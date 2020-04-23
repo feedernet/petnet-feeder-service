@@ -12,6 +12,3 @@
 # things I've probably forgotten
 
     # sudo iptables-restore < /etc/iptables/rules.v4
-/etc/wpa_supplicant/wpa_supplicant.conf
-
-/etc/hostapd/hostapd.conf /etc/init.d/isc-dhcp-server  
