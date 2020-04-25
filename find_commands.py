@@ -1,5 +1,4 @@
-
-
+from config import Config
 import json
 import requests
 import sys
@@ -42,9 +41,7 @@ if False and True:
         #'_page': pagenum,
         #'statuses': True,
       },
-      headers={
-        'x-arrow-apikey': '9bfee7fe6c70f753eafa3028e530aae550dcb697db5b6533161c4b14cd31f0cb'
-      },
+      headers=Config.getRequestHeaders(),
     )
   retj = ret.json()
   print(json.dumps(retj, indent=2))
@@ -56,9 +53,7 @@ def hid(cmd):
         #'_page': pagenum,
         'statuses': True,
       },
-      headers={
-        'x-arrow-apikey': '9bfee7fe6c70f753eafa3028e530aae550dcb697db5b6533161c4b14cd31f0cb'
-      },
+      headers=Config.getRequestHeaders(),
     )
   retj = ret.json()
   print(json.dumps(retj, indent=2))
@@ -72,9 +67,7 @@ def all_gateways():
         '_size': 200,
         '_page': pagenum,
       },
-      headers={
-        'x-arrow-apikey': '9bfee7fe6c70f753eafa3028e530aae550dcb697db5b6533161c4b14cd31f0cb'
-      },
+      headers=Config.getRequestHeaders(),
     )
     retj = ret.json()
     pagecount = len(retj['data'])
@@ -89,7 +82,7 @@ seen = {}
 def get_logs(hid):
   ret = requests.get(f'https://api.arrowconnect.io/api/v1/kronos/devices/{hid}/logs',
     params={ '_size': 200 },
-    headers={ 'x-arrow-apikey': '9bfee7fe6c70f753eafa3028e530aae550dcb697db5b6533161c4b14cd31f0cb' },
+    headers=Config.getRequestHeaders(),
   )
   retj = ret.json()
   if not retj['data']: return
@@ -130,9 +123,7 @@ def all_devices():
         '_size': 200,
         '_page': pagenum,
       },
-      headers={
-        'x-arrow-apikey': '9bfee7fe6c70f753eafa3028e530aae550dcb697db5b6533161c4b14cd31f0cb'
-      },
+      headers=Config.getRequestHeaders(),
     )
     retj = ret.json()
     pagecount = len(retj['data'])
