@@ -1,0 +1,3 @@
+curl -D - -k https://api.arrowconnect.io/api/v1/kronos/devices
+curl --header "Content-Type: application/json" -d '{"uid":"x"}' -D - -k https://api.arrowconnect.io/api/v1/kronos/devices
+curl --header "Content-Type: application/json" -d '{"y":"x"}' -D - -k https://api.arrowconnect.io/api/v1/kronos/gateways
