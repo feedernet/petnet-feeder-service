@@ -7,6 +7,9 @@ import os
 import sys
 import logging
 
+# Application we will run as
+APPLICATION_ID = "38973487e8241ea4483e88ef8ca7934c8663dc25"
+
 # Map of all the gateways & devices for now
 # Each gateway contains a dictionary of devices
 # Likely migrate this to an actual database later
@@ -66,7 +69,15 @@ async def welcome(req, resp):
   resp.media = {"default": f"🤖😻\n"}
 
 def get_gateways(req, resp):
-  resp.media = toListing(list(gateways.keys()))
+  gatewayObjects = [{
+    "hid" : x,
+    "pri" : "arw:pgs:gwy:" + x,
+    "applicationHid" : APPLICATION_ID,
+    "softwareName" : "SMART FEEDER",
+    "softwareReleaseName" : "SMART FEEDER",
+    "type" : "SMART FEEDER"
+  } for x in gateways.keys()]
+  resp.media = toListing(gatewayObjects)
 
 @app.route('/api/v1/kronos/gateways')
 async def manage_gateways(req, resp):
