@@ -102,10 +102,10 @@ async def manage_gateways(req, resp):
   if gatewayHid in gateways:
     resp.media = {
       "hid" : gatewayHid,
-      "links" : {},
+      #"links" : {},
       "message" : "gateway is already registered"
     }
-    log.info("gateway already registered")
+    log.info(f"gateway already registered; returning {resp.media}")
     resp.set_cookie('JSESSIONID', value='pjbKBnNnas6qblrovritCihhHivY2WjFHc--S97u')
     return
   else:
@@ -113,10 +113,10 @@ async def manage_gateways(req, resp):
     gateways[gatewayHid] = {}
     resp.media = {
       "hid": gatewayHid,
-      "links": {},
+      #"links": {},
       "message": "OK"
     }
-    log.info("new gateway.")
+    log.info(f"new gateway; returning {resp.media}")
     resp.set_cookie('JSESSIONID', value='pjbKBnNnas6qblrovritCihhHivY2WjFHc--S97u')
     return
 
@@ -126,6 +126,8 @@ async def manage_gateways(req, resp):
 # https://github.com/konexios/konexios-sdk-android/blob/master/sample/src/main/java/com/konexios/sample/device/DeviceAbstract.java
 # https://github.com/konexios/moonstone-docs/blob/master/kronos/device-firmware-management.pdf
 # 
+# this is called "register" in the C code, so we can think of this call as "device registration"
+# https://github.com/konexios/konexios-sdk-c/blob/master/src/arrow/api/device/device.c#L14
 @app.route('/api/v1/kronos/devices')
 async def manage_devices(req, resp):
   if not req.method == 'post':
@@ -162,10 +164,10 @@ async def manage_devices(req, resp):
     'links' : {},
     'message' : 'device is already registered',
     # guessing at the following, they would be undocumented. hooray cargo culting!
-    'deviceHid': hid,
-    'externalId': 'hello',
-    'enabled': True,
     'pri' : 'arw:krn:dev:' + hid,
+    #'deviceHid': hid,
+    #'externalId': 'hello',
+    #'enabled': True,
   }
 
   # Check if we already have this device
@@ -175,7 +177,8 @@ async def manage_devices(req, resp):
     return
   # else We don't have this device, so add it
   gateways[gatewayHid][hid] = device
-  ret['message'] = 'device was registered successfully'
+  # returning "already registered" (above) always.
+  #ret['message'] = 'device was registered successfully'
   resp.media = ret
 
   log.info(f"new reg: {resp.media}")
@@ -200,6 +203,8 @@ def get_devices(req, resp):
     return
 
 
+# this response can (also) be seen here:
+# https://github.com/konexios/konexios-sdk-c/blob/master/src/arrow/api/gateway/gateway.c#L30
 @app.route('/api/v1/kronos/gateways/{gateway_id}/config')
 async def gateway_config(req, resp, gateway_id):
   log.info(f"gw config headers: {req.headers}")
