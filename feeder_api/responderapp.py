@@ -24,8 +24,17 @@ log = logging.getLogger(__file__)
 
 # Generate "hardware IDs" per device
 def generateHid(uid):
-  return 'e954822c15b4e7a0c23a92b73edc1280722c3b34'
-  #return sha1(uid.encode('utf-8')).hexdigest()
+  if uid == 'smartfeeder-795ae773737d-prod': # ted
+    return 'e954822c15b4e7a0c23a92b73edc1280722c3b34'
+  log.info(f"generating based on incoming uid: {uid}")
+  return sha1(uid.encode('utf-8')).hexdigest()
+
+def generateGatewayHid(uid):
+  if uid == 'smartfeeder-795ae773737d': # ted
+    return '6ec68eb4db216f61822a9aa4333d9824ae7d1abc'
+  log.warning(f"seeing unknown feeder uid: {uid}")
+  return sha1(uid.encode('utf-8')).hexdigest()
+
 
 # Welcome :) using this as a catch-all for all the methods we haven't implemented.
 # stolen from here: https://flask.palletsprojects.com/en/1.1.x/patterns/singlepageapplications/
@@ -45,32 +54,38 @@ async def manage_gateways(req, resp):
     return get_gateways(req, resp)
   #example of input data: {"name":"SF Gateway","uid":"smartfeeder-795ae773737d","osName":"FreeRTOS","type":"Local","softwareName":"SMART FEEDER","softwareVersion":"2.8.0","sdkVersion":"1.3.12"}
   payload = await req.media()
-  log.info(f"payload: {payload}")
+  log.info(f"gateways payload: {payload}")
+  log.info(f"gateways headers: {req.headers}")
 
   # Ensure all gateways have a "uid"
   if 'uid' not in payload:
     log.warning("gateway didn't contain a UID, returning 400")
-    resp.status_code = api.status_codes.HTTP_400
+    resp.status_code = app.status_codes.HTTP_400
+    return
 
-  # Generate the HID
-  hid = generateHid(payload['uid'])
+  # Generate the gateway HID
+  #log.info(f"generating based on incoming uid: {uid}")
+  gatewayHid = generateGatewayHid(payload['uid'])
 
   # Check if we already have this gateway
-  if hid in gateways:
+  if gatewayHid in gateways:
     resp.media = {
-      "hid" : hid,
+      "hid" : gatewayHid,
       "links" : {},
       "message" : "gateway is already registered"
     }
+    log.info("gateway already registered")
+    resp.set_cookie('JSESSIONID', value='pjbKBnNnas6qblrovritCihhHivY2WjFHc--S97u')
     return
   else:
     # Add to our gateways
-    gateways[hid] = {}
+    gateways[gatewayHid] = {}
     resp.media = {
-      "hid": hid,
+      "hid": gatewayHid,
       "links": {},
       "message": "OK"
     }
+    log.info("new gateway.")
     resp.set_cookie('JSESSIONID', value='pjbKBnNnas6qblrovritCihhHivY2WjFHc--S97u')
     return
 
@@ -82,22 +97,24 @@ async def manage_devices(req, resp):
     return get_devices(req, resp)
   # Handle POST (create)
   device = await req.media()
+  log.info(f"devices payload: {device}")
+  log.info(f"devices headers: {req.headers}")
 
   # Ensure all devices have a "gatewayHid"
   if 'gatewayHid' not in device:
     log.warning("device didn't contain a gatewayHid, returning 400")
-    resp.status_code = api.status_codes.HTTP_400
+    resp.status_code = app.status_codes.HTTP_400
     return
   # Ensure all devices have a "uid"
   if 'uid' not in device:
     log.warning("device didn't contain a UID, returning 400")
-    resp.status_code = api.status_codes.HTTP_400
+    resp.status_code = app.status_codes.HTTP_400
     return
 
   # Ensure the gateway exists
   if device['gatewayHid'] not in gateways:
     log.warning("device's gateway does not exist, returning 400")
-    resp.status_code = api.status_codes.HTTP_400
+    resp.status_code = app.status_codes.HTTP_400
     return
   # Fetch the gateway HID
   gatewayHid = device['gatewayHid']
@@ -108,6 +125,7 @@ async def manage_devices(req, resp):
   if hid in gateways[gatewayHid]:
     resp.media = {
       "hid" : hid,
+      "externalId" : "hello",
       "links" : {},
       "message" : "device is already registered"
     }
@@ -117,6 +135,7 @@ async def manage_devices(req, resp):
   gateways[gatewayHid][hid] = device
   resp.media = {
     "hid" : hid,
+    "externalId" : "hello",
     "links" : {},
     "message" : "device was registered successfully"
   }
@@ -132,7 +151,7 @@ def get_devices(req, resp):
   if gatewayHid:
     # Ensure the gateway exists
     if gatewayHid not in gateways:
-      resp.status_code = api.status_codes.HTTP_400
+      resp.status_code = app.status_codes.HTTP_400
       return
     resp.media = {"data" : list(gateways[gatewayHid].values())}
     return
@@ -146,6 +165,7 @@ def get_devices(req, resp):
 
 @app.route('/api/v1/kronos/gateways/{gateway_id}/config')
 async def gateway_config(req, resp, gateway_id):
+  log.info(f"gw config headers: {req.headers}")
   resp.media = {
     "cloudPlatform": "IotConnect",
     "key": {
@@ -153,6 +173,7 @@ async def gateway_config(req, resp, gateway_id):
       "secretKey": "gEhFrm2hRvW2Km47lgt9xRBCtT9uH2Lx77WxYliNGJI="
     }
   }
+  resp.set_cookie('JSESSIONID', value='pjbKBnNnas6qblrovritCihhHivY2WjFHc--S97u')
 
 
 
