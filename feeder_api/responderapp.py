@@ -36,6 +36,16 @@ def generateGatewayHid(uid):
   return sha1(uid.encode('utf-8')).hexdigest()
 
 
+def toListing(objList):
+  listSize = len(objList)
+  return {
+    'size' : listSize,
+    'data' : objList,
+    'page' : 1,
+    'totalSize' : listSize,
+    'totalPages' : 1,
+  }
+
 # Welcome :) using this as a catch-all for all the methods we haven't implemented.
 # stolen from here: https://flask.palletsprojects.com/en/1.1.x/patterns/singlepageapplications/
 @app.route('/', default=True)
@@ -46,7 +56,7 @@ async def welcome(req, resp):
   resp.media = {"default": f"🤖😻\n"}
 
 def get_gateways(req, resp):
-  resp.media = {"data" : list(gateways.keys())}
+  resp.media = toListing(list(gateways.keys()))
 
 @app.route('/api/v1/kronos/gateways')
 async def manage_gateways(req, resp):
@@ -153,13 +163,13 @@ def get_devices(req, resp):
     if gatewayHid not in gateways:
       resp.status_code = app.status_codes.HTTP_400
       return
-    resp.media = {"data" : list(gateways[gatewayHid].values())}
+    resp.media = toListing(list(gateways[gatewayHid].values()))
     return
   else:
     # No specific gateway specified, return all devices for now
     deviceLists = [x.values() for x in gateways.values()]
     devices = [entry for sublist in deviceLists for entry in sublist]
-    resp.media = {"data" : devices}
+    resp.media = toListing(devices)
     return
 
 
