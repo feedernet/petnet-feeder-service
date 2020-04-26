@@ -39,7 +39,7 @@ def manage_gateways():
   payload = request.get_json(force=True)
   print(f"payload: {payload}")
 
-  resp = flask.make_response(json.dumps({"hid": "6ec68eb4db216f61822a9aa4333d9824ae7d1abc", "links": {}, "message": "OK" }))
+  resp = flask.make_response({"hid": "6ec68eb4db216f61822a9aa4333d9824ae7d1abc", "links": {}, "message": "OK" })
   resp.set_cookie('JSESSIONID', 'pjbKBnNnas6qblrovritCihhHivY2WjFHc--S97u')
   return resp
 
