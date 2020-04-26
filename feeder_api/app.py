@@ -25,6 +25,16 @@ app.logger.addHandler(logging.StreamHandler(sys.stdout))
 def generateHid(uid):
   return sha1(uid.encode('utf-8')).hexdigest()
 
+def toListing(objList):
+  listSize = len(objList)
+  return {
+    'size' : listSize,
+    'data' : objList,
+    'page' : 1,
+    'totalSize' : listSize,
+    'totalPages' : 1,
+  }
+
 # Welcome :) using this as a catch-all for all the methods we haven't implemented.
 # stolen from here: https://flask.palletsprojects.com/en/1.1.x/patterns/singlepageapplications/
 @app.route('/', defaults={'path': ''})
@@ -35,7 +45,7 @@ def welcome(path):
 
 @app.route('/api/v1/kronos/gateways', methods=['GET'])
 def get_gateways():
-  return json.dumps({"data" : list(gateways.keys())})
+  return json.dumps(toListing(list(gateways.keys())))
 
 @app.route('/api/v1/kronos/gateways', methods=['POST'])
 def manage_gateways():
@@ -122,12 +132,12 @@ def get_devices():
     # Ensure the gateway exists
     if gatewayHid not in gateways:
       return Response(status=400)
-    return flask.make_response({"data" : list(gateways[gatewayHid].values())})
+    return flask.make_response(toListing(list(gateways[gatewayHid].values())))
   else:
     # No specific gateway specified, return all devices for now
     deviceLists = [x.values() for x in gateways.values()]
     devices = [entry for sublist in deviceLists for entry in sublist]
-    return flask.make_response({"data" : devices})
+    return flask.make_response(toListing(devices))
 
 
 
