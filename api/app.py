@@ -8,9 +8,10 @@ import os
 import sys
 import logging
 
-# Map of all the devices for now
+# Map of all the gateways & devices for now
+# Each gateway contains a dictionary of devices
 # Likely migrate this to an actual database later
-devices = {}
+gateways = {}
 
 # Create the flask app
 app = flask.Flask(__name__)
@@ -32,17 +33,41 @@ def welcome(path):
   app.logger.debug("request: {request}")
   return f"🤖😻\n"
 
-@app.route('/api/v1/kronos/gateways', methods=['GET', 'POST'])
-def manage_gateways():
+@app.route('/api/v1/kronos/gateways', methods=['GET'])
+def get_gateways():
+  return json.dumps({"data" : list(gateways.keys())})
 
+@app.route('/api/v1/kronos/gateways', methods=['POST'])
+def manage_gateways():
   #example of input data: {"name":"SF Gateway","uid":"smartfeeder-795ae773737d","osName":"FreeRTOS","type":"Local","softwareName":"SMART FEEDER","softwareVersion":"2.8.0","sdkVersion":"1.3.12"}
   payload = request.get_json(force=True)
   print(f"payload: {payload}")
 
-  resp = flask.make_response({"hid": "6ec68eb4db216f61822a9aa4333d9824ae7d1abc", "links": {}, "message": "OK" })
-  resp.set_cookie('JSESSIONID', 'pjbKBnNnas6qblrovritCihhHivY2WjFHc--S97u')
-  return resp
+  # Ensure all gateways have a "uid"
+  if 'uid' not in payload:
+    app.logger.warning("gateway didn't contain a UID, returning 400")
+    return Response(status=400)
 
+  # Generate the HID
+  hid = generateHid(payload['uid'])
+
+  # Check if we already have this gateway
+  if hid in gateways:
+    return flask.make_response({
+      "hid" : hid,
+      "links" : {},
+      "message" : "gateway is already registered"
+    })
+  else:
+    # Add to our gateways
+    gateways[hid] = {}
+    resp = flask.make_response({
+      "hid": hid,
+      "links": {},
+      "message": "OK"
+    })
+    resp.set_cookie('JSESSIONID', 'pjbKBnNnas6qblrovritCihhHivY2WjFHc--S97u')
+    return resp
 
 
 
@@ -53,21 +78,34 @@ def manage_devices():
   print("ff")
   # Handle POST (create)
   device = request.json
+
+  # Ensure all devices have a "gatewayHid"
+  if 'gatewayHid' not in device:
+    app.logger.warning("device didn't contain a gatewayHid, returning 400")
+    return Response(status=400)
   # Ensure all devices have a "uid"
   if 'uid' not in device:
     app.logger.warning("device didn't contain a UID, returning 400")
     return Response(status=400)
+
+  # Ensure the gateway exists
+  if device['gatewayHid'] not in gateways:
+    app.logger.warning("device's gateway does not exist, returning 400")
+    return Response(status=400)
+  # Fetch the gateway HID
+  gatewayHid = device['gatewayHid']
+
   # Generate the HID
   hid = generateHid(device['uid'])
   # Check if we already have this device
-  if hid in devices:
+  if hid in gateways[gatewayHid]:
     return {
       "hid" : hid,
       "links" : {},
       "message" : "device is already registered"
     }
   # else We don't have this device, so add it
-  devices[hid] = device
+  gateways[gatewayHid][hid] = device
   return {
     "hid" : hid,
     "links" : {},
@@ -78,8 +116,18 @@ def manage_devices():
 @app.route('/api/v1/kronos/devices', methods=['GET'])
 def get_devices():
   # Handle GET (fetch)
-  # For now, allow us to fetch all of the devices
-  return json.dumps(devices)
+  # Check if we want the devices of a specific gateway
+  gatewayHid = request.args.get('gatewayHid')
+  if gatewayHid:
+    # Ensure the gateway exists
+    if gatewayHid not in gateways:
+      return Response(status=400)
+    return flask.make_response({"data" : list(gateways[gatewayHid].values())})
+  else:
+    # No specific gateway specified, return all devices for now
+    deviceLists = [x.values() for x in gateways.values()]
+    devices = [entry for sublist in deviceLists for entry in sublist]
+    return flask.make_response({"data" : devices})
 
 
 
