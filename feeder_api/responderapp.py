@@ -145,26 +145,27 @@ async def manage_devices(req, resp):
 
   # Generate the HID
   hid = generateHid(device['uid'])
+
+  ret = {
+    'hid': hid,
+    'links' : {},
+    'message' : 'device is already registered',
+    # guessing at the following, they would be undocumented. hooray cargo culting!
+    'deviceHid': hid,
+    'externalId': 'hello',
+    'enabled': True,
+  }
+
   # Check if we already have this device
   if hid in gateways[gatewayHid]:
-    resp.media = {
-      "hid" : hid,
-      "externalId" : "hello",
-      "links" : {},
-      "message" : "device is already registered",
-      "enabled": True,
-    }
+    resp.media = ret
     log.info(f"existing reg: {resp.media}")
     return
   # else We don't have this device, so add it
   gateways[gatewayHid][hid] = device
-  resp.media = {
-    "hid" : hid,
-    "externalId" : "hello",
-    "links" : {},
-    "message" : "device was registered successfully",
-    "enabled": True,
-  }
+  ret['message'] = 'device was registered successfully'
+  resp.media = ret
+
   log.info(f"new reg: {resp.media}")
 
 
