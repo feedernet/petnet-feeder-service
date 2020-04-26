@@ -30,7 +30,7 @@ def toListing(objList):
   return {
     'size' : listSize,
     'data' : objList,
-    'page' : 1,
+    'page' : 0,
     'totalSize' : listSize,
     'totalPages' : 1,
   }
