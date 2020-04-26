@@ -3,6 +3,7 @@
 from flask import Flask, request, Response
 from hashlib import sha1
 import json
+import os
 
 # Map of all the devices for now
 # Likely migrate this to an actual database later
@@ -60,9 +61,11 @@ def get_devices():
 
 # Run the app if we're executing this file
 if __name__ == '__main__':
-  if os.environ.get('SSH_PLZ'):
+  if os.environ.get('USER', 'nope') == 'root':
     # run with SSL enabled (on the same port); not defaulting because it requires sudo to start.
     # instaed, could put in haproxy or use iptables: https://superuser.com/a/1334552
     app.run(ssl_context='adhoc', host='0.0.0.0', port=443)
-  app.run()
+  else:
+    # note that by default, we'll only serve traffic to localhost.
+    app.run()
 
