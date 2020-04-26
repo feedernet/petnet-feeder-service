@@ -1,6 +1,6 @@
 from config import Config
 import json
-import requests
+from request import Request
 import sys
 
 
@@ -34,42 +34,29 @@ cmd = None
 
 
 if False and True:
-  ret = requests.get(f'https://api.arrowconnect.io/api/v1/{cmd}',
-  #ret = requests.get(f'https://api.arrowconnect.io/api/v1/kronos/{cmd}',
-      params={
-        #'_size': 200,
-        #'_page': pagenum,
-        #'statuses': True,
-      },
-      headers=Config.getRequestHeaders(),
-    )
-  retj = ret.json()
+  retj = Request.create('GET', f'https://api.arrowconnect.io/api/v1/{cmd}', {
+    #'_size': 200,
+    #'_page': pagenum,
+    #'statuses': True,
+  })
   print(json.dumps(retj, indent=2))
 
 def hid(cmd):
-  ret = requests.get(f'https://api.arrowconnect.io/api/v1/kronos/devices/91bddfcd3e7ef7227c2a7eb40771c415affddc5c/{cmd}',
-      params={
-        #'_size': 200,
-        #'_page': pagenum,
-        'statuses': True,
-      },
-      headers=Config.getRequestHeaders(),
-    )
-  retj = ret.json()
+  retj = Request.create('GET', f'https://api.arrowconnect.io/api/v1/kronos/devices/91bddfcd3e7ef7227c2a7eb40771c415affddc5c/{cmd}', {
+    #'_size': 200,
+    #'_page': pagenum,
+    'statuses': True,
+  })
   print(json.dumps(retj, indent=2))
 
 def all_gateways():
   pagenum = 0
   totcount = 0
   while True:
-    ret = requests.get('https://api.arrowconnect.io/api/v1/kronos/gateways',
-      params={
-        '_size': 200,
-        '_page': pagenum,
-      },
-      headers=Config.getRequestHeaders(),
-    )
-    retj = ret.json()
+    retj = Request.create('GET', 'https://api.arrowconnect.io/api/v1/kronos/gateways', {
+      '_size': 200,
+      '_page': pagenum,
+    })
     pagecount = len(retj['data'])
     if not pagecount: break
     totcount += pagecount
@@ -80,11 +67,9 @@ def all_gateways():
 seen = {}
 
 def get_logs(hid):
-  ret = requests.get(f'https://api.arrowconnect.io/api/v1/kronos/devices/{hid}/logs',
-    params={ '_size': 200 },
-    headers=Config.getRequestHeaders(),
-  )
-  retj = ret.json()
+  retj = Request.create('GET', f'https://api.arrowconnect.io/api/v1/kronos/devices/{hid}/logs', {
+    '_size' : 200
+  })
   if not retj['data']: return
   for entry in retj['data']:
     #print(json.dumps(entry, indent=2))
@@ -118,14 +103,10 @@ def all_devices():
   pagenum = 0
   totcount = 0
   while True:
-    ret = requests.get('https://api.arrowconnect.io/api/v1/kronos/devices',
-      params={
-        '_size': 200,
-        '_page': pagenum,
-      },
-      headers=Config.getRequestHeaders(),
-    )
-    retj = ret.json()
+    retj = Request.create('GET', 'https://api.arrowconnect.io/api/v1/kronos/devices', {
+      '_size': 200,
+      '_page': pagenum,
+    })
     pagecount = len(retj['data'])
     if not pagecount: break
     totcount += pagecount
