@@ -23,8 +23,8 @@ def generateHid(uid):
 # stolen from here: https://flask.palletsprojects.com/en/1.1.x/patterns/singlepageapplications/
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
-def welcome():
-  return "🤖😻"
+def welcome(path):
+  return "🤖😻\n"
 
 # Fetch or create a device
 @app.route('/api/v1/kronos/devices', methods=['POST'])
