@@ -46,6 +46,16 @@ def toListing(objList):
     'totalPages' : 1,
   }
 
+
+# if there's MQTT, it should come over this:
+# https://social.microsoft.com/Forums/azure/en-US/ca68041a-d098-4d11-b108-fe3c76420281/using-mqtt-over-websockets-on-port-443?forum=azureiothub
+@app.route('/$iothub/websocket', websocket=True)
+async def welcome_websocket(ws):
+  await ws.accept()
+  log.info("in a websocket")
+  await ws.close()
+
+
 # Welcome :) using this as a catch-all for all the methods we haven't implemented.
 # stolen from here: https://flask.palletsprojects.com/en/1.1.x/patterns/singlepageapplications/
 @app.route('/', default=True)
@@ -101,6 +111,10 @@ async def manage_gateways(req, resp):
 
 
 # Fetch or create a device
+# this is the one currently failing. possibly relevant:
+# https://github.com/konexios/konexios-sdk-android/blob/master/sample/src/main/java/com/konexios/sample/device/DeviceAbstract.java
+# https://github.com/konexios/moonstone-docs/blob/master/kronos/device-firmware-management.pdf
+# 
 @app.route('/api/v1/kronos/devices')
 async def manage_devices(req, resp):
   if not req.method == 'post':
