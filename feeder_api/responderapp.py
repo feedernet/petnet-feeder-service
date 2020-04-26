@@ -12,7 +12,8 @@ import logging
 # Likely migrate this to an actual database later
 gateways = {}
 
-# Create the flask app
+# Create the RESPONDER app
+# https://responder.kennethreitz.org/en/latest/quickstart.html
 app = responder.API()
 
 log = logging.getLogger(__file__)
@@ -23,7 +24,8 @@ log = logging.getLogger(__file__)
 
 # Generate "hardware IDs" per device
 def generateHid(uid):
-  return sha1(uid.encode('utf-8')).hexdigest()
+  return 'e954822c15b4e7a0c23a92b73edc1280722c3b34'
+  #return sha1(uid.encode('utf-8')).hexdigest()
 
 # Welcome :) using this as a catch-all for all the methods we haven't implemented.
 # stolen from here: https://flask.palletsprojects.com/en/1.1.x/patterns/singlepageapplications/
@@ -78,7 +80,6 @@ async def manage_gateways(req, resp):
 async def manage_devices(req, resp):
   if not req.method == 'post':
     return get_devices(req, resp)
-  log.warning("yo")
   # Handle POST (create)
   device = await req.media()
 
@@ -110,6 +111,8 @@ async def manage_devices(req, resp):
       "links" : {},
       "message" : "device is already registered"
     }
+    log.info(f"existing reg: {resp.media}")
+    return
   # else We don't have this device, so add it
   gateways[gatewayHid][hid] = device
   resp.media = {
@@ -117,6 +120,9 @@ async def manage_devices(req, resp):
     "links" : {},
     "message" : "device was registered successfully"
   }
+  log.info(f"new reg: {resp.media}")
+
+
 
 
 def get_devices(req, resp):
@@ -136,6 +142,18 @@ def get_devices(req, resp):
     devices = [entry for sublist in deviceLists for entry in sublist]
     resp.media = {"data" : devices}
     return
+
+
+@app.route('/api/v1/kronos/gateways/{gateway_id}/config')
+async def gateway_config(req, resp, gateway_id):
+  resp.media = {
+    "cloudPlatform": "IotConnect",
+    "key": {
+      "apiKey": "efa2396b6f0bae3cc5fe5ef34829d60d91b96a625e55afabcea0e674f1a7ac43",
+      "secretKey": "gEhFrm2hRvW2Km47lgt9xRBCtT9uH2Lx77WxYliNGJI="
+    }
+  }
+
 
 
 
