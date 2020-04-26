@@ -151,7 +151,8 @@ async def manage_devices(req, resp):
       "hid" : hid,
       "externalId" : "hello",
       "links" : {},
-      "message" : "device is already registered"
+      "message" : "device is already registered",
+      "enabled": True,
     }
     log.info(f"existing reg: {resp.media}")
     return
@@ -161,11 +162,10 @@ async def manage_devices(req, resp):
     "hid" : hid,
     "externalId" : "hello",
     "links" : {},
-    "message" : "device was registered successfully"
+    "message" : "device was registered successfully",
+    "enabled": True,
   }
   log.info(f"new reg: {resp.media}")
-
-
 
 
 def get_devices(req, resp):
