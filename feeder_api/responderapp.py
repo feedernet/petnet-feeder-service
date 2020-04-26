@@ -165,6 +165,7 @@ async def manage_devices(req, resp):
     'deviceHid': hid,
     'externalId': 'hello',
     'enabled': True,
+    'pri' : 'arw:krn:dev:' + hid,
   }
 
   # Check if we already have this device
