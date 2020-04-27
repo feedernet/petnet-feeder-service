@@ -51,7 +51,8 @@ def toListing(objList):
 
 def jsonResponse(resp, obj):
   resp.content = json.dumps(obj)
-  resp.headers.update({'content-type' : 'application/json;charset=UTF-8'})
+  log.debug(f"response json: {resp.content}")
+  resp.headers.update({'Content-Type' : 'application/json;charset=UTF-8'})
 
 
 # if there's MQTT, it should come over this:
@@ -108,8 +109,7 @@ async def manage_gateways(req, resp):
       "hid" : gatewayHid,
       #"links" : {},
       "message" : "gateway is already registered"
-    }
-    log.info(f"gateway already registered; returning {resp.content}")
+    })
     resp.set_cookie('JSESSIONID', value='pjbKBnNnas6qblrovritCihhHivY2WjFHc--S97u')
     return
   else:
@@ -119,8 +119,7 @@ async def manage_gateways(req, resp):
       "hid": gatewayHid,
       #"links": {},
       "message": "OK"
-    }
-    log.info(f"new gateway; returning {resp.content}")
+    })
     resp.set_cookie('JSESSIONID', value='pjbKBnNnas6qblrovritCihhHivY2WjFHc--S97u')
     return
 
@@ -177,15 +176,12 @@ async def manage_devices(req, resp):
   # Check if we already have this device
   if hid in gateways[gatewayHid]:
     jsonResponse(resp, ret)
-    log.info(f"existing reg: {resp.content}")
     return
   # else We don't have this device, so add it
   gateways[gatewayHid][hid] = device
   # returning "already registered" (above) always.
   #ret['message'] = 'device was registered successfully'
   jsonResponse(resp, ret)
-
-  log.info(f"new reg: {resp.content}")
 
 
 def get_devices(req, resp):
