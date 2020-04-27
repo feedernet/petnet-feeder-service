@@ -49,6 +49,10 @@ def toListing(objList):
     'totalPages' : 1,
   }
 
+def jsonResponse(resp, obj):
+  resp.content = json.dumps(obj)
+  resp.headers.update({'content-type' : 'application/json;charset=UTF-8'})
+
 
 # if there's MQTT, it should come over this:
 # https://social.microsoft.com/Forums/azure/en-US/ca68041a-d098-4d11-b108-fe3c76420281/using-mqtt-over-websockets-on-port-443?forum=azureiothub
@@ -66,7 +70,7 @@ async def welcome(req, resp):
   # fwiw, fails if there's no media.
   #data = await req.media()
   #log.debug("request: {data}")
-  resp.media = {"default": f"🤖😻\n"}
+  jsonResponse(resp, {"default": f"🤖😻\n"})
 
 def get_gateways(req, resp):
   gatewayObjects = [{
@@ -77,7 +81,7 @@ def get_gateways(req, resp):
     "softwareReleaseName" : "SMART FEEDER",
     "type" : "SMART FEEDER"
   } for x in gateways.keys()]
-  resp.media = toListing(gatewayObjects)
+  jsonResponse(resp, toListing(gatewayObjects))
 
 @app.route('/api/v1/kronos/gateways')
 async def manage_gateways(req, resp):
@@ -100,23 +104,23 @@ async def manage_gateways(req, resp):
 
   # Check if we already have this gateway
   if gatewayHid in gateways:
-    resp.media = {
+    jsonResponse(resp, {
       "hid" : gatewayHid,
       #"links" : {},
       "message" : "gateway is already registered"
     }
-    log.info(f"gateway already registered; returning {resp.media}")
+    log.info(f"gateway already registered; returning {resp.content}")
     resp.set_cookie('JSESSIONID', value='pjbKBnNnas6qblrovritCihhHivY2WjFHc--S97u')
     return
   else:
     # Add to our gateways
     gateways[gatewayHid] = {}
-    resp.media = {
+    jsonResponse(resp, {
       "hid": gatewayHid,
       #"links": {},
       "message": "OK"
     }
-    log.info(f"new gateway; returning {resp.media}")
+    log.info(f"new gateway; returning {resp.content}")
     resp.set_cookie('JSESSIONID', value='pjbKBnNnas6qblrovritCihhHivY2WjFHc--S97u')
     return
 
@@ -172,16 +176,16 @@ async def manage_devices(req, resp):
 
   # Check if we already have this device
   if hid in gateways[gatewayHid]:
-    resp.media = ret
-    log.info(f"existing reg: {resp.media}")
+    jsonResponse(resp, ret)
+    log.info(f"existing reg: {resp.content}")
     return
   # else We don't have this device, so add it
   gateways[gatewayHid][hid] = device
   # returning "already registered" (above) always.
   #ret['message'] = 'device was registered successfully'
-  resp.media = ret
+  jsonResponse(resp, ret)
 
-  log.info(f"new reg: {resp.media}")
+  log.info(f"new reg: {resp.content}")
 
 
 def get_devices(req, resp):
@@ -193,13 +197,13 @@ def get_devices(req, resp):
     if gatewayHid not in gateways:
       resp.status_code = app.status_codes.HTTP_400
       return
-    resp.media = toListing(list(gateways[gatewayHid].values()))
+    jsonResponse(resp, toListing(list(gateways[gatewayHid].values())))
     return
   else:
     # No specific gateway specified, return all devices for now
     deviceLists = [x.values() for x in gateways.values()]
     devices = [entry for sublist in deviceLists for entry in sublist]
-    resp.media = toListing(devices)
+    jsonResponse(resp, toListing(devices))
     return
 
 
@@ -208,13 +212,13 @@ def get_devices(req, resp):
 @app.route('/api/v1/kronos/gateways/{gateway_id}/config')
 async def gateway_config(req, resp, gateway_id):
   log.info(f"gw config headers: {req.headers}")
-  resp.media = {
+  jsonResponse(resp, {
     "cloudPlatform": "IotConnect",
     "key": {
       "apiKey": "efa2396b6f0bae3cc5fe5ef34829d60d91b96a625e55afabcea0e674f1a7ac43",
       "secretKey": "gEhFrm2hRvW2Km47lgt9xRBCtT9uH2Lx77WxYliNGJI="
     }
-  }
+  })
   resp.set_cookie('JSESSIONID', value='pjbKBnNnas6qblrovritCihhHivY2WjFHc--S97u')
 
 
