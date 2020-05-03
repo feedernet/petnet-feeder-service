@@ -134,3 +134,7 @@ dmypy.json
 # local certs
 cert.pem
 pkey.pem
+
+# node
+node_modules/
+.yarn

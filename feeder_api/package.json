@@ -1,0 +1,33 @@
+{
+  "name": "petnet_feeder_api",
+  "version": "0.0.1",
+  "description": "Reverse-engineered PetNet Feeder API",
+  "main": "api.js",
+  "dependencies": {
+    "cookie-parser": "^1.4.5",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "https": "^1.0.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tedder/petnet-api-hacking.git"
+  },
+  "keywords": [
+    "petnet",
+    "feeder",
+    "iot",
+    "device",
+    "api"
+  ],
+  "author": "PetNet Feeder API Crew",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tedder/petnet-api-hacking/issues"
+  },
+  "homepage": "https://github.com/tedder/petnet-api-hacking#readme"
+}
