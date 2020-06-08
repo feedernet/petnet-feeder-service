@@ -1,0 +1,17 @@
+Centos 8 Installation Guide
+Pre-requisites:
+- Centos 8 machine with local IP address
+- Access to Internet (for updates and installations)
+- External ability to redirect traffic to Centos 8 machine
+- GIT files are installed to Home directory
+
+Steps for Install and Run:
+1. Install 'Development Tools' using sudo yum install 'Development Tools'
+2. Install Responder using sudo python -m pip install responder
+3. Optional: Install Flask using sudo python -m pip install Flask
+4. Install from GIT using git clone https://github.com/tedder/petnet-api-hacking.git
+5. Run mkcert.py using python ~/petnet-api-hacking/mkcert.py
+6. Set up Firewall to allow access from PetNet (for development purposes I turned off firewall to confirm nothing was blocking traffic)
+7. Comment out lines 224, 229, and 231 (this will alow the app to always run using the certs on port 443)
+8. Adjust address on line 228 to match IP address of Centos 8 device
+9. Run responderapp.py using sudo python ~/petnet-api-hacking/responderapp.py
