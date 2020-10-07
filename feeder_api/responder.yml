@@ -10,6 +10,8 @@ webapp:
       ssl_keyfile: pkey.pem
       ssl_certfile: cert.pem
 mqtt:
+  client:
+
   server:
     listeners:
       default:

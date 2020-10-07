@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from hashlib import sha1
+from starlette.staticfiles import StaticFiles
 from uvicorn import Config, Server
 import json
 import logging
@@ -11,6 +12,8 @@ import sys
 # Application we will run as
 APPLICATION_ID = "38973487e8241ea4483e88ef8ca7934c8663dc25"
 
+mqtt_client = None
+
 # Map of all the gateways & devices for now
 # Each gateway contains a dictionary of devices
 # Likely migrate this to an actual database later
@@ -19,6 +22,7 @@ gateways = {}
 # Create the RESPONDER app
 # https://responder.kennethreitz.org/en/latest/quickstart.html
 app = responder.API()
+app.mount('/static', StaticFiles(directory='static'))
 
 log = logging.getLogger(__file__)
 
@@ -57,6 +61,18 @@ def jsonResponse(resp, obj):
   resp.headers.update({'Content-Type' : 'application/json;charset=UTF-8'})
 
 
+@app.route('/feed/{gateway_id}')
+async def feed(req, resp, gateway_id):
+  global mqtt_client
+  log.debug(f"got feed request for {gateway_id}")
+  if mqtt_client is None:
+    log.debug('mqtt is none!')
+    return
+
+  await mqtt_client.send_cmd_feed(gateway_id)
+  resp.html = app.template('fed.html', gateway=gateway_id)
+
+
 # if there's MQTT, it should come over this:
 # https://social.microsoft.com/Forums/azure/en-US/ca68041a-d098-4d11-b108-fe3c76420281/using-mqtt-over-websockets-on-port-443?forum=azureiothub
 @app.route('/$iothub/websocket', websocket=True)
@@ -68,12 +84,14 @@ async def welcome_websocket(ws):
 
 # Welcome :) using this as a catch-all for all the methods we haven't implemented.
 # stolen from here: https://flask.palletsprojects.com/en/1.1.x/patterns/singlepageapplications/
-@app.route('/', default=True)
+@app.route('/api/?P<api_path>.*')
 async def welcome(req, resp):
-  # fwiw, fails if there's no media.
-  #data = await req.media()
-  #log.debug("request: {data}")
   jsonResponse(resp, {"default": f"🤖😻\n"})
+
+@app.route('/', default=True)
+async def welcome_html(req, resp):
+  resp.html = app.template('welcome.html', gateways=gateways.keys())
+
 
 def get_gateways(req, resp):
   gatewayObjects = [{
@@ -223,22 +241,29 @@ async def gateway_config(req, resp, gateway_id):
 @app.route('/api/v1/kronos/gateways/{gateway_id}/checkin')
 async def gateway_checkin(req, resp, gateway_id):
   log.info(f"gw config headers: {req.headers}")
+  if gateway_id not in gateways:
+      log.info(f"Adding gateway {gateway_id} to seen gateways")
+      gateways[gateway_id] = {}
   jsonResponse(resp, {})
   resp.set_cookie('JSESSIONID', value='pjbKBnNnas6qblrovritCihhHivY2WjFHc--S97u')
+
 
 @app.route('/api/v1/core/events/{gateway_id}/received')
 async def events_received(req, resp, gateway_id):
   log.info(f"gw config headers: {req.headers}")
   data = await req.content
-  log.info("request: {data}")
+  log.info(f"request: {data}")
   jsonResponse(resp, {})
   resp.set_cookie('JSESSIONID', value='pjbKBnNnas6qblrovritCihhHivY2WjFHc--S97u')
 
-def create(loop, config):
+
+def create(loop, config, mqtt=None):
+  global mqtt_client
   servers = []
+  mqtt_client = mqtt
+  logging.info('mqtt client is %s' % mqtt)
   for listener in config['listeners']:
-    webapp_config = Config(app=app.app, loop=loop, debug=True, **config['listeners'][listener])
+    webapp_config = Config(app=app.app, loop=loop, log_level=logging.DEBUG, debug=True, **config['listeners'][listener])
     server = SignalableServer(webapp_config)
     servers.append(server)
-
   return servers
