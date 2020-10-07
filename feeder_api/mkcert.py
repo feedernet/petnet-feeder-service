@@ -85,8 +85,7 @@ def gen_self_signed_cert():
         try:
             return _gen_cryptography()
         except:
-            return (None, None)
-    return (None, None)
+            raise RuntimeError("Must install 'openssl' or 'cryptography'")
 
 if __name__ == '__main__':
     c = gen_self_signed_cert()
