@@ -61,16 +61,44 @@ def jsonResponse(resp, obj):
   resp.headers.update({'Content-Type' : 'application/json;charset=UTF-8'})
 
 
-@app.route('/feed/{gateway_id}')
-async def feed(req, resp, gateway_id):
-  global mqtt_client
-  log.debug(f"got feed request for {gateway_id}")
-  if mqtt_client is None:
-    log.debug('mqtt is none!')
-    return
+@app.route('/api/{gateway_id}/button')
+class ButtonResource:
+  async def on_post(self, req, resp, *, gateway_id):
+    global mqtt_client
+    data = await req.media(format='json')
+    enable = data['enable'] if 'enable' in data else True
+    log.debug(f"got remote_button_enable request for {gateway_id} to value {enable}")
+    await mqtt_client.send_cmd_button(gateway_id, enable=enable)
+    resp.media = {'success': 'ok'}
 
-  await mqtt_client.send_cmd_feed(gateway_id)
-  resp.html = app.template('fed.html', gateway=gateway_id)
+
+@app.route('/api/{gateway_id}/reboot')
+class RebootResource:
+  async def on_post(self, req, resp, *, gateway_id):
+    global mqtt_client
+    log.debug(f"got reboot request for {gateway_id}")
+    await mqtt_client.send_cmd_reboot(gateway_id)
+    resp.media = {'success': 'ok'}
+
+@app.route('/api/{gateway_id}/utc_offset')
+class FeedResource:
+  async def on_post(self, req, resp, *, gateway_id):
+    global mqtt_client
+    data = await req.media(format='json')
+    portion = data['utc_offset'] if 'utc_offset' in data else -7
+    log.debug(f"got utc_offset request for {gateway_id} for utc_offset {utc_offset}")
+    await mqtt_client.send_cmd_utc_offset(gateway_id, utc_offset=utc_offset)
+    resp.media = {'success': 'ok'}
+
+@app.route('/api/{gateway_id}/feed')
+class FeedResource:
+  async def on_post(self, req, resp, *, gateway_id):
+    global mqtt_client
+    data = await req.media(format='json')
+    portion = data['portion'] if 'portion' in data else 0.0625
+    log.debug(f"got feed request for {gateway_id} of portion {portion}")
+    await mqtt_client.send_cmd_feed(gateway_id, portion=portion)
+    resp.media = {'success': 'ok'}
 
 
 # if there's MQTT, it should come over this:
