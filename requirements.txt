@@ -1,3 +1,6 @@
 Flask~=1.0.2
+cryptography
 itsdangerous
 responder
+hbmqtt
+pyyaml

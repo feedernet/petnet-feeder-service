@@ -1,0 +1,33 @@
+debug: true
+webapp:
+  listeners:
+    http:
+      host: 0.0.0.0
+      port: 5000
+    tls:
+      host: 0.0.0.0
+      port: 7112
+      ssl_keyfile: pkey.pem
+      ssl_certfile: cert.pem
+mqtt:
+  server:
+    listeners:
+      default:
+        max-connections: 50000
+        type: tcp
+      tcp-1:
+        bind: 0.0.0.0:1883
+      tcp-ssl-1:
+        bind: 0.0.0.0:8883
+        ssl: on
+        cafile: cert.pem
+        certfile: cert.pem
+        keyfile: pkey.pem
+    auth:
+      plugins: ['auth.anonymous']
+      allow-anonymous: true
+    timeout-disconnect-delay: 300
+    topic-check:
+      enabled: True
+      plugins: 
+      - topic_taboo
