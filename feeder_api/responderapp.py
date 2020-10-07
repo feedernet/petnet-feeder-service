@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 
-import responder
 from hashlib import sha1
+from uvicorn import Config, Server
 import json
-import os
-import sys
 import logging
+import os
+import responder
+import sys
 
 # Application we will run as
 APPLICATION_ID = "38973487e8241ea4483e88ef8ca7934c8663dc25"
@@ -20,10 +21,11 @@ gateways = {}
 app = responder.API()
 
 log = logging.getLogger(__file__)
-#app.logger.addHandler(logging.StreamHandler(sys.stdout))
 
-# FYI, logging:
-# https://flask.palletsprojects.com/en/1.1.x/logging/#basic-configuration
+# Prevent uvicorn installing signal handlers that block ours
+class SignalableServer(Server):
+  def install_signal_handlers(self):
+    pass
 
 # Generate "hardware IDs" per device
 def generateHid(uid):
@@ -218,15 +220,25 @@ async def gateway_config(req, resp, gateway_id):
   resp.set_cookie('JSESSIONID', value='pjbKBnNnas6qblrovritCihhHivY2WjFHc--S97u')
 
 
+@app.route('/api/v1/kronos/gateways/{gateway_id}/checkin')
+async def gateway_checkin(req, resp, gateway_id):
+  log.info(f"gw config headers: {req.headers}")
+  jsonResponse(resp, {})
+  resp.set_cookie('JSESSIONID', value='pjbKBnNnas6qblrovritCihhHivY2WjFHc--S97u')
 
+@app.route('/api/v1/core/events/{gateway_id}/received')
+async def events_received(req, resp, gateway_id):
+  log.info(f"gw config headers: {req.headers}")
+  data = await req.content
+  log.info("request: {data}")
+  jsonResponse(resp, {})
+  resp.set_cookie('JSESSIONID', value='pjbKBnNnas6qblrovritCihhHivY2WjFHc--S97u')
 
-# Run the app if we're executing this file
-if __name__ == '__main__':
-  if os.environ.get('USER', 'nope') == 'root':
-    # run with SSL enabled (on the same port); not defaulting because it requires sudo to start.
-    # instaed, could put in haproxy or use iptables: https://superuser.com/a/1334552
-    app.run(ssl_keyfile="pkey.pem", ssl_certfile="cert.pem", address='0.0.0.0', port=443, debug=True)
-  else:
-    # note that by default, we'll only serve traffic to localhost.
-    app.run()
+def create(loop, config):
+  servers = []
+  for listener in config['listeners']:
+    webapp_config = Config(app=app.app, loop=loop, debug=True, **config['listeners'][listener])
+    server = SignalableServer(webapp_config)
+    servers.append(server)
 
+  return servers
