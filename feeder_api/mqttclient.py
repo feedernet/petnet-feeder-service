@@ -29,18 +29,38 @@ class MqttGateway:
     letters = string.ascii_lowercase
     return ''.join(random.choice(letters) for i in range(32))
 
-  async def send_cmd_feed(self, gateway_id):
+  def build_command(self, command, args):
+    payload = json.dumps(args)
     msg = {
         "hid": self.generate_task_id(),
         "name": "SendCommand",
         "encrypted": False,
         "parameters": {
             "deviceHid": "unused",
-            "command":"feed",
-            "payload":"{\"portion\":1}"
+            "command": command,
+            "payload": payload,
         },
     }
-    await self.client.publish(f"krs/cmd/stg/{gateway_id}", json.dumps(msg).encode('utf-8'), qos=QOS_2)
+    return json.dumps(msg).encode('utf-8')
+
+  async def send_cmd(self, gateway_id, command, args):
+    packet = self.build_command(command, args)
+    await self.client.publish(f"krs/cmd/stg/{gateway_id}", packet, qos=QOS_2)
+
+  async def send_cmd_feed(self, gateway_id, *, portion=0.0625):
+    await self.send_cmd(gateway_id, 'feed', {'portion': portion})
+
+  async def send_cmd_button(self, gateway_id, *, enable=True):
+      await self.send_cmd(gateway_id, 'button_enable_remote', {'enable': enable})
+
+  async def send_cmd_reboot(self, gateway_id):
+    await self.send_cmd(gateway_id, 'reboot', {})
+
+  async def send_cmd_utc_offset(self, gateway_id, *, utc_offset=0):
+    await self.send_cmd(gateway_id, 'utc_offset', {'utc_offset': utc_offset})
+
+  async def send_cmd_schedule(self, gateway_id, *, active=True, feeding_id='aaaa', name='FEED2', portion=0.0625, reminder=False, time=43100):
+    await self.send_cmd(gateway_id, 'schedule', {'active': active, 'feeding_id': feeding_id, 'name': name, 'portion': portion, 'reminder': reminder, 'time': time})
 
   async def start(self):
     await self.client.connect('mqtt://localhost:1883/')

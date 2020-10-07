@@ -28,7 +28,6 @@ mqtt:
     auth:
       plugins: ['auth.anonymous']
       allow-anonymous: true
-    timeout-disconnect-delay: 300
     topic-check:
       enabled: True
       plugins: 
