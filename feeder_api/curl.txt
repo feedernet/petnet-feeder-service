@@ -1,4 +1,0 @@
-curl -D - -k https://api.arrowconnect.io/api/v1/kronos/devices
-curl --header "Content-Type: application/json" -d '{"uid":"x"}' -D - -k https://api.arrowconnect.io/api/v1/kronos/devices
-curl --header "Content-Type: application/json" -d '{"y":"x"}' -D - -k https://api.arrowconnect.io/api/v1/kronos/gateways
-curl -H "Content-Type: application/json" -X POST -d '{"gatewayHid":"e954822c15b4e7a0c23a92b73edc1280722c3b34", "uid":"smartfeeder-795ae773737d-prod"}' -D - -k https://api.arrowconnect.io/api/v1/kronos/devices
