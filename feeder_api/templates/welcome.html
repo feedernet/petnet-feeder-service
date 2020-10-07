@@ -1,0 +1,6 @@
+<p>List of all gateways seen:</p>
+<ul>
+    {% for gateway in gateways %}
+    <li>Gateway: {{gateway}} <a href="/feed/{{gateway}}">Feed</a></li>
+    {% endfor %}
+</ul>

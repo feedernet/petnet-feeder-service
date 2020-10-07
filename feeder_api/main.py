@@ -4,6 +4,7 @@ import argparse
 import asyncio
 import logging
 import yaml
+import mqttclient
 import mqttserver
 import responderapp
 import signal
@@ -45,16 +46,22 @@ class Main:
     parser.add_argument('--debug', '-d', action='store_true')
     pargs = parser.parse_args(args)
 
+    if pargs.debug:
+        logging.basicConfig(level=logging.DEBUG)
+        logging.info('Enabled debug logging level')
+
     self.read_config()
 
     # Set up tasks
     loop = asyncio.get_event_loop()
 
-    self.webapps = responderapp.create(loop, self.config['webapp'])
     self.broker = mqttserver.create(loop, self.config['mqtt']['server'])
+    self.client = mqttclient.create(loop, self.config['mqtt']['client'])
+    self.webapps = responderapp.create(loop, self.config['webapp'], mqtt=self.client)
   
     tasks = [loop.create_task(x.serve()) for x in self.webapps] + [
       loop.create_task(self.broker.start()),
+      loop.create_task(self.client.start()),
       loop.create_task(self.install_signal_handlers(loop)),
     ]
   
