@@ -64,7 +64,7 @@ iptables -t nat -A PREROUTING -i eth0 -p tcp -d 172.4.0.1 --dport 8883 -j DNAT -
 #### docker
 
 ```
-docker create \
+docker run -d \
   --name=petnet-feeder-service \
   -p 5000:5000 \
   -p 7112:7112 \
@@ -75,7 +75,7 @@ docker create \
 
 #### docker-compose
 
-```
+```yaml
 ---
 version: "2.1"
 services:
