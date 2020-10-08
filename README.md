@@ -1,4 +1,4 @@
-# petnet-api-hacking
+# petnet-feeder-service
 
 Reverse-engineering the PetNet feeders. So far v2 has been properly hacked!
 
@@ -6,12 +6,12 @@ This is an experimental web interface that assumes you have set up your
 PetNet Feeder V2 already. There is not a way to set up the WiFi credentials
 in this repository.
 
-## Network setup
+# Network setup
 
 To intercept calls without needing to hack an entire network, you will need
 to add a PiHole to your network (they're nice to have anyhow). TKTK.
 
-### DNS spoofing
+## DNS spoofing
 
 You must configure fake DNS addresses for some of the hosts which the
 PetNet Feeder attempts to connect.
@@ -40,14 +40,14 @@ Name:   mqtt-a01.arrowconnect.io
 Address: 172.4.0.1
 ```
 
-### Firewall setup
+## Firewall setup
 
 For this step you need to set up NAT for the fake address that you
 used before (e.g., `172.4.0.1`). If the source and destination are
 on the same network, you'll need to make sure it's a hairpin NAT so that
 the source addresses are translated to something else as well.
 
-#### IPTables
+### IPTables
 
 In this example, I'm assuming you're redirecting to the actual server
 at address `192.168.1.10` from the fake address:
@@ -59,9 +59,9 @@ iptables -t nat -A PREROUTING -i eth0 -p tcp -d 172.4.0.1 --dport 1883 -j DNAT -
 iptables -t nat -A PREROUTING -i eth0 -p tcp -d 172.4.0.1 --dport 8883 -j DNAT --to 192.168.1.10:8883
 ```
 
-### Running the app
+# Running the app
 
-#### docker
+## docker
 
 ```
 docker run -d \
@@ -73,7 +73,7 @@ docker run -d \
   tedder42/petnet-feeder-service
 ```
 
-#### docker-compose
+## docker-compose
 
 ```yaml
 ---
@@ -89,7 +89,7 @@ services:
     restart: unless-stopped
 ```
 
-### Parameters
+## Parameters
 
 | Parameter | Function |
 | :----: | --- |
@@ -97,7 +97,7 @@ services:
 | `-p 7112:7112` | The HTTPS access port for the webserver. |
 | `-p 8883:8883` | The MQTT TLS port for the PetNet feeder. |
 
-## Developing
+# Developing
 
 You need to make sure the Python modules are available.
 
