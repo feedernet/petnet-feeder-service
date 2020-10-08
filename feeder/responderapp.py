@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
 from hashlib import sha1
-from starlette.staticfiles import StaticFiles
 from uvicorn import Config, Server
 import json
 import logging
@@ -22,7 +21,6 @@ gateways = {}
 # Create the RESPONDER app
 # https://responder.kennethreitz.org/en/latest/quickstart.html
 app = responder.API()
-app.mount('/static', StaticFiles(directory='static'))
 
 log = logging.getLogger(__file__)
 
