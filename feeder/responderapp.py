@@ -283,13 +283,18 @@ async def events_received(req, resp, gateway_id):
   resp.set_cookie('JSESSIONID', value='pjbKBnNnas6qblrovritCihhHivY2WjFHc--S97u')
 
 
-def create(loop, config, mqtt=None):
+def create(loop, config, *, mqtt=None, debug=False):
   global mqtt_client
-  servers = []
   mqtt_client = mqtt
-  logging.info('mqtt client is %s' % mqtt)
+
+  if debug:
+    log_level = logging.DEBUG
+  else:
+    log_level = logging.INFO
+
+  servers = []
   for listener in config['listeners']:
-    webapp_config = Config(app=app.app, loop=loop, log_level=logging.DEBUG, debug=True, **config['listeners'][listener])
+    webapp_config = Config(app=app.app, loop=loop, log_level=log_level, debug=debug, **config['listeners'][listener])
     server = SignalableServer(webapp_config)
     servers.append(server)
   return servers
