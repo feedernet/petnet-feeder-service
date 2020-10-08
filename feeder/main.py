@@ -36,21 +36,23 @@ class Main:
     for sig in (signal.SIGINT, signal.SIGTERM, signal.SIGQUIT):
       loop.add_signal_handler(sig, lambda sig=sig: asyncio.create_task(self.shutdown(sig, loop)))
   
-  def read_config(self):
-    with open('responder.yml') as f:
+  def read_config(self, *, file):
+    with open(file) as f:
       self.config = yaml.load(f, Loader=yaml.FullLoader)
   
   def main(self, args):
     # Set up configuration of app
     parser = argparse.ArgumentParser(prog='main')
     parser.add_argument('--debug', '-d', action='store_true')
+    parser.add_argument('--config', '-c')
     pargs = parser.parse_args(args)
 
     if pargs.debug:
         logging.basicConfig(level=logging.DEBUG)
         logging.info('Enabled debug logging level')
 
-    self.read_config()
+    config_file = pargs.config if pargs.config else 'config.yml'
+    self.read_config(file=config_file)
 
     # Set up tasks
     loop = asyncio.get_event_loop()

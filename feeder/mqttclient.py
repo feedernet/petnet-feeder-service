@@ -9,7 +9,7 @@ from hbmqtt.client import MQTTClient, ClientException
 from hbmqtt.mqtt.constants import QOS_1, QOS_2
 
 class MqttGateway:
-  def __init__(self, *, loop, config, client=None):
+  def __init__(self, loop, config, *, client=None):
     self.client = MQTTClient(loop=loop, config=config) if client is None else client
 
   async def handle_message(self, packet):
