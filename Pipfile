@@ -7,9 +7,15 @@ name = "pypi"
 pytest = "*"
 pytest-asyncio = "*"
 tox-pipenv = "*"
+black = "20.8b1"
 
 [packages]
 cryptography = "*"
 hbmqtt = "*"
-pyyaml = "*"
-responder = "*"
+jinja2 = "*"
+aiofiles = "*"
+fastapi = "*"
+uvicorn = "*"
+
+[pipenv]
+allow_prereleases = true
