@@ -22,7 +22,7 @@ gateways = {}
 # https://responder.kennethreitz.org/en/latest/quickstart.html
 app = responder.API()
 
-log = logging.getLogger('responderapp')
+log = logging.getLogger(__file__)
 
 # Prevent uvicorn installing signal handlers that block ours
 class SignalableServer(Server):
@@ -294,7 +294,7 @@ def create(loop, config, *, mqtt=None, debug=False):
 
   servers = []
   for listener in config['listeners']:
-    webapp_config = Config(app=app.app, loop=loop, log_config=None, log_level=log_level, debug=debug, **config['listeners'][listener])
+    webapp_config = Config(app=app.app, loop=loop, log_level=log_level, debug=debug, **config['listeners'][listener])
     server = SignalableServer(webapp_config)
     servers.append(server)
   return servers

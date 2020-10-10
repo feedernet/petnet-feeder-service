@@ -2,7 +2,6 @@
 
 import argparse
 import asyncio
-import coloredlogs
 import logging
 import yaml
 import mqttclient
@@ -10,7 +9,6 @@ import mqttserver
 import responderapp
 import signal
 import sys
-import task_logger
 
 class Main:
   config = {}
@@ -42,14 +40,6 @@ class Main:
     with open(file) as f:
       self.config = yaml.load(f, Loader=yaml.FullLoader)
   
-  @staticmethod
-  def handle_exception(loop, context):
-    if 'exception' in context:
-      logging.error("Caught global exception:", exc_info = context["exception"])
-    else:
-      msg = context["message"]
-      logging.error(f"Caught global exception: {msg}")
-
   def main(self, args):
     # Set up configuration of app
     parser = argparse.ArgumentParser(prog='main')
@@ -59,8 +49,9 @@ class Main:
     parser.add_argument('--ssl_certfile', help='PEM-encoded SSL certificate')
     pargs = parser.parse_args(args)
 
-    log_level = 'DEBUG' if pargs.debug else 'INFO'
-    coloredlogs.install(fmt='%(asctime)s.%(msecs)03d %(levelname)s %(name)s :: %(message)s', level=log_level)
+    if pargs.debug:
+      logging.basicConfig(level=logging.DEBUG)
+      logging.debug('Enabled debug logging level')
 
     config_file = pargs.config if pargs.config else 'config.yml'
     self.read_config(file=config_file)
@@ -75,16 +66,14 @@ class Main:
 
     # Set up tasks
     loop = asyncio.get_event_loop()
-    loop.set_exception_handler(self.handle_exception)
 
     self.broker = mqttserver.create(loop, self.config['mqtt']['server'])
     self.client = mqttclient.create(loop, self.config['mqtt']['client'])
     self.webapps = responderapp.create(loop, self.config['webapp'], mqtt=self.client, debug=pargs.debug)
   
-    logger = logging.getLogger('task_logger')
-    tasks = [task_logger.create_task(x.serve(), logger=logger, message='Webapp raised exception', loop=loop) for x in self.webapps] + [
-      task_logger.create_task(self.broker.start(), logger=logger, message='MQTT broker raised exception', loop=loop),
-      task_logger.create_task(self.client.start(), logger=logger, message='MQTT client raised exception', loop=loop),
+    tasks = [loop.create_task(x.serve()) for x in self.webapps] + [
+      loop.create_task(self.broker.start()),
+      loop.create_task(self.client.start()),
       loop.create_task(self.install_signal_handlers(loop)),
     ]
   
