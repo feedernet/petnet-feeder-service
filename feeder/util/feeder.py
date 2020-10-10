@@ -1,6 +1,25 @@
 import math
 import hashlib
 
+from fastapi import APIRouter
+
+from feeder.util.mqtt.client import FeederClient
+
+
+class APIRouterWithMQTTClient(APIRouter):
+    _client = None
+
+    @property
+    def client(self) -> FeederClient:
+        return self._client
+
+    @client.setter
+    def client(self, client: FeederClient):
+        if isinstance(client, FeederClient):
+            self._client = client
+        else:
+            raise AttributeError("Client must be instance of FeederClient!")
+
 
 def paginate_response(entities: list, current_page=1, max_page_size=10) -> dict:
     list_length = len(entities)

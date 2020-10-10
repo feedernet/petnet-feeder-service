@@ -22,7 +22,7 @@
     }
 
     function sendCommand(command, gateway_id, form) {
-        var apiUrl = "/api/" + gateway_id + "/" + command;
+        var apiUrl = "/api/v1/feeder/" + gateway_id + "/" + command;
         var dataObject = serializeArray(form);
 
         fetch(apiUrl, {
