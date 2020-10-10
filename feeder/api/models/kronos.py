@@ -56,8 +56,22 @@ class AddGatewayResponse(BaseModel):
 
 
 class DeviceRegistration(BaseModel):
-    gatewayHid: str
+    """
+    Example: {
+        'name': 'SF20A',
+        'type': 'SMART FEEDER',
+        'uid': 'smartfeeder-4b09fa082bbd-prod',
+        'gatewayHid': 'd48d71fb4478ed189b37699ac1ea665fbed5a577',
+        'softwareName': 'SMART FEEDER',
+        'softwareVersion': '2.8.0'
+    }
+    """
+    name: str
+    type: str
     uid: str
+    gatewayHid: str
+    softwareName: str
+    softwareVersion: str
 
 
 class PaginatedDeviceList(BasePaginatedList):
@@ -65,8 +79,5 @@ class PaginatedDeviceList(BasePaginatedList):
 
 
 class GatewayConfiguration(BaseModel):
-    cloudPlatform: str = "IoTConnect"
-    key: dict = {
-        "apiKey": "efa2396b6f0bae3cc5fe5ef34829d60d91b96a625e55afabcea0e674f1a7ac43",
-        "secretKey": "gEhFrm2hRvW2Km47lgt9xRBCtT9uH2Lx77WxYliNGJI=",
-    }
+    cloudPlatform: str
+    key: dict
