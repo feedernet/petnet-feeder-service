@@ -16,6 +16,11 @@ jinja2 = "*"
 aiofiles = "*"
 fastapi = "*"
 uvicorn = "*"
+sqlalchemy = "*"
+alembic = "*"
+databases = "*"
+aiosqlite = "*"
+typing-extensions = "*"
 
 [pipenv]
 allow_prereleases = true

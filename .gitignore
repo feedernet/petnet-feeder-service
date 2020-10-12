@@ -112,6 +112,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+.idea/
 
 # Spyder project settings
 .spyderproject
@@ -134,3 +135,6 @@ dmypy.json
 # local certs
 cert.pem
 pkey.pem
+
+#local database
+data.db

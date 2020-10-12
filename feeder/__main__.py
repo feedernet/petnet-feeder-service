@@ -14,6 +14,8 @@ from feeder.api.routers import kronos, feeder
 from feeder.config import LOGGING_CONFIG
 from feeder.util.mqtt import FeederClient, FeederBroker
 from feeder.util.mkcert import generate_self_signed_certificate
+from feeder.database.session import db
+from feeder.database.models import KronosDevices
 
 
 logger = logging.getLogger("feeder")
@@ -21,6 +23,9 @@ if settings.debug:
     for named_logger in LOGGING_CONFIG["loggers"]:
         if named_logger:
             LOGGING_CONFIG["loggers"][named_logger]["level"] = "DEBUG"
+    LOGGING_CONFIG["loggers"]["hbmqtt.client.plugins"] = {"level": "INFO"}
+    LOGGING_CONFIG["loggers"]["hbmqtt.broker.plugins"] = {"level": "INFO"}
+    LOGGING_CONFIG["loggers"]["hbmqtt.mqtt.protocol.handler"] = {"level": "INFO"}
 dictConfig(LOGGING_CONFIG)
 
 public_key = os.path.abspath(settings.mqtts_public_key)
@@ -56,13 +61,15 @@ app.include_router(feeder.router, prefix="/api/v1/feeder")
 
 @app.get("/", response_class=HTMLResponse)
 async def read_item(request: Request):
+    devices = await KronosDevices.get()
     return templates.TemplateResponse(
-        "welcome.html", {"request": request, "gateways": kronos.gateways}
+        "welcome.html", {"request": request, "devices": devices}
     )
 
 
 @app.on_event("startup")
 async def startup_event():
+    await db.connect()
     loop.create_task(broker.start())
     loop.create_task(client.start())
 
@@ -70,8 +77,8 @@ async def startup_event():
 @app.on_event("shutdown")
 async def shutdown_event():
     await asyncio.gather([broker.shutdown()], return_exceptions=True)
+    await db.disconnect()
 
 
 if __name__ == "__main__":
-    print(settings.mqtts_public_key)
     uvicorn.run("feeder.__main__:app", host="0.0.0.0", port=settings.http_port)
