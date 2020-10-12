@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from feeder import settings
 
 
-class NewFeeder(BaseModel):
+class NewGateway(BaseModel):
     """
     This is the structure of a new feeder registering itself.
     Example: {
@@ -28,13 +28,14 @@ class NewFeeder(BaseModel):
     sdkVersion: str
 
 
-class Gateway(BaseModel):
+class Gateway(NewGateway):
     hid: str
     pri: str
     applicationHid: str = settings.app_id
-    softwareName: str = "SMART FEEDER"
-    softwareReleaseName: str = "SMART FEEDER"
-    type: str = "SMART FEEDER"
+    discoveredAt: int = 0
+
+    class Config:
+        orm_mode = True
 
 
 class BasePaginatedList(BaseModel):
@@ -55,7 +56,7 @@ class AddGatewayResponse(BaseModel):
     pri: Optional[str]
 
 
-class DeviceRegistration(BaseModel):
+class NewDevice(BaseModel):
     """
     Example: {
         'name': 'SF20A',
@@ -74,8 +75,17 @@ class DeviceRegistration(BaseModel):
     softwareVersion: str
 
 
+class Device(NewDevice):
+    hid: str
+    discoveredAt: int = 0
+    lastPingedAt: int = 0
+
+    class Config:
+        orm_mode = True
+
+
 class PaginatedDeviceList(BasePaginatedList):
-    data: List[DeviceRegistration] = []
+    data: List[Device] = []
 
 
 class GatewayConfiguration(BaseModel):

@@ -53,13 +53,14 @@ In this example, I'm assuming you're redirecting to the actual server
 at address `192.168.1.10` from the fake address:
 
 ```
-iptables -t nat -A PREROUTING -i eth0 -p tcp -d 172.4.0.1 --dport 80 -j DNAT --to 192.168.1.10:7112
-iptables -t nat -A PREROUTING -i eth0 -p tcp -d 172.4.0.1 --dport 443 -j DNAT --to 192.168.1.10:7112
+iptables -t nat -A PREROUTING -i eth0 -p tcp -d 172.4.0.1 --dport 80 -j DNAT --to 192.168.1.10:5000
 iptables -t nat -A PREROUTING -i eth0 -p tcp -d 172.4.0.1 --dport 1883 -j DNAT --to 192.168.1.10:1883
 iptables -t nat -A PREROUTING -i eth0 -p tcp -d 172.4.0.1 --dport 8883 -j DNAT --to 192.168.1.10:8883
 ```
 
 # Running the app
+
+You will need to run some form of SSL proxy (NGINX, Traefik, etc.) in front of this service. 
 
 ## docker
 
@@ -67,7 +68,6 @@ iptables -t nat -A PREROUTING -i eth0 -p tcp -d 172.4.0.1 --dport 8883 -j DNAT -
 docker run -d \
   --name=petnet-feeder-service \
   -p 5000:5000 \
-  -p 7112:7112 \
   -p 8883:8883 \
   --restart unless-stopped \
   tedder42/petnet-feeder-service
@@ -79,13 +79,18 @@ docker run -d \
 ---
 version: "2.1"
 services:
-  bazarr:
+  feeder-service:
     image: tedder42/petnet-feeder-service
     container_name: petnet-feeder-service
+    environment:
+      - DATABASE_PATH=/data/data.db
+      - MQTTS_PRIVATE_KEY=/data/cert.pem
+      - MQTTS_PUBLIC_KEY=/data/pkey.pem
     ports:
       - 5000:5000
-      - 7112:7112
       - 8883:8883
+    volumes:
+      - "/local/path:/data"
     restart: unless-stopped
 ```
 
@@ -94,7 +99,6 @@ services:
 | Parameter | Function |
 | :----: | --- |
 | `-p 5000:5000` | The HTTP access port for the webserver. |
-| `-p 7112:7112` | The HTTPS access port for the webserver. |
 | `-p 8883:8883` | The MQTT TLS port for the PetNet feeder. |
 
 # Developing
@@ -102,13 +106,31 @@ services:
 You need to make sure the Python modules are available.
 
 ```
-make init
+pip install --editable .
 ```
 
 To run the daemon locally:
 
 ```
-cd feeder && ./main.py
+python -m feeder
+```
+
+## Database and Schema Migrations
+
+This project uses SQLAlchemy and Alembic for managing database models and schema migrations.
+
+If you change a database model and need to generate a migration, Alembic can do that for you automatically!
+
+```shell script
+DATABASE_PATH=./data.db alembic revision --autogenerate -m "Changing something about the models."
+```
+
+This will create a migration script in `feeder/database/alembic/versions`.
+
+To apply these changes to your database, run:
+
+```shell script
+DATABASE_PATH=./data.db alembic upgrade head
 ```
 
 # How can I help?

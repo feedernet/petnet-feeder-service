@@ -3,31 +3,33 @@ from typing import Optional
 
 from fastapi import APIRouter, Query, HTTPException
 from fastapi.responses import JSONResponse
+from sqlite3 import IntegrityError
 
 from feeder.api.models.kronos import (
     PaginatedGatewayList,
     AddGatewayResponse,
-    NewFeeder,
-    DeviceRegistration,
+    NewGateway,
+    NewDevice,
     GatewayConfiguration,
     PaginatedDeviceList,
 )
 from feeder.util.feeder import paginate_response, generate_feeder_hid
+from feeder.database.models import KronosGateways, KronosDevices
 
 logger = logging.getLogger(__name__)
 kronos_headers = {
     "content-type": "application/json;charset=UTF-8"
 }
-gateways = {}
 
 router = APIRouter()
 
 
 @router.get("/gateways", response_model=PaginatedGatewayList)
-async def get_feeders():
+async def get_gateways():
+    all_gateways = await KronosGateways.get()
     formatted_feeders = [
-        {"hid": feeder_hid, "pri": f"arw:pgs:gwy:{feeder_hid}"}
-        for feeder_hid in gateways.keys()
+        {"pri": f"arw:pgs:gwy:{gateway['hid']}", **gateway}
+        for gateway in all_gateways
     ]
 
     return paginate_response(
@@ -36,43 +38,37 @@ async def get_feeders():
 
 
 @router.post("/gateways", response_model=AddGatewayResponse)
-async def add_gateway(feeder: NewFeeder):
-    gateway_hid = generate_feeder_hid(feeder.uid)
-    if gateway_hid not in gateways.keys():
-        gateways[gateway_hid] = {}
+async def add_gateway(gateway: NewGateway):
+    gateway_hid = generate_feeder_hid(gateway.uid)
+    try:
+        await KronosGateways.create(**gateway.dict())
         content = {"hid": gateway_hid, "message": "OK"}
-    else:
+    except IntegrityError:
+        logger.debug("Gateway (%s) already registered!", gateway_hid)
         content = {"hid": gateway_hid, "message": "gateway is already registered"}
+        return JSONResponse(content=content, headers=kronos_headers)
 
     return JSONResponse(content=content, headers=kronos_headers)
 
 
 @router.get("/devices", response_model=PaginatedDeviceList)
 async def get_devices(gateway_hid: Optional[str] = Query(None, alias="gatewayHid")):
-    if gateway_hid:
-        if gateway_hid in gateways:
-            devices = list(gateways[gateway_hid].values())
-            logger.info(devices)
-        else:
-            raise HTTPException(status_code=400, detail="Gateway ID not found!")
-    else:
-        devices = []
-        for gateway in gateways:
-            devices += gateways[gateway].values()
+    devices = await KronosDevices.get(gateway_hid)
+    device_array = [{**device} for device in devices]
 
-    content = paginate_response(entities=devices, max_page_size=len(devices))
+    content = paginate_response(entities=device_array, max_page_size=len(devices))
     return JSONResponse(content=content, headers=kronos_headers)
 
 
 @router.post("/devices", response_model=AddGatewayResponse)
-async def register_feeder(device: DeviceRegistration):
-    if device.gatewayHid not in gateways.keys():
-        raise HTTPException(status_code=400, detail="Gateway not found!")
-
+async def register_feeder(device: NewDevice):
+    # Generate the feeder device HID
     device_hid = generate_feeder_hid(device.uid)
 
-    if device_hid not in gateways[device.gatewayHid].keys():
-        gateways[device.gatewayHid][device_hid] = dict(device)
+    try:
+        await KronosDevices.create(**device.dict())
+    except IntegrityError:
+        logger.debug("Device (%s) already registered!", device_hid)
 
     content = {
         "hid": device_hid,
