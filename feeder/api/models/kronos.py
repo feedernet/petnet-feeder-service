@@ -19,18 +19,18 @@ class NewGateway(BaseModel):
     }
     """
 
-    name: str
-    uid: str
-    osName: str
-    type: str
-    softwareName: str
-    softwareVersion: str
-    sdkVersion: str
+    name: Optional[str]
+    uid: Optional[str]
+    osName: Optional[str]
+    type: Optional[str]
+    softwareName: Optional[str]
+    softwareVersion: Optional[str]
+    sdkVersion: Optional[str]
 
 
 class Gateway(NewGateway):
     hid: str
-    pri: str
+    pri: Optional[str]
     applicationHid: str = settings.app_id
     discoveredAt: int = 0
 
@@ -67,12 +67,12 @@ class NewDevice(BaseModel):
         'softwareVersion': '2.8.0'
     }
     """
-    name: str
-    type: str
-    uid: str
+    name: Optional[str]
+    type: Optional[str]
+    uid: Optional[str]
     gatewayHid: str
-    softwareName: str
-    softwareVersion: str
+    softwareName: Optional[str]
+    softwareVersion: Optional[str]
 
 
 class Device(NewDevice):
