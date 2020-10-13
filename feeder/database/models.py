@@ -1,6 +1,7 @@
 from fastapi import HTTPException
 from sqlalchemy import Boolean, Column, Integer, ForeignKey, Table, Text, Float
 from sqlite3 import IntegrityError
+import logging
 
 from feeder.util.feeder import generate_feeder_hid
 from feeder.util import get_current_timestamp
@@ -92,11 +93,15 @@ class KronosDevices:
         return results
 
     @classmethod
-    async def ping(cls, device_hid):
+    async def ping(cls, gateway_hid, device_hid):
         query = devices.update().where(devices.c.hid == device_hid).values(
             lastPingedAt=get_current_timestamp()
         )
         results = await db.execute(query)
+        if results == 0:
+            logging.debug(f"Adding new device {device_hid}")
+            query = devices.insert().values(hid=device_hid)
+            results = await db.execute(query)
         return results
 
 
