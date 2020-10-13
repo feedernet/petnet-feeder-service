@@ -18,6 +18,13 @@ from feeder.database.session import db
 from feeder.database.models import KronosDevices
 
 
+def handle_exception(loop, context):
+    if 'exception' in context:
+        logging.error("Caught global exception:", exc_info = context["exception"])
+    else:
+        msg = context["message"]
+        logging.error(f"Caught global exception: {msg}")
+
 logger = logging.getLogger("feeder")
 if settings.debug:
     for named_logger in LOGGING_CONFIG["loggers"]:
@@ -44,6 +51,7 @@ if not os.path.exists(public_key) and not os.path.exists(private_key):
 
 templates = Jinja2Templates(directory="feeder/templates")
 loop = asyncio.get_event_loop()
+loop.set_exception_handler(handle_exception)
 client = FeederClient()
 feeder.router.client = client
 broker = FeederBroker()
