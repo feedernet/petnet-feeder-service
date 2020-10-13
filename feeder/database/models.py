@@ -54,6 +54,14 @@ class KronosGateways:
         results = await db.execute(query)
         return results
 
+    @classmethod
+    async def get_or_insert(cls, *, gateway_hid):
+        query = gateways.select().where(gateways.c.hid == gateway_hid)
+        results = await db.fetch_all(query)
+        if not results:
+            await KronosGateway.create(hid=gateway_hid)
+            results = await db.fetch_all(query)
+        return results[0]
 
 devices = Table(
     "kronos_device",
@@ -93,15 +101,22 @@ class KronosDevices:
         return results
 
     @classmethod
-    async def ping(cls, gateway_hid, device_hid):
+    async def get_or_insert(cls, *, gateway_hid, device_hid):
+        query = devices.select().where(devices.c.gatewayHid == gateway_hid)
+        results = await db.fetch_all(query)
+        if not results:
+            gateway = await KronosGateways.get_or_insert(gateway_hid=gateway_hid)
+            await KronosDevices.create(hid=device_hid, gatewayHid=gateway.hid)
+            results = await db.fetch_all(query)
+        return results[0]
+
+    @classmethod
+    async def ping(cls, *, gateway_hid, device_hid):
+        device = await KronosDevice.get_or_insert(gateway_hid=gateway_hid, device_hid=device_hid)
         query = devices.update().where(devices.c.hid == device_hid).values(
             lastPingedAt=get_current_timestamp()
         )
         results = await db.execute(query)
-        if results == 0:
-            logging.debug(f"Adding new device {device_hid}")
-            query = devices.insert().values(hid=device_hid)
-            results = await db.execute(query)
         return results
 
 
@@ -130,7 +145,7 @@ class DeviceSensorData:
         return results
 
     @classmethod
-    async def report(cls, device_hid: str, voltage: float, usb_power: bool, charging: bool, ir: bool, rssi: int):
+    async def report(cls, *, gateway_hid: str, device_hid: str, voltage: float, usb_power: bool, charging: bool, ir: bool, rssi: int):
         sensors = {
             "timestamp": get_current_timestamp(),
             "voltage": voltage,
@@ -147,7 +162,9 @@ class DeviceSensorData:
                 **sensors
             )
         else:
-            query = sensor_data.insert().values(device_hid=device_hid, **sensors)
+            # We may have never seen this device before, so make sure the device exists.
+            device = await KronosDevices.get_or_insert(device_hid=device_hid, gateway_hid=gateway_hid)
+            query = sensor_data.insert().values(device_hid=device.hid, **sensors)
 
         results = await db.execute(query)
         return results
