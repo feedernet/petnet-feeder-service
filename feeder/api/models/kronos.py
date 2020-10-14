@@ -30,7 +30,7 @@ class NewGateway(BaseModel):
 
 class Gateway(NewGateway):
     hid: str
-    pri: Optional[str]
+    pri: str
     applicationHid: str = settings.app_id
     discoveredAt: int = 0
 
