@@ -59,7 +59,7 @@ class KronosGateways:
         query = gateways.select().where(gateways.c.hid == gateway_hid)
         results = await db.fetch_all(query)
         if not results:
-            await KronosGateway.create(hid=gateway_hid)
+            await KronosGateways.create(hid=gateway_hid)
             results = await db.fetch_all(query)
         return results[0]
 
@@ -112,7 +112,7 @@ class KronosDevices:
 
     @classmethod
     async def ping(cls, *, gateway_hid, device_hid):
-        device = await KronosDevice.get_or_insert(gateway_hid=gateway_hid, device_hid=device_hid)
+        device = await KronosDevices.get_or_insert(gateway_hid=gateway_hid, device_hid=device_hid)
         query = devices.update().where(devices.c.hid == device_hid).values(
             lastPingedAt=get_current_timestamp()
         )
