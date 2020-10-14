@@ -79,6 +79,15 @@ async def register_feeder(device: NewDevice):
     return JSONResponse(content=content, headers=kronos_headers)
 
 
+@router.put("/gateways/{gateway_id}/checkin")
+async def gateway_checkin(gateway_id: str):
+    try:
+        await KronosGateways.create(hid=gateway_id)
+        logger.debug(f"New gateway seen: {gateway_id}")
+    except IntegrityError:
+        logger.debug(f"Check-in for gateway: {gateway_id}")
+
+
 @router.get("/gateways/{gateway_id}/config", response_model=GatewayConfiguration)
 async def get_static_gateway_conf(gateway_id: str):
     logger.debug("Sending static config for gateway: %s", gateway_id)

@@ -32,15 +32,16 @@ def build_command(device_id, command, args):
     return json.dumps(msg).encode("utf-8")
 
 
-async def commit_telemetry_data(payload: dict):
+async def commit_telemetry_data(gateway_id: str, payload: dict):
     device_id = payload["_|deviceHid"]
     message_type = payload["s|msg_type"]
     if message_type == "hb":
         logger.debug("Sending ping for %s", device_id)
-        await KronosDevices.ping(device_id)
+        await KronosDevices.ping(gateway_hid=gateway_id, device_hid=device_id)
     if message_type == "sensor":
         logger.info("Updating sensor information for %s", device_id)
         await DeviceSensorData.report(
+            gateway_hid=gateway_id,
             device_hid=device_id,
             voltage=payload["f|voltage"]/1000,
             usb_power=bool(payload["i|usb"]),
@@ -64,8 +65,9 @@ class FeederClient(MQTTClient):
             request_id = payload["requestId"]
             await self.create_request_ack(gateway_id, request_id)
         elif telemetry_result:
+            gateway_id = telemetry_result.groupdict()["gateway_id"]
             payload = json.loads(packet.payload.data)
-            await commit_telemetry_data(payload)
+            await commit_telemetry_data(gateway_id, payload)
         else:
             logger.info(
                 f"Unknown message: {packet.variable_header.topic_name} => {packet.payload.data}"

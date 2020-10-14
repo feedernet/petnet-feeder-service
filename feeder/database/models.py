@@ -1,6 +1,7 @@
 from fastapi import HTTPException
 from sqlalchemy import Boolean, Column, Integer, ForeignKey, Table, Text, Float
 from sqlite3 import IntegrityError
+import logging
 
 from feeder.util.feeder import generate_feeder_hid
 from feeder.util import get_current_timestamp
@@ -19,13 +20,13 @@ gateways = Table(
     "kronos_gateway",
     metadata,
     Column("hid", Text(), primary_key=True, index=True),
-    Column("name", Text(), nullable=False),
-    Column("uid", Text(), nullable=False),
-    Column("osName", Text(), nullable=False),
-    Column("type", Text(), nullable=False),
-    Column("softwareName", Text(), nullable=False),
-    Column("softwareVersion", Text(), nullable=False),
-    Column("sdkVersion", Text(), nullable=False),
+    Column("name", Text(), nullable=True),
+    Column("uid", Text(), nullable=True),
+    Column("osName", Text(), nullable=True),
+    Column("type", Text(), nullable=True),
+    Column("softwareName", Text(), nullable=True),
+    Column("softwareVersion", Text(), nullable=True),
+    Column("sdkVersion", Text(), nullable=True),
     Column("discoveredAt", Integer(), nullable=False)
 )
 
@@ -53,17 +54,25 @@ class KronosGateways:
         results = await db.execute(query)
         return results
 
+    @classmethod
+    async def get_or_insert(cls, *, gateway_hid):
+        query = gateways.select().where(gateways.c.hid == gateway_hid)
+        results = await db.fetch_all(query)
+        if not results:
+            await KronosGateways.create(hid=gateway_hid)
+            results = await db.fetch_all(query)
+        return results[0]
 
 devices = Table(
     "kronos_device",
     metadata,
     Column("hid", Text(), primary_key=True, index=True),
-    Column("name", Text(), nullable=False),
-    Column("uid", Text(), nullable=False),
-    Column("type", Text(), nullable=False),
+    Column("name", Text(), nullable=True),
+    Column("uid", Text(), nullable=True),
+    Column("type", Text(), nullable=True),
     Column("gatewayHid", Text(), ForeignKey("kronos_gateway.hid"), nullable=False),
-    Column("softwareName", Text(), nullable=False),
-    Column("softwareVersion", Text(), nullable=False),
+    Column("softwareName", Text(), nullable=True),
+    Column("softwareVersion", Text(), nullable=True),
     Column("discoveredAt", Integer(), nullable=False),
     Column("lastPingedAt", Integer(), nullable=True),
 )
@@ -92,7 +101,18 @@ class KronosDevices:
         return results
 
     @classmethod
-    async def ping(cls, device_hid):
+    async def get_or_insert(cls, *, gateway_hid, device_hid):
+        query = devices.select().where(devices.c.gatewayHid == gateway_hid)
+        results = await db.fetch_all(query)
+        if not results:
+            gateway = await KronosGateways.get_or_insert(gateway_hid=gateway_hid)
+            await KronosDevices.create(hid=device_hid, gatewayHid=gateway.hid)
+            results = await db.fetch_all(query)
+        return results[0]
+
+    @classmethod
+    async def ping(cls, *, gateway_hid, device_hid):
+        device = await KronosDevices.get_or_insert(gateway_hid=gateway_hid, device_hid=device_hid)
         query = devices.update().where(devices.c.hid == device_hid).values(
             lastPingedAt=get_current_timestamp()
         )
@@ -125,7 +145,7 @@ class DeviceSensorData:
         return results
 
     @classmethod
-    async def report(cls, device_hid: str, voltage: float, usb_power: bool, charging: bool, ir: bool, rssi: int):
+    async def report(cls, *, gateway_hid: str, device_hid: str, voltage: float, usb_power: bool, charging: bool, ir: bool, rssi: int):
         sensors = {
             "timestamp": get_current_timestamp(),
             "voltage": voltage,
@@ -142,7 +162,9 @@ class DeviceSensorData:
                 **sensors
             )
         else:
-            query = sensor_data.insert().values(device_hid=device_hid, **sensors)
+            # We may have never seen this device before, so make sure the device exists.
+            device = await KronosDevices.get_or_insert(device_hid=device_hid, gateway_hid=gateway_hid)
+            query = sensor_data.insert().values(device_hid=device.hid, **sensors)
 
         results = await db.execute(query)
         return results
