@@ -3,8 +3,9 @@ import logging
 from logging.config import dictConfig
 import asyncio
 import uvicorn
+from pathlib import Path
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -62,17 +63,33 @@ app = FastAPI(
     version="1.0",
 )
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+frontend = Path("./static/build/index.html")
+if frontend.exists():
+    app.mount(f"{settings.app_root}/build", StaticFiles(directory="./static/build", html=True), name="static")
 app.include_router(kronos.router, prefix="/api/v1/kronos")
 app.include_router(feeder.router, prefix="/api/v1/feeder")
 
 
-@app.get("/", response_class=HTMLResponse)
+@app.get("/testing", response_class=HTMLResponse)
 async def read_item(request: Request):
     devices = await KronosDevices.get()
     return templates.TemplateResponse(
         "welcome.html", {"request": request, "devices": devices}
     )
+
+
+@app.get(f"{settings.app_root}/{{full_path:path}}", response_class=HTMLResponse)
+async def render_frontend(full_path: str):
+    frontend_paths = ["settings", "feeders", ""]
+    if full_path not in frontend_paths:
+        raise HTTPException(status_code=404)
+
+    if frontend.exists():
+        with frontend.open("r") as index:
+            return index.read()
+
+    logger.warning("Caught frontend request without built frontend.")
+    raise HTTPException(status_code=500, detail="Frontend not built!")
 
 
 @app.on_event("startup")

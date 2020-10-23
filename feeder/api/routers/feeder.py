@@ -1,7 +1,9 @@
 import logging
+from typing import List
 
+from feeder.api.models.kronos import Device, DeviceTelemetry
 from feeder.util.feeder import APIRouterWithMQTTClient
-
+from feeder.database.models import KronosDevices, DeviceTelemetryData
 from feeder.api.models.feeder import (
     FrontButton,
     UTCOffset,
@@ -11,6 +13,22 @@ from feeder.api.models.feeder import (
 
 logger = logging.getLogger(__name__)
 router = APIRouterWithMQTTClient()
+
+
+@router.get("", response_model=List[Device])
+@router.get("/", response_model=List[Device])
+async def get_devices():
+    return await KronosDevices.get()
+
+
+@router.get("/{device_id}", response_model=Device)
+async def get_single_device(device_id: str):
+    return await KronosDevices.get(device_hid=device_id)
+
+
+@router.get("/{device_id}/telemetry", response_model=DeviceTelemetry)
+async def get_device_telemetry(device_id: str):
+    return await DeviceTelemetryData.get(device_hid=device_id)
 
 
 @router.post("/{gateway_id}/{device_id}/button", response_model=GenericResponse)

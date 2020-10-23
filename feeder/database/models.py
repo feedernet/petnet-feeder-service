@@ -80,17 +80,30 @@ devices = Table(
 
 class KronosDevices:
     @classmethod
-    async def get(cls, gateway_hid=""):
+    async def get(cls, gateway_hid="", device_hid=""):
         query = devices.select()
         if gateway_hid:
             query = query.where(devices.c.gatewayHid == gateway_hid)
+        if device_hid:
+            query = query.where(devices.c.hid == device_hid)
 
         results = await db.fetch_all(query)
         if gateway_hid and not results:
             raise HTTPException(
                 status_code=400, detail=f"No devices registered for Gateway: {gateway_hid}"
             )
+        if device_hid and not results:
+            raise HTTPException(
+                status_code=400, detail=f"No devices found with HID: {device_hid}"
+            )
         return results
+
+    @classmethod
+    async def get_by_hid(cls, device_hid=""):
+        query = devices.select()
+        if device_hid:
+            query = query.where(devices.c.hid == device_hid)
+
 
     @classmethod
     async def create(cls, **device):
@@ -133,7 +146,7 @@ sensor_data = Table(
 )
 
 
-class DeviceSensorData:
+class DeviceTelemetryData:
     @classmethod
     async def get(cls, device_hid):
         query = sensor_data.select().where(sensor_data.c.device_hid == device_hid)
@@ -142,7 +155,7 @@ class DeviceSensorData:
             raise HTTPException(
                 status_code=400, detail="Unknown device or device has not yet reported!"
             )
-        return results
+        return results[0]
 
     @classmethod
     async def report(cls, *, gateway_hid: str, device_hid: str, voltage: float, usb_power: bool, charging: bool, ir: bool, rssi: int):

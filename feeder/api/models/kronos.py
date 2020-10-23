@@ -84,6 +84,15 @@ class Device(NewDevice):
         orm_mode = True
 
 
+class DeviceTelemetry(BaseModel):
+    timestamp: int
+    voltage: float
+    usb_power: bool
+    charging: bool
+    ir: bool
+    rssi: int
+
+
 class PaginatedDeviceList(BasePaginatedList):
     data: List[Device] = []
 
