@@ -7,13 +7,15 @@ import Icon from '@mdi/react'
 import {mdiPaw, mdiSilverwareForkKnife, mdiCog} from '@mdi/js';
 import {ErrorComponent} from "./components/Error";
 import FeederCardList from "./containers/FeederCardListContainer";
+import {getRootPath} from "./util";
 
+const rootPath = getRootPath()
 
 class App extends React.Component {
     state = {
         routes: [
             {
-                path: '/',
+                path: rootPath,
                 label: 'Feeder List',
                 exact: true,
                 render: props => {
@@ -40,10 +42,10 @@ class App extends React.Component {
                         <Navbar.Toggle aria-controls="basic-navbar-nav"/>
                         <Navbar.Collapse id="basic-navbar-nav">
                             <Nav className="mr-auto">
-                                <Link to={"/"} component={Nav.Link}>
+                                <Link to={rootPath} component={Nav.Link}>
                                     <Icon path={mdiSilverwareForkKnife} size={.75}/> Feeders
                                 </Link>
-                                <Link to={"/settings"} component={Nav.Link}>
+                                <Link to={`${rootPath}/settings`} component={Nav.Link}>
                                     <Icon path={mdiCog} size={.75}/> Settings
                                 </Link>
                             </Nav>

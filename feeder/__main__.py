@@ -51,6 +51,7 @@ if not os.path.exists(public_key) and not os.path.exists(private_key):
 
 
 templates = Jinja2Templates(directory="feeder/templates")
+frontend_template = Jinja2Templates(directory="static/build")
 loop = asyncio.get_event_loop()
 loop.set_exception_handler(handle_exception)
 client = FeederClient()
@@ -67,7 +68,7 @@ frontend = Path("./static/build/index.html")
 if frontend.exists():
     app.mount(f"{settings.app_root}/build", StaticFiles(directory="./static/build", html=True), name="static")
 app.include_router(kronos.router, prefix="/api/v1/kronos")
-app.include_router(feeder.router, prefix="/api/v1/feeder")
+app.include_router(feeder.router, prefix=f"{settings.app_root}/api/v1/feeder")
 
 
 @app.get("/testing", response_class=HTMLResponse)
@@ -79,14 +80,18 @@ async def read_item(request: Request):
 
 
 @app.get(f"{settings.app_root}/{{full_path:path}}", response_class=HTMLResponse)
-async def render_frontend(full_path: str):
+async def render_frontend(full_path: str, request: Request):
     frontend_paths = ["settings", "feeders", ""]
     if full_path not in frontend_paths:
         raise HTTPException(status_code=404)
 
     if frontend.exists():
-        with frontend.open("r") as index:
-            return index.read()
+        build_path = "build"
+        if settings.app_root:
+            build_path = f"{settings.app_root[1:]}/build"
+        return frontend_template.TemplateResponse(
+            "index.html", {"request": request, "build_path": build_path, "root_path": settings.app_root}
+        )
 
     logger.warning("Caught frontend request without built frontend.")
     raise HTTPException(status_code=500, detail="Frontend not built!")

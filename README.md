@@ -86,6 +86,9 @@ services:
       - DATABASE_PATH=/data/data.db
       - MQTTS_PRIVATE_KEY=/data/cert.pem
       - MQTTS_PUBLIC_KEY=/data/pkey.pem
+      # To serve the frontend and API under a different root path
+      # define that path using the APP_ROOT variable.
+      # - APP_ROOT=/petnet
     ports:
       - 5000:5000
       - 8883:8883
