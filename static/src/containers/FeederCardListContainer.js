@@ -30,7 +30,11 @@ class FeederCardListContainer extends React.Component {
         return (
             <>
                 <h1 style={{marginBottom: 30}}>Feeders</h1>
-                {feederArray}
+                {
+                    this.state.feeders.length > 0 ?
+                        feederArray :
+                        <h3 style={{textAlign: "center"}}>No feeders found...</h3>
+                }
             </>
         );
     }

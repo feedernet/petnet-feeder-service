@@ -28,7 +28,6 @@ class FeederCardContainer extends React.Component {
     }
 
     refreshFeederTelemetry() {
-        console.log("called")
         this.props.dispatchGetFeederTelemetry(this.props.feeder.hid).then(() => {
             if (!this.props.getFeederTelemetryState._requestFailed) {
                 this.setState({

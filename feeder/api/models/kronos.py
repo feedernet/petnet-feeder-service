@@ -78,7 +78,7 @@ class NewDevice(BaseModel):
 class Device(NewDevice):
     hid: str
     discoveredAt: int = 0
-    lastPingedAt: int = 0
+    lastPingedAt: Optional[int] = 0
 
     class Config:
         orm_mode = True

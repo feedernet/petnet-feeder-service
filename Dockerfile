@@ -1,14 +1,22 @@
+FROM node:14-alpine
+WORKDIR /tmp
+COPY static/package*.json ./
+COPY static/src ./src
+COPY static/public ./public
+RUN npm install
+RUN PUBLIC_URL=/build npm run build
+
 FROM python:3.8
 RUN pip install pipenv
-COPY Pipfile* /tmp/
-RUN cd /tmp && pipenv install --system --deploy --ignore-pipfile
-COPY feeder/ /tmp/feeder
-COPY static/ /tmp/static
-COPY alembic.ini /tmp
-COPY setup.py /tmp
-COPY README.md /tmp
-RUN cd /tmp && pip install .
 WORKDIR /tmp
+COPY Pipfile* ./
+RUN pipenv install --system --deploy --ignore-pipfile
+COPY feeder/ ./feeder
+COPY --from=0 /tmp/build ./static/build
+COPY alembic.ini ./
+COPY setup.py ./
+COPY README.md ./
+RUN pip install .
 CMD alembic upgrade head && python -m feeder
 EXPOSE 1883/tcp
 EXPOSE 5000/tcp

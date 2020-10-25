@@ -61,7 +61,9 @@ export const SnackModalComponent = function (props) {
             </Modal.Header>
             <Modal.Body>
                 Someone has been very good! Pick a volume and press dispense.
-                <h1 style={{textAlign: "center"}}>{displaySizes[props.currentPortion]} cups</h1>
+                <h1 style={{textAlign: "center"}}>
+                    {displaySizes[props.currentPortion]} {props.currentPortion > 1 ? "cups" : "cup"}
+                </h1>
                 <div className={"my-4 mx-2"}>
                     <Slider
                         min={0.0625}

@@ -37,6 +37,10 @@ export const FeederCardComponent = function (props) {
         }
     }
 
+    // This is to cover the case where we need to disable the buttons and telemetry
+    // for devices that have registered themselves but not yet connected to MQTT
+    const enabled = !stale && props.feeder.lastPingedAt !== 0 && props.feeder.lastPingedAt !== null
+
     return (
         <Card style={{marginBottom: 20}}>
             <Card.Body>
@@ -62,7 +66,7 @@ export const FeederCardComponent = function (props) {
                                         <Card.Subtitle className="mb-2 text-muted">Last
                                             Seen: {lastPingDate}</Card.Subtitle>
                                     </div>
-                                    {!stale ?
+                                    {enabled ?
                                         <Card.Text>
                                             <ul>
                                                 <li><Icon path={mdiWifiStrength3} size={.75}/> WiFi Signal
@@ -73,18 +77,29 @@ export const FeederCardComponent = function (props) {
                                                 <li><Icon path={mdiLaserPointer} size={.75}/> IR Beam: {telemetry.ir}
                                                 </li>
                                             </ul>
-                                        </Card.Text> : null}
+                                        </Card.Text> :
+                                        <div>
+                                            <p>
+                                                This feeder has either not reported data recently or was just
+                                                discovered.
+                                            </p>
+                                            <p>
+                                                Once it has started communicating with the message broker,
+                                                it will be available in the UI.
+                                            </p>
+                                        </div>
+                                    }
                                 </Col>
                                 <Col sm={12} md={6}>
                                     <Button style={{width: "100%"}} className={"my-1"} variant="secondary"
-                                            disabled={stale} onClick={props.showSnackModal}>
+                                            disabled={!enabled} onClick={props.showSnackModal}>
                                         Snack Time!
                                     </Button>
-                                    <Button style={{width: "100%"}} className={"my-1"} disabled={stale}
+                                    <Button style={{width: "100%"}} className={"my-1"} disabled={!enabled}
                                             variant="info">Scheduling
                                     </Button>
                                     <Button style={{width: "100%"}} className={"my-1"} variant="warning"
-                                            disabled={stale}>
+                                            disabled={!enabled}>
                                         Edit Feeder
                                     </Button>
                                 </Col>
