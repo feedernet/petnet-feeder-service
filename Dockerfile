@@ -1,4 +1,4 @@
-FROM node:14-alpine
+FROM --platform=$BUILDPLATFORM node:14-alpine AS frontend-build
 WORKDIR /tmp
 COPY static/package*.json ./
 COPY static/src ./src
@@ -12,7 +12,7 @@ WORKDIR /tmp
 COPY Pipfile* ./
 RUN pipenv install --system --deploy --ignore-pipfile
 COPY feeder/ ./feeder
-COPY --from=0 /tmp/build ./static/build
+COPY --from=frontend-build /tmp/build ./static/build
 COPY alembic.ini ./
 COPY setup.py ./
 COPY README.md ./
