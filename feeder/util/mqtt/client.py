@@ -7,7 +7,7 @@ import string
 from hbmqtt.client import MQTTClient, ClientException
 from hbmqtt.mqtt.constants import QOS_2
 
-from feeder.database.models import KronosDevices, DeviceSensorData
+from feeder.database.models import KronosDevices, DeviceTelemetryData
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +40,7 @@ async def commit_telemetry_data(gateway_id: str, payload: dict):
         await KronosDevices.ping(gateway_hid=gateway_id, device_hid=device_id)
     if message_type == "sensor":
         logger.info("Updating sensor information for %s", device_id)
-        await DeviceSensorData.report(
+        await DeviceTelemetryData.report(
             gateway_hid=gateway_id,
             device_hid=device_id,
             voltage=payload["f|voltage"]/1000,

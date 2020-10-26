@@ -53,7 +53,7 @@ async def add_gateway(gateway: NewGateway):
 
 @router.get("/devices", response_model=PaginatedDeviceList)
 async def get_devices(gateway_hid: Optional[str] = Query(None, alias="gatewayHid")):
-    devices = await KronosDevices.get(gateway_hid)
+    devices = await KronosDevices.get(gateway_hid=gateway_hid)
     device_array = [{**device} for device in devices]
 
     content = paginate_response(entities=device_array, max_page_size=len(devices))
