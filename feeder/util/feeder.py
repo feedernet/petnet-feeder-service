@@ -17,7 +17,7 @@ class APIRouterWithMQTTClient(APIRouter):
         self._client = client
 
 
-def paginate_response(entities: list, current_page=1, max_page_size=10) -> dict:
+def paginate_response(entities: list, current_page=1, max_page_size=10, total_override=0) -> dict:
     list_length = len(entities)
     offset = (current_page - 1) * max_page_size
     page_size = max_page_size
@@ -25,8 +25,10 @@ def paginate_response(entities: list, current_page=1, max_page_size=10) -> dict:
         page_size = list_length
 
     page_count = 0
-    if page_size:
+    if page_size and not total_override:
         page_count = math.ceil(list_length / page_size)
+    elif page_size and total_override:
+        page_count = math.ceil(total_override / page_size)
 
     return {
         "size": page_size,
