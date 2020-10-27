@@ -7,7 +7,7 @@ import string
 from hbmqtt.client import MQTTClient, ClientException
 from hbmqtt.mqtt.constants import QOS_2
 
-from feeder.database.models import KronosDevices, DeviceTelemetryData
+from feeder.database.models import KronosDevices, DeviceTelemetryData, FeedingResult
 
 logger = logging.getLogger(__name__)
 
@@ -43,11 +43,32 @@ async def commit_telemetry_data(gateway_id: str, payload: dict):
         await DeviceTelemetryData.report(
             gateway_hid=gateway_id,
             device_hid=device_id,
-            voltage=payload["f|voltage"]/1000,
+            voltage=payload["f|voltage"] / 1000,
             usb_power=bool(payload["i|usb"]),
             charging=bool(payload["i|chg"]),
             ir=bool(payload["i|ir"]),
             rssi=payload["i|rssi"]
+        )
+    if message_type == "feed_result":
+        logger.info("Committing feed result data for %s", device_id)
+        await FeedingResult.report(
+            device_hid=device_id,
+            start_time=payload.get("i|stime"),
+            end_time=payload.get("i|etime"),
+            pour=payload.get("i|pour"),
+            full=payload.get("i|full"),
+            grams_expected=payload.get("f|e_g"),
+            grams_actual=payload.get("f|a_g"),
+            hopper_start=payload.get("f|h_s"),
+            hopper_end=payload.get("f|h_e"),
+            source=payload.get("i|src"),
+            fail=payload.get("b|fail"),
+            trip=payload.get("b|trip"),
+            lrg=payload.get("b|lrg"),
+            vol=payload.get("b|vol"),
+            bowl=payload.get("b|bowl"),
+            recipe_id=payload.get("s|rid"),
+            error=payload.get("s|err")
         )
 
 
@@ -61,18 +82,25 @@ class FeederClient(MQTTClient):
         )
         if api_result:
             gateway_id = api_result.groupdict()["gateway_id"]
-            payload = json.loads(packet.payload.data)
+            try:
+                payload = json.loads(packet.payload.data)
+            except UnicodeDecodeError:
+                logger.exception("Failed to decode message: %s", packet.payload.data)
+                return
             request_id = payload["requestId"]
             await self.create_request_ack(gateway_id, request_id)
         elif telemetry_result:
             gateway_id = telemetry_result.groupdict()["gateway_id"]
-            payload = json.loads(packet.payload.data)
+            try:
+                payload = json.loads(packet.payload.data)
+            except UnicodeDecodeError:
+                logger.exception("Failed to decode message: %s", packet.payload.data)
+                return
             await commit_telemetry_data(gateway_id, payload)
         else:
             logger.info(
                 f"Unknown message: {packet.variable_header.topic_name} => {packet.payload.data}"
             )
-
 
     async def create_request_ack(self, gateway_id, request_id):
         reply = {
@@ -103,15 +131,15 @@ class FeederClient(MQTTClient):
         await self.send_cmd(gateway_id, device_id, "utc_offset", {"utc_offset": utc_offset})
 
     async def send_cmd_schedule(
-        self,
-        gateway_id,
-        *,
-        active=True,
-        feeding_id="aaaa",
-        name="FEED2",
-        portion=0.0625,
-        reminder=False,
-        time=43100,
+            self,
+            gateway_id,
+            *,
+            active=True,
+            feeding_id="aaaa",
+            name="FEED2",
+            portion=0.0625,
+            reminder=False,
+            time=43100,
     ):
         await self.send_cmd(
             gateway_id,
@@ -137,3 +165,6 @@ class FeederClient(MQTTClient):
 
         except ClientException as ce:
             logging.error(f"mqtt-client exception: {ce}")
+        except Exception:
+            # We cannot let the client error out!
+            logger.exception("Unhandled error in MQTT client!")

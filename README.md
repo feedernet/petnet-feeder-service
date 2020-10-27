@@ -58,9 +58,44 @@ iptables -t nat -A PREROUTING -i eth0 -p tcp -d 172.4.0.1 --dport 1883 -j DNAT -
 iptables -t nat -A PREROUTING -i eth0 -p tcp -d 172.4.0.1 --dport 8883 -j DNAT --to 192.168.1.10:8883
 ```
 
+Please note that you can also have the container running in your local network and will not need to modify IPTables. For example if you local network is on 192.168.1.x and your container's IP address is 192.168.1.10, point your local DNS resolver to that IP address and you do not need to add iptable entries.
+
 # Running the app
 
-You will need to run some form of SSL proxy (NGINX, Traefik, etc.) in front of this service. 
+You will need to run some form of SSL proxy (NGINX, Traefik, etc.) in front of this service.
+The SSL service is required and will need to listen on 443 and reverse proxy back to the docker container service on port 5000.
+You will need to generate a self-signed certificate for it. It can be generated with openssl:
+
+...
+  sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/nginx/cert.key -out /etc/nginx/cert.crt 
+...
+
+If you are using NGINX, your config will look like this:
+
+    
+    server {
+        listen       443 ssl;
+        server_name  [SERVER_NAME];
+
+    ssl_certificate           /etc/nginx/cert.crt;
+    ssl_certificate_key       /etc/nginx/cert.key;
+
+    ssl on;
+    ssl_session_cache  builtin:1000  shared:SSL:10m;
+    ssl_protocols  TLSv1 TLSv1.1 TLSv1.2;
+    ssl_ciphers HIGH:!aNULL:!eNULL:!EXPORT:!CAMELLIA:!DES:!MD5:!PSK:!RC4;
+    ssl_prefer_server_ciphers on;
+
+        location / {
+         proxy_pass http://[CONTAINER_IP]:5000;
+         proxy_redirect http://[CONTAINER_IP]:5000 https://[SERVER_NAME]:443;
+        
+        }
+
+
+Where:
+* [SERVER_NAME] needs to be consistent with your self-signed certificate common name.
+* [CONTAINER_IP] is the IP address of the docker container you are running.
 
 ## docker
 

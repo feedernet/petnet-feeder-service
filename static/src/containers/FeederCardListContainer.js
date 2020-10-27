@@ -7,12 +7,16 @@ import {getFeederDevices} from "../actions/getFeederDevices";
 import {feederDeviceShape} from "../shapes/feeder";
 
 class FeederCardListContainer extends React.Component {
+    refreshInterval;
     state = {
         feeders: []
     }
 
     componentDidMount() {
         this.props.dispatchGetFeeders()
+        this.refreshInterval = setInterval(
+            this.refreshFeeders.bind(this), 15000
+        );
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
@@ -21,6 +25,14 @@ class FeederCardListContainer extends React.Component {
                 feeders: this.props.getFeederDevicesState.feeders
             })
         }
+    }
+
+    refreshFeeders() {
+        this.props.dispatchGetFeeders()
+    }
+
+    componentWillUnmount() {
+        clearInterval(this.refreshInterval)
     }
 
     render() {
