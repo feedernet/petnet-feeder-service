@@ -3,6 +3,7 @@ from typing import List, Optional
 from pydantic import BaseModel
 
 from feeder import settings
+from feeder.api.models import BasePaginatedList
 
 
 class NewGateway(BaseModel):
@@ -36,13 +37,6 @@ class Gateway(NewGateway):
 
     class Config:
         orm_mode = True
-
-
-class BasePaginatedList(BaseModel):
-    size: int = 0
-    page: int = 0
-    totalSize: int = 0
-    totalPages: int = 1
 
 
 class PaginatedGatewayList(BasePaginatedList):

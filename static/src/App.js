@@ -7,6 +7,7 @@ import Icon from '@mdi/react'
 import {mdiPaw, mdiSilverwareForkKnife, mdiCog} from '@mdi/js';
 import {ErrorComponent} from "./components/Error";
 import FeederCardList from "./containers/FeederCardListContainer";
+import FeedHistory from "./containers/FeedHistoryTableContainer";
 import {getRootPath} from "./util";
 
 const rootPath = getRootPath()
@@ -19,7 +20,10 @@ class App extends React.Component {
                 label: 'Feeder List',
                 exact: true,
                 render: props => {
-                    return <FeederCardList {...props} />;
+                    return <>
+                        <FeederCardList {...props} />
+                        <FeedHistory {...props} />
+                    </>;
                 }
             },
             {
