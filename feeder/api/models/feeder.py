@@ -25,8 +25,8 @@ class FeedEvent(BaseModel):
     timestamp: int
     start_time: int
     end_time: int
-    pour: int
-    full: int
+    pour: Optional[int]
+    full: Optional[int]
     grams_expected: int
     grams_actual: int
     hopper_start: int
