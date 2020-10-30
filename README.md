@@ -91,7 +91,7 @@ If you are using NGINX, your config will look like this:
          proxy_redirect http://[CONTAINER_IP]:5000 https://[SERVER_NAME]:443;
         
         }
-
+```
 
 Where:
 * [SERVER_NAME] needs to be consistent with your self-signed certificate common name.
