@@ -66,9 +66,9 @@ You will need to run some form of SSL proxy (NGINX, Traefik, etc.) in front of t
 The SSL service is required and will need to listen on 443 and reverse proxy back to the docker container service on port 5000.
 You will need to generate a self-signed certificate for it. It can be generated with openssl:
 
-...
+```
   sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/nginx/cert.key -out /etc/nginx/cert.crt 
-...
+```
 
 If you are using NGINX, your config will look like this:
 
