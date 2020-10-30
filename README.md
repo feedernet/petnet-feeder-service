@@ -89,7 +89,6 @@ If you are using NGINX, your config will look like this:
     location / {
          proxy_pass http://[CONTAINER_IP]:5000;
          proxy_redirect http://[CONTAINER_IP]:5000 https://[SERVER_NAME]:443;
-        
     }
 ```
 
