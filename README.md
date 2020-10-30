@@ -86,7 +86,7 @@ If you are using NGINX, your config will look like this:
     ssl_ciphers HIGH:!aNULL:!eNULL:!EXPORT:!CAMELLIA:!DES:!MD5:!PSK:!RC4;
     ssl_prefer_server_ciphers on;
 
-        location / {
+    location / {
          proxy_pass http://[CONTAINER_IP]:5000;
          proxy_redirect http://[CONTAINER_IP]:5000 https://[SERVER_NAME]:443;
         
