@@ -72,7 +72,7 @@ You will need to generate a self-signed certificate for it. It can be generated 
 
 If you are using NGINX, your config will look like this:
 
-    
+```nginx
     server {
         listen       443 ssl;
         server_name  [SERVER_NAME];
