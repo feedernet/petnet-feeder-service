@@ -1,7 +1,7 @@
 import logging
 from typing import List
 
-from feeder.api.models.kronos import Device, DeviceTelemetry
+from feeder.api.models.kronos import Device, DeviceTelemetry, DeviceName
 from feeder.util.feeder import APIRouterWithMQTTClient, paginate_response
 from feeder.database.models import KronosDevices, DeviceTelemetryData, FeedingResult
 from feeder.api.models.feeder import (
@@ -39,7 +39,15 @@ async def get_history(size: int = 10, page: int = 1):
 
 @router.get("/{device_id}", response_model=Device)
 async def get_single_device(device_id: str):
-    return await KronosDevices.get(device_hid=device_id)
+    device = await KronosDevices.get(device_hid=device_id)
+    return device[0]
+
+
+@router.put("/{device_id}", response_model=Device)
+async def update_single_device(device_id: str, updated: DeviceName):
+    await KronosDevices.update(device_hid=device_id, name=updated.name)
+    device = await KronosDevices.get(device_hid=device_id)
+    return device[0]
 
 
 @router.get("/{device_id}/telemetry", response_model=DeviceTelemetry)

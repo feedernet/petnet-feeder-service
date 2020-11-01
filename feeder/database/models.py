@@ -103,12 +103,6 @@ class KronosDevices:
         return results
 
     @classmethod
-    async def get_by_hid(cls, device_hid=""):
-        query = devices.select()
-        if device_hid:
-            query = query.where(devices.c.hid == device_hid)
-
-    @classmethod
     async def create(cls, **device):
         device = handle_potential_registration(device)
 
@@ -128,9 +122,17 @@ class KronosDevices:
 
     @classmethod
     async def ping(cls, *, gateway_hid, device_hid):
-        device = await KronosDevices.get_or_insert(gateway_hid=gateway_hid, device_hid=device_hid)
+        await KronosDevices.get_or_insert(gateway_hid=gateway_hid, device_hid=device_hid)
         query = devices.update().where(devices.c.hid == device_hid).values(
             lastPingedAt=get_current_timestamp()
+        )
+        results = await db.execute(query)
+        return results
+
+    @classmethod
+    async def update(cls, *, device_hid: str, name: str):
+        query = devices.update().where(devices.c.hid == device_hid).values(
+            name=name
         )
         results = await db.execute(query)
         return results

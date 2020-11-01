@@ -78,6 +78,10 @@ class Device(NewDevice):
         orm_mode = True
 
 
+class DeviceName(BaseModel):
+    name: str
+
+
 class DeviceTelemetry(BaseModel):
     timestamp: int
     voltage: float
