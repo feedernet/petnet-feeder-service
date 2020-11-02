@@ -53,21 +53,18 @@ In this example, I'm assuming you're redirecting to the actual server
 at address `192.168.1.10` from the fake address:
 
 ```
-iptables -t nat -A PREROUTING -i eth0 -p tcp -d 172.4.0.1 --dport 80 -j DNAT --to 192.168.1.10:5000
+iptables -t nat -A PREROUTING -i eth0 -p tcp -d 172.4.0.1 --dport 80 -j DNAT --to 192.168.1.10:443
 iptables -t nat -A PREROUTING -i eth0 -p tcp -d 172.4.0.1 --dport 1883 -j DNAT --to 192.168.1.10:1883
 iptables -t nat -A PREROUTING -i eth0 -p tcp -d 172.4.0.1 --dport 8883 -j DNAT --to 192.168.1.10:8883
 ```
 
-# Running the app
-
-You will need to run some form of SSL proxy (NGINX, Traefik, etc.) in front of this service. 
 
 ## docker
 
 ```
 docker run -d \
   --name=petnet-feeder-service \
-  -p 5000:5000 \
+  -p 443:443 \
   -p 8883:8883 \
   --restart unless-stopped \
   tedder42/petnet-feeder-service
@@ -90,7 +87,7 @@ services:
       # define that path using the APP_ROOT variable.
       # - APP_ROOT=/petnet
     ports:
-      - 5000:5000
+      - 443:443
       - 8883:8883
     volumes:
       - "/local/path:/data"
@@ -101,7 +98,7 @@ services:
 
 | Parameter | Function |
 | :----: | --- |
-| `-p 5000:5000` | The HTTP access port for the webserver. |
+| `-p 443:443` | The HTTPSs access port for the webserver. |
 | `-p 8883:8883` | The MQTT TLS port for the PetNet feeder. |
 
 # Developing

@@ -111,4 +111,4 @@ async def shutdown_event():
 
 
 if __name__ == "__main__":
-    uvicorn.run("feeder.__main__:app", host="0.0.0.0", port=settings.http_port)
+        uvicorn.run("feeder.__main__:app", host="0.0.0.0", port=settings.http_port, ssl_keyfile=settings.mqtts_private_key, ssl_certfile = settings.mqtts_public_key)

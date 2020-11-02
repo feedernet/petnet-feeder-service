@@ -26,5 +26,5 @@ RUN pip install .
 RUN apk del .build-deps
 CMD alembic upgrade head && python -m feeder
 EXPOSE 1883/tcp
-EXPOSE 5000/tcp
+EXPOSE 443/tcp
 EXPOSE 8883/tcp
