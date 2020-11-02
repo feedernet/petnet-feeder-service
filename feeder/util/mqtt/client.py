@@ -8,6 +8,7 @@ from hbmqtt.client import MQTTClient, ClientException
 from hbmqtt.mqtt.constants import QOS_2
 
 from feeder.database.models import KronosDevices, DeviceTelemetryData, FeedingResult
+from feeder.util.mqtt.authentication import local_username, local_password
 
 logger = logging.getLogger(__name__)
 
@@ -73,13 +74,12 @@ async def commit_telemetry_data(gateway_id: str, payload: dict):
 
 
 class FeederClient(MQTTClient):
+    api_regex = re.compile(r"^krs\.api\.gts\.(?P<gateway_id>.*)$")
+    telemetry_regex = re.compile(r"^krs\.tel\.gts\.(?P<gateway_id>.*)$")
+
     async def handle_message(self, packet):
-        api_result = re.match(
-            r"^krs\.api\.gts\.(?P<gateway_id>.*)$", packet.variable_header.topic_name
-        )
-        telemetry_result = re.match(
-            r"^krs\.tel\.gts\.(?P<gateway_id>.*)$", packet.variable_header.topic_name
-        )
+        api_result = self.api_regex.match(packet.variable_header.topic_name)
+        telemetry_result = self.telemetry_regex.match(packet.variable_header.topic_name)
         if api_result:
             gateway_id = api_result.groupdict()["gateway_id"]
             try:
@@ -155,7 +155,7 @@ class FeederClient(MQTTClient):
         )
 
     async def start(self):
-        await self.connect("mqtt://localhost:1883/")
+        await self.connect("mqtt://%s:%s@localhost:1883/" % (local_username, local_password))
         await self.subscribe([("#", QOS_2)])
         try:
             while True:

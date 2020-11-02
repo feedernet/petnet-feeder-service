@@ -6,4 +6,10 @@ setup(
     packages=find_packages(),
     license='MIT',
     long_description=open('README.md').read(),
+    entry_points={
+        'hbmqtt.broker.plugins': [
+            'auth_petnet = feeder.util.mqtt.authentication:PetnetAuthPlugin',
+            'topic_petnet = feeder.util.mqtt.topic:PetnetTopicPlugin',
+        ],
+    },
 )

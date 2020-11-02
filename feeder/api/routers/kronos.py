@@ -90,11 +90,12 @@ async def gateway_checkin(gateway_id: str):
 
 @router.get("/gateways/{gateway_id}/config", response_model=GatewayConfiguration)
 async def get_static_gateway_conf(gateway_id: str):
-    logger.debug("Sending static config for gateway: %s", gateway_id)
+    logger.debug("Sending config for gateway: %s", gateway_id)
+    gateways = await KronosGateways.get(gateway_hid=gateway_id)
     static_config = {
         "cloudPlatform": "IoTConnect",
         "key": {
-            "apiKey": "efa2396b6f0bae3cc5fe5ef34829d60d91b96a625e55afabcea0e674f1a7ac43",
+            "apiKey": gateways[0]["apiKey"],
             "secretKey": "gEhFrm2hRvW2Km47lgt9xRBCtT9uH2Lx77WxYliNGJI=",
         }
     }

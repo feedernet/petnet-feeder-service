@@ -21,8 +21,8 @@ class FeederBroker(Broker):
                     "keyfile": abspath(settings.mqtts_private_key),
                 },
             },
-            "auth": {"plugins": ["auth.anonymous"], "allow-anonymous": True},
-            "topic-check": {"enabled": True, "plugins": ["topic_taboo"]},
+            "auth": {"plugins": ["auth_petnet"]},
+            "topic-check": {"enabled": True, "plugins": ["topic_petnet"]},
         }
 
         if config_overrides:
