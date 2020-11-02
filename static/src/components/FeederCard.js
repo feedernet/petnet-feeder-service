@@ -99,7 +99,7 @@ export const FeederCardComponent = function (props) {
                                             variant="info">Scheduling
                                     </Button>
                                     <Button style={{width: "100%"}} className={"my-1"} variant="warning"
-                                            disabled={!enabled}>
+                                            disabled={!enabled} onClick={props.showEditModal}>
                                         Edit Feeder
                                     </Button>
                                 </Col>
