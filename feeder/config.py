@@ -42,5 +42,5 @@ class Settings(BaseSettings):
     mqtts_port: int = 8883
     mqtts_public_key: str = "./cert.pem"
     mqtts_private_key: str = "./pkey.pem"
-    http_port: int = 5000
+    http_port: int = 443
     app_root: str = ""
