@@ -47,7 +47,7 @@ class App extends React.Component {
                     className={window.navigator.standalone === true ? "ios-app-nav" : null}>
                     <Container>
                         <Navbar.Brand href="#">
-                            <img src={ProjectLogo} alt={"PetConnect Logo"} width={175}/>
+                            <img src={ProjectLogo} alt={"FeederNet Logo"} width={175}/>
                         </Navbar.Brand>
                         <Navbar.Toggle aria-controls="basic-navbar-nav"/>
                         <Navbar.Collapse id="basic-navbar-nav">

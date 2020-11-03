@@ -1,4 +1,4 @@
-# petnet-feeder-service
+# FeederNet
 
 Reverse-engineering the PetNet feeders. So far v2 has been properly hacked!
 
