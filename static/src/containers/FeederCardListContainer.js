@@ -41,7 +41,7 @@ class FeederCardListContainer extends React.Component {
         )
         return (
             <>
-                <h1 style={{marginBottom: 30}}>Feeders</h1>
+                <h2 style={{marginBottom: 20}} className={"d-none d-sm-block"}>Feeders</h2>
                 {
                     this.state.feeders.length > 0 ?
                         feederArray :
