@@ -14,17 +14,18 @@ from feeder import settings
 from feeder.api.routers import kronos, feeder
 from feeder.config import LOGGING_CONFIG
 from feeder.util.mqtt import FeederClient, FeederBroker
-from feeder.util.mkcert import generate_self_signed_certificate
+from feeder.util.mkcert import generate_self_signed_certificate, domain_in_subjects
 from feeder.database.session import db
 from feeder.database.models import KronosDevices
 
 
 def handle_exception(loop, context):
     if 'exception' in context:
-        logging.error("Caught global exception:", exc_info = context["exception"])
+        logging.error("Caught global exception:", exc_info=context["exception"])
     else:
         msg = context["message"]
         logging.error(f"Caught global exception: {msg}")
+
 
 logger = logging.getLogger("feeder")
 if settings.debug:
@@ -38,17 +39,6 @@ dictConfig(LOGGING_CONFIG)
 
 public_key = os.path.abspath(settings.mqtts_public_key)
 private_key = os.path.abspath(settings.mqtts_private_key)
-
-if not os.path.exists(public_key) and not os.path.exists(private_key):
-    logger.warning("Generating self-signed key pair!")
-    certificate_pair = generate_self_signed_certificate()
-    with open(public_key, "wb") as f:
-        logger.info("Writing new public key to %s", public_key)
-        f.write(certificate_pair[0])
-    with open(private_key, "wb") as f:
-        logger.info("Writing new private key to %s", private_key)
-        f.write(certificate_pair[1])
-
 
 templates = Jinja2Templates(directory="feeder/templates")
 frontend_template = Jinja2Templates(directory="static/build")
@@ -111,4 +101,20 @@ async def shutdown_event():
 
 
 if __name__ == "__main__":
+    if not os.path.exists(public_key) and not os.path.exists(private_key):
+        logger.warning("Generating self-signed key pair!")
+        certificate_pair = generate_self_signed_certificate()
+        with open(public_key, "wb") as f:
+            logger.info("Writing new public key to %s", public_key)
+            f.write(certificate_pair[0])
+        with open(private_key, "wb") as f:
+            logger.info("Writing new private key to %s", private_key)
+            f.write(certificate_pair[1])
+    elif not domain_in_subjects(public_key, settings.domain) and settings.domain:
+        logger.warning("The certificates provided are not valid for %s!", settings.domain)
+        logger.warning("If you aren't using these certificates in your SSL proxy, " +
+                       "you can ignore this message.")
+        logger.warning("To generate new certificates, please delete the existing " +
+                       "certificates and restart this application.")
+
     uvicorn.run("feeder.__main__:app", host="0.0.0.0", port=settings.http_port)

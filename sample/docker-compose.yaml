@@ -1,0 +1,55 @@
+---
+version: "2.1"
+services:
+  feeder-service:
+    # For Raspberry Pi devices using older processors, we need to specify certain versions
+    # in order to make sure docker pulls down the right container. Uncomment the line
+    # which fits the device you are running this on.
+
+    # Raspberry Pi Zero / Zero W / Compute Module 1 / Pi 1 (A/B)
+    # image: tedder42/petnet-feeder-service:latest-pizero
+
+    # Raspberry Pi 2 Model B
+    # image: tedder42/petnet-feeder-service:latest-pib2
+
+    # Intel/AMD PCs and everything else...
+    # image: tedder42/petnet-feeder-service:latest
+
+    container_name: petnet-feeder-service
+    environment:
+      - DATABASE_PATH=/data/data.db
+      - MQTTS_PRIVATE_KEY=/data/cert.pem
+      - MQTTS_PUBLIC_KEY=/data/pkey.pem
+
+      # This changes the root path of the frontend. If you are planning on running this
+      # application under a sub-path of an existing domain, set that here.
+      # - APP_ROOT=/petnet
+
+      # Add a domain to the self-signed certificates tht are generated on the first run.
+      # - DOMAIN="myfeeder.com"
+
+    ports:
+      - 5000:5000
+      - 8883:8883
+    volumes:
+      - "${HOME}/petnet-feeder-service/data:/data"
+    restart: unless-stopped
+
+  nginx:
+    # Raspberry Pi Zero / Zero W / Compute Module 1 / Pi 1 (A/B)
+    # image: nginx@sha256:b83a950f2d82392e7455b9d9158d10a1d074487612b708b0c10b29c4735802dc
+
+    # Raspberry Pi 2 Model B
+    # image: nginx@sha256:78aaa353363ae2ae1a53ca7014ab726f946b6a93d3b8225fa8a87d091b47f734
+
+    # Intel/AMD PCs and everything else...
+    # image: nginx:latest
+
+    container_name: nginx
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - "${HOME}/petnet-feeder-service/data:/data"
+      - "${HOME}/petnet-feeder-service/data/nginx.conf:/etc/nginx/conf.d/default.conf"
+    restart: unless-stopped
