@@ -4,11 +4,12 @@ import Container from "react-bootstrap/Container";
 import Navbar from "react-bootstrap/Navbar";
 import Nav from "react-bootstrap/Nav";
 import Icon from '@mdi/react'
-import {mdiPaw, mdiSilverwareForkKnife, mdiCog} from '@mdi/js';
+import {mdiSilverwareForkKnife, mdiCog} from '@mdi/js';
 import {ErrorComponent} from "./components/Error";
 import FeederCardList from "./containers/FeederCardListContainer";
 import FeedHistory from "./containers/FeedHistoryTableContainer";
 import {getRootPath} from "./util";
+import ProjectLogo from "./images/feeder-project-logo.svg"
 
 const rootPath = getRootPath()
 
@@ -38,10 +39,15 @@ class App extends React.Component {
     render() {
         return (
             <div>
-                <Navbar expand="lg" variant="dark" bg="primary" fixed="top">
+                <Navbar
+                    expand="lg"
+                    variant="dark"
+                    bg="primary"
+                    fixed="top"
+                    className={window.navigator.standalone === true ? "ios-app-nav" : null}>
                     <Container>
                         <Navbar.Brand href="#">
-                            <Icon path={mdiPaw} size={1}/> Pet Feeder
+                            <img src={ProjectLogo} alt={"PetConnect Logo"} width={175}/>
                         </Navbar.Brand>
                         <Navbar.Toggle aria-controls="basic-navbar-nav"/>
                         <Navbar.Collapse id="basic-navbar-nav">
@@ -56,7 +62,7 @@ class App extends React.Component {
                         </Navbar.Collapse>
                     </Container>
                 </Navbar>
-                <Container style={{marginTop: 100}}>
+                <Container style={{marginTop: window.navigator.standalone === true ? 70 : 100}}>
                     <Switch>
                         {this.state.routes.map(ea => {
                             return <Route key={ea.path} {...ea} />;

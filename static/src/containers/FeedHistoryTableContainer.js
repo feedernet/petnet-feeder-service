@@ -55,7 +55,6 @@ class FeedHistoryContainer extends React.Component {
     }
 
     handleChangePageSize(event) {
-        console.log(event)
         this.setState({
             pageSize: event
         }, () => {
@@ -64,11 +63,9 @@ class FeedHistoryContainer extends React.Component {
     }
 
     handleChangeFilter(event) {
-        console.log(event);
         const feeders = this.props.getFeederDevicesState.feeders.filter(f => {
             return f.hid === event
         })
-        console.log(feeders)
         if (feeders.length > 0) {
             this.setState({
                 filteredDeviceId: feeders[0].hid,
@@ -87,7 +84,6 @@ class FeedHistoryContainer extends React.Component {
     }
 
     handleChangePage(event) {
-        console.log(event)
         this.setState({
             page: event
         }, () => {
@@ -99,7 +95,7 @@ class FeedHistoryContainer extends React.Component {
     render() {
 
         return <>
-            <h1 style={{marginTop: 30, marginBottom: 30}}>History</h1>
+            <h2 style={{marginTop: 20, marginBottom: 20}}>History</h2>
             <FeedHistoryTableComponent
                 history={this.state.history}
                 feeders={this.props.getFeederDevicesState.feeders}
