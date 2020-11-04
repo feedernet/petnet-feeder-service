@@ -37,6 +37,12 @@ class FeederCardContainer extends React.Component {
         })
     }
 
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        if (this.props.feeder.lastPingedAt !== prevProps.feeder.lastPingedAt || this.props.feeder.name !== prevProps.feeder.name) {
+            this.setState({feeder: this.props.feeder})
+        }
+    }
+
     refreshFeederTelemetry() {
         this.props.dispatchGetFeederTelemetry(this.props.feeder.hid).then(() => {
             if (!this.props.getFeederTelemetryState._requestFailed) {
