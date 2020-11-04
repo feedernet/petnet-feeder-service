@@ -44,3 +44,4 @@ class Settings(BaseSettings):
     mqtts_private_key: str = "./pkey.pem"
     http_port: int = 5000
     app_root: str = ""
+    domain: str = ""  # Added as SAN to self-signed cert

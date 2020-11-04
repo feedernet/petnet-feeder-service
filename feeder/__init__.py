@@ -1,6 +1,5 @@
 import logging
 
-from feeder.util.mkcert import generate_self_signed_certificate
 from feeder.config import Settings
 
 
