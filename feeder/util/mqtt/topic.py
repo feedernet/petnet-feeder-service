@@ -1,8 +1,10 @@
-import asyncio
 import re
+import logging
 
 from hbmqtt.plugins.topic_checking import BaseTopicPlugin
 from feeder.util.mqtt.authentication import local_username
+
+logger = logging.getLogger(__name__)
 
 
 class PetnetTopicPlugin(BaseTopicPlugin):
@@ -10,10 +12,6 @@ class PetnetTopicPlugin(BaseTopicPlugin):
         r"krs/(api|cmd)/stg/(?P<gateway_id>.*)$")
     username_regex = re.compile(r'^/pegasus:(?P<gateway_id>.*)$')
 
-    def __init__(self, context):
-        super().__init__(context)
-
-    @asyncio.coroutine
     async def topic_filtering(self, *args, **kwargs):
         filter_result = super().topic_filtering(*args, **kwargs)
         if not filter_result:
@@ -21,8 +19,7 @@ class PetnetTopicPlugin(BaseTopicPlugin):
 
         session = kwargs.get('session', None)
         topic = kwargs.get('topic', None)
-        self.context.logger.debug('username: %s, topic: %s' %
-                                  (session.username, topic))
+        logger.debug('username: %s, topic: %s', session.username, topic)
 
         if session.username == local_username:
             return True
@@ -42,8 +39,7 @@ class PetnetTopicPlugin(BaseTopicPlugin):
 
         target_id = topic_match.group('gateway_id')
         if gateway_id != target_id:
-            self.context.logger.warning('Gateway %s tried to subscribe to %s'
-                                        % (gateway_id, target_id))
+            logger.warning('Gateway %s tried to subscribe to %s', gateway_id, target_id)
             return False
 
         return True
