@@ -1,5 +1,6 @@
 import math
 import hashlib
+import secrets
 
 from fastapi import APIRouter
 
@@ -37,6 +38,10 @@ def paginate_response(entities: list, current_page=1, max_page_size=10, total_ov
         "totalSize": list_length,
         "totalPages": page_count,
     }
+
+
+def generate_api_key() -> str:
+    return secrets.token_hex(32)
 
 
 def generate_feeder_hid(uid: str) -> str:

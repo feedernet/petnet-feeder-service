@@ -4,7 +4,7 @@ from sqlalchemy import Boolean, Column, Integer, ForeignKey, Table, Text, Float,
 from sqlalchemy.sql.expression import literal
 from sqlite3 import IntegrityError
 
-from feeder.util.feeder import generate_feeder_hid
+from feeder.util.feeder import generate_api_key, generate_feeder_hid
 from feeder.util import get_current_timestamp
 from feeder.database.session import db, metadata
 
@@ -30,7 +30,8 @@ gateways = Table(
     Column("softwareName", Text(), nullable=True),
     Column("softwareVersion", Text(), nullable=True),
     Column("sdkVersion", Text(), nullable=True),
-    Column("discoveredAt", Integer(), nullable=False)
+    Column("discoveredAt", Integer(), nullable=False),
+    Column("apiKey", Text(), nullable=False),
 )
 
 
@@ -52,6 +53,8 @@ class KronosGateways:
     @classmethod
     async def create(cls, **gateway):
         gateway = handle_potential_registration(gateway)
+        if "apiKey" not in gateway:
+            gateway["apiKey"] = generate_api_key()
 
         query = gateways.insert().values(**gateway)
         results = await db.execute(query)
