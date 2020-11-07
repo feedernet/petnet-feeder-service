@@ -118,22 +118,21 @@ class FeederClient(MQTTClient):
         packet = build_command(device_id, command, args)
         await self.publish(f"krs/cmd/stg/{gateway_id}", packet, qos=QOS_2)
 
-    async def send_cmd_feed(self, gateway_id, device_id, *, portion=0.0625):
+    async def send_cmd_feed(self, gateway_id, device_id, portion=0.0625):
         await self.send_cmd(gateway_id, device_id, "feed", {"portion": portion})
 
-    async def send_cmd_button(self, gateway_id, device_id, *, enable=True):
+    async def send_cmd_button(self, gateway_id, device_id, enable=True):
         await self.send_cmd(gateway_id, device_id, "button_enable_remote", {"enable": enable})
 
     async def send_cmd_reboot(self, gateway_id, device_id):
         await self.send_cmd(gateway_id, device_id, "reboot", {})
 
-    async def send_cmd_utc_offset(self, gateway_id, device_id, *, utc_offset=0):
+    async def send_cmd_utc_offset(self, gateway_id, device_id, utc_offset=0):
         await self.send_cmd(gateway_id, device_id, "utc_offset", {"utc_offset": utc_offset})
 
     async def send_cmd_schedule(
             self,
             gateway_id,
-            *,
             active=True,
             feeding_id="aaaa",
             name="FEED2",

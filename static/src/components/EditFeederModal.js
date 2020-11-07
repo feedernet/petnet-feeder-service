@@ -2,33 +2,113 @@ import React from "react";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import InputGroup from "react-bootstrap/InputGroup";
-import FormControl from "react-bootstrap/FormControl"
-import {mdiCheck} from '@mdi/js';
+import FormControl from "react-bootstrap/FormControl";
+import Row from "react-bootstrap/Row";
+import Col from "react-bootstrap/Col";
+import ToggleButton from "react-bootstrap/ToggleButton";
+import ToggleButtonGroup from "react-bootstrap/ToggleButtonGroup";
+import Form from "react-bootstrap/Form"
+import {mdiRestart, mdiDelete, mdiCheck, mdiWindowClose} from '@mdi/js';
 import Icon from "@mdi/react";
+import {ianaTimeZones} from "../constants";
 
 export const EditFeederModalComponent = function (props) {
+    const zoneOptions = ianaTimeZones.map((tz) => <option value={tz}>{tz}</option>)
+
     return (
-        <Modal show={props.show} onHide={props.handleClose}>
-            <Modal.Header closeButton>
-                <Modal.Title>Edit Feeder</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-                <label htmlFor={"feeder-name"}>Feeder Name</label>
-                <InputGroup className="mb-3">
-                    <FormControl
-                        id={"feeder-name"}
-                        placeholder={"Feeder Name"}
-                        aria-label={"Feeder Name"}
-                        value={props.name}
-                        onChange={props.handleNameChange}
-                    />
-                    <InputGroup.Append>
-                        <Button variant="outline-success" onClick={props.handleNameSubmit}>
-                            <Icon path={mdiCheck} size={.75}/> Save
-                        </Button>
-                    </InputGroup.Append>
-                </InputGroup>
-            </Modal.Body>
-        </Modal>
+        <>
+            <Modal show={props.show} onHide={props.handleClose} centered>
+                <Modal.Header closeButton>
+                    <Modal.Title>Edit Feeder</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <label htmlFor={"feeder-name"}>Name</label>
+                    <InputGroup className="mb-3">
+                        <FormControl
+                            id={"feeder-name"}
+                            placeholder={"Feeder Name"}
+                            aria-label={"Feeder Name"}
+                            value={props.name}
+                            onChange={props.handleNameChange}
+                        />
+                        <InputGroup.Append>
+                            <Button variant="outline-secondary" onClick={props.handleSubmit}>
+                                <Icon path={mdiCheck} size={.75}/> Save
+                            </Button>
+                        </InputGroup.Append>
+                    </InputGroup>
+                    <Row>
+                        <Col xs={12} sm={6} className={"mb-3"}>
+                            <label htmlFor={"feeder-button"}>Front Button</label>
+                            <div>
+                                <ToggleButtonGroup
+                                    type="radio"
+                                    name="options"
+                                    defaultValue={props.frontButtonEnabled} style={{width: "100%"}}
+                                    onClick={props.isStale || props.isJustDiscovered ? null : props.handleFrontButtonChange}
+                                >
+                                    <ToggleButton
+                                        value={true}
+                                        variant={!props.frontButtonEnabled ? "light" : "success"}
+                                        disabled={props.isStale || props.isJustDiscovered}
+                                    >
+                                        On
+                                    </ToggleButton>
+                                    <ToggleButton
+                                        value={false}
+                                        variant={props.frontButtonEnabled || props.frontButtonEnabled === null ? "light" : "danger"}
+                                        disabled={props.isStale || props.isJustDiscovered}
+                                    >
+                                        Off
+                                    </ToggleButton>
+                                </ToggleButtonGroup>
+                            </div>
+                        </Col>
+                        <Col xs={12} sm={6} className={"mb-3"}>
+                            <Form.Group controlId="feeder-timezone">
+                                <Form.Label>Timezone</Form.Label>
+                                <Form.Control
+                                    as="select"
+                                    value={props.timezone}
+                                    onChange={props.handleTimezoneChange}
+                                    disabled={props.isStale || props.isJustDiscovered}
+                                >
+                                    {zoneOptions}
+                                </Form.Control>
+                            </Form.Group>
+                        </Col>
+                    </Row>
+                    <hr/>
+                    <Row>
+                        <Col xs={12} sm={6} className={"my-1"}>
+                            <Button variant="danger" onClick={() => props.toggleConfirmDelete(true)} style={{width: "100%"}}>
+                                <Icon path={mdiDelete} size={.75}/> Delete
+                            </Button>
+                        </Col>
+                        <Col xs={12} sm={6} className={"my-1"}>
+                            <Button
+                                variant="warning"
+                                onClick={props.handleRestart}
+                                style={{width: "100%"}}
+                                disabled={props.isStale || props.isJustDiscovered}
+                            >
+                                <Icon path={mdiRestart} size={.75}/> Restart
+                            </Button>
+                        </Col>
+                    </Row>
+                </Modal.Body>
+            </Modal>
+            <Modal show={props.showConfirmDelete} onHide={() => props.toggleConfirmDelete(false)} centered>
+                <Modal.Header closeButton><Modal.Title>Are you sure?</Modal.Title></Modal.Header>
+                <Modal.Body>
+                    <p>Deleting a feeder will also permanently clear it's history.</p>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="danger" onClick={props.handleDelete} style={{width: "100%"}}>
+                        <Icon path={mdiDelete} size={.75}/> Delete
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+        </>
     )
 }

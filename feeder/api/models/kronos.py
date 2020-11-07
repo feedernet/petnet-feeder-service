@@ -73,13 +73,17 @@ class Device(NewDevice):
     hid: str
     discoveredAt: int = 0
     lastPingedAt: Optional[int] = 0
+    frontButton: Optional[bool]
+    timezone: Optional[str]
 
     class Config:
         orm_mode = True
 
 
-class DeviceName(BaseModel):
-    name: str
+class DeviceUpdate(BaseModel):
+    name: Optional[str]
+    timezone: Optional[str]
+    frontButton: Optional[bool]
 
 
 class DeviceTelemetry(BaseModel):

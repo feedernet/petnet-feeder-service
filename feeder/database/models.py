@@ -82,6 +82,8 @@ devices = Table(
     Column("softwareVersion", Text(), nullable=True),
     Column("discoveredAt", Integer(), nullable=False),
     Column("lastPingedAt", Integer(), nullable=True),
+    Column("timezone", Text(), nullable=True),
+    Column("frontButton", Boolean(), nullable=True),
 )
 
 
@@ -133,12 +135,30 @@ class KronosDevices:
         return results
 
     @classmethod
-    async def update(cls, *, device_hid: str, name: str):
+    async def update(cls, *, device_hid: str, name: str = None, timezone: str = None, front_button: bool = None):
+        values = {}
+        if name is not None:
+            values["name"] = name
+        if timezone is not None:
+            values["timezone"] = timezone
+        if front_button is not None:
+            values["frontButton"] = front_button
         query = devices.update().where(devices.c.hid == device_hid).values(
-            name=name
+            **values
         )
         results = await db.execute(query)
         return results
+
+    @classmethod
+    async def delete(cls, device_id):
+        device = await KronosDevices.get(device_hid=device_id)
+        await DeviceTelemetryData.clear_for_device(device_id)
+        await FeedingResult.clear_for_device(device_id)
+
+        device_query = devices.delete().where(devices.c.hid == device_id)
+        gateway_query = gateways.delete().where(gateways.c.hid == device[0].hid)
+        await db.execute(device_query)
+        await db.execute(gateway_query)
 
 
 sensor_data = Table(
@@ -190,6 +210,11 @@ class DeviceTelemetryData:
 
         results = await db.execute(query)
         return results
+
+    @classmethod
+    async def clear_for_device(cls, device_id):
+        query = sensor_data.delete().where(sensor_data.c.device_hid == device_id)
+        return await db.execute(query)
 
 
 feeding_event = Table(
@@ -267,6 +292,11 @@ class FeedingResult:
             return await db.execute(query)
         except IntegrityError:
             logger.exception("Unable to save feed result!")
+
+    @classmethod
+    async def clear_for_device(cls, device_id):
+        query = feeding_event.delete().where(feeding_event.c.device_hid == device_id)
+        return await db.execute(query)
 
 
 schedules = Table(

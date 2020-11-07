@@ -55,7 +55,7 @@ const displaySizes = {
 
 export const SnackModalComponent = function (props) {
     return (
-        <Modal show={props.show} onHide={props.handleClose}>
+        <Modal show={props.show} onHide={props.handleClose} centered>
             <Modal.Header closeButton>
                 <Modal.Title>It's snack time!</Modal.Title>
             </Modal.Header>
