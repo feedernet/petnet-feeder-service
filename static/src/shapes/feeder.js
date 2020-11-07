@@ -9,7 +9,9 @@ export const feederDeviceShape = PropTypes.shape({
     softwareVersion: PropTypes.string,
     hid: PropTypes.string,
     discoveredAt: PropTypes.number,
-    lastPingedAt: PropTypes.number
+    lastPingedAt: PropTypes.number,
+    timezone: PropTypes.string,
+    frontButton: PropTypes.bool
 })
 
 export const feederTelemetryShape = PropTypes.shape({

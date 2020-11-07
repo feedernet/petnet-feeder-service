@@ -21,6 +21,7 @@ alembic = "*"
 databases = "*"
 aiosqlite = "*"
 typing-extensions = "*"
+pytz = "*"
 
 [pipenv]
 allow_prereleases = true
