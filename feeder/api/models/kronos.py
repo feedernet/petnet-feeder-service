@@ -75,6 +75,8 @@ class Device(NewDevice):
     lastPingedAt: Optional[int] = 0
     frontButton: Optional[bool]
     timezone: Optional[str]
+    connected: bool = False
+    currentRecipe: Optional[int]
 
     class Config:
         orm_mode = True
@@ -84,6 +86,7 @@ class DeviceUpdate(BaseModel):
     name: Optional[str]
     timezone: Optional[str]
     frontButton: Optional[bool]
+    currentRecipe: Optional[int]
 
 
 class DeviceTelemetry(BaseModel):

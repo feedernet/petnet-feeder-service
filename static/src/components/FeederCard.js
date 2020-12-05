@@ -15,7 +15,8 @@ import {
     mdiInformation,
     mdiFoodApple,
     mdiClock,
-    mdiPencil
+    mdiPencil,
+    mdiCog
 } from '@mdi/js';
 
 

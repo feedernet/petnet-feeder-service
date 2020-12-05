@@ -2,14 +2,14 @@ import {FEEDER_API_BASE} from "../constants";
 import {triggerFeeding} from "../constants/feeder";
 import {createAction} from "redux-api-middleware";
 
-export const triggerFeedingAction = (gatewayId, deviceId, portion) => {
+export const triggerFeedingAction = (deviceId, portion) => {
     const body = JSON.stringify({
         portion
     });
 
     const meta = {
         method: 'POST',
-        endpoint: `${FEEDER_API_BASE}/${gatewayId}/${deviceId}/feed`,
+        endpoint: `${FEEDER_API_BASE}/${deviceId}/feed`,
         headers: { 'Content-Type': 'application/json' },
         body
     };

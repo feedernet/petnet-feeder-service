@@ -3,6 +3,12 @@ import {getRootPath} from "../util";
 export const API_BASE = "/api/v1";
 
 export const FEEDER_API_BASE = `${getRootPath()}${API_BASE}/feeder`
+export const PET_API_BASE = `${getRootPath()}${API_BASE}/pet`
+
+export const newFeederWizard = {
+    SHOW_FEEDER_WIZARD: 'SHOW_FEEDER_WIZARD',
+    DISMISS_FEEDER_WIZARD: 'DISMISS_FEEDER_WIZARD'
+}
 
 export const ianaTimeZones = [
     'Africa/Abidjan',

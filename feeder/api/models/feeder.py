@@ -35,3 +35,15 @@ class FeedEvent(BaseModel):
 
 class FeedHistory(BasePaginatedList):
     data: List[FeedEvent]
+
+
+class HopperLevel(BaseModel):
+    level: int
+
+
+class Recipe(BaseModel):
+    id: Optional[int]
+    name: Optional[str] = ""
+    tbsp_per_feeding: int
+    g_per_tbsp: int
+    budget_tbsp: int

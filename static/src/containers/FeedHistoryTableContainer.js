@@ -42,16 +42,14 @@ class FeedHistoryContainer extends React.Component {
             this.state.filteredDeviceId,
             this.state.pageSize,
             this.state.page
-        )
-    }
-
-    componentDidUpdate(prevProps, prevState, snapshot) {
-        if (this.props.getFeedHistoryState.history !== prevState.history && !this.props.getFeedHistoryState._requestFailed) {
-            this.setState({
-                history: this.props.getFeedHistoryState.history,
-                totalPages: this.props.getFeedHistoryState.totalPages
-            })
-        }
+        ).then(() => {
+            if (!this.props.getFeedHistoryState._requestFailed) {
+                this.setState({
+                    history: this.props.getFeedHistoryState.history,
+                    totalPages: this.props.getFeedHistoryState.totalPages
+                })
+            }
+        })
     }
 
     handleChangePageSize(event) {
@@ -71,8 +69,8 @@ class FeedHistoryContainer extends React.Component {
                 filteredDeviceId: feeders[0].hid,
                 filteredDeviceName: feeders[0].name ? feeders[0].name : `New Feeder (${feeders[0].hid.substring(0, 6)})`
             }, () => {
-            this.updateHistory()
-        })
+                this.updateHistory()
+            })
         } else {
             this.setState({
                 filteredDeviceId: "",

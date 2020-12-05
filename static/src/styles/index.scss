@@ -21,3 +21,22 @@ code {
   /* Status bar height on iOS 11+ */
   padding-top: calc(env(safe-area-inset-top)) !important;
 }
+
+.pet-avatar-text {
+  margin-bottom: 0.25rem !important;
+  margin-top: 0.25rem !important;
+}
+
+.pet-avatar-text-selected {
+  margin-bottom: 0.25rem !important;
+  margin-top: 0.25rem !important;
+  font-weight: 700 !important;
+}
+
+.pet-avatar-text:hover {
+  font-weight: 700 !important;
+}
+
+.pet-avatar-container:hover {
+  box-shadow: 0 0 0 4px #28AFB0 !important;
+}

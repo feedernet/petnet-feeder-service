@@ -1,0 +1,17 @@
+export const getPets = {
+    GET_PETS: "GET_PETS",
+    GET_PETS_SUCCESS: "GET_PETS_SUCCESS",
+    GET_PETS_FAILURE: "GET_PETS_FAILURE"
+};
+
+export const createPet = {
+    CREATE_PET: "CREATE_PET",
+    CREATE_PET_SUCCESS: "CREATE_PET_SUCCESS",
+    CREATE_PET_FAILURE: "CREATE_PET_FAILURE",
+}
+
+export const modifyPet = {
+    MOD_PET: "MOD_PET",
+    MOD_PET_SUCCESS: "MOD_PET_SUCCESS",
+    MOD_PET_FAILURE: "MOD_PET_FAILURE",
+}
