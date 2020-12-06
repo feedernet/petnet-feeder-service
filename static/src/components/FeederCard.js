@@ -8,16 +8,16 @@ import FeederLight from "../images/feeder_white.png";
 import {feederDeviceShape, feederTelemetryShape} from "../shapes/feeder";
 import Icon from '@mdi/react'
 import {
-    mdiBatteryCharging,
-    mdiWifiStrength3,
-    mdiLaserPointer,
     mdiAlertCircle,
     mdiInformation,
     mdiFoodApple,
     mdiClock,
     mdiPencil,
-    mdiCog
+    mdiPowerPlug,
+    mdiBatteryCharging,
+    mdiWifi
 } from '@mdi/js';
+import HopperLevelIndicator from "../containers/HopperLevelContainer";
 
 
 export const FeederCardComponent = function (props) {
@@ -31,9 +31,9 @@ export const FeederCardComponent = function (props) {
     }
     if (props.telemetry) {
         telemetry = {
-            rssi: props.telemetry.rssi,
+            rssi: props.telemetry.rssi ? props.telemetry.rssi: 0,
             charging: props.telemetry.charging ? "Charging" : "Charged",
-            ir: props.telemetry.ir ? "Unobstructed" : "Obstructed"
+            usb_power: props.telemetry.usb_power ? "Plugged In" : "On Battery"
         }
     }
 
@@ -67,16 +67,19 @@ export const FeederCardComponent = function (props) {
                                         </Card.Subtitle>
                                     </div>
                                     {!props.isStale && !props.isJustDiscovered ?
-                                        <Card.Text>
-                                            <ul>
-                                                <li><Icon path={mdiWifiStrength3} size={.75}/> WiFi Signal
-                                                    Strength: {telemetry.rssi}
-                                                </li>
-                                                <li><Icon path={mdiBatteryCharging}
-                                                          size={.75}/> Battery: {telemetry.charging}</li>
-                                                <li><Icon path={mdiLaserPointer} size={.75}/> IR Beam: {telemetry.ir}
-                                                </li>
-                                            </ul>
+                                        <Card.Text className={"mt-3"}>
+                                            <HopperLevelIndicator deviceHid={props.feeder.hid}/>
+                                            <Row className={"text-muted text-center mt-3 px-2"}>
+                                                <Col className={"p-2"} xs={6} sm={3} lg={3}>
+                                                    <Icon path={mdiWifi} size={.75}/> {telemetry.rssi}%
+                                                </Col>
+                                                <Col className={"p-2"} xs={6} sm={4} lg={4}>
+                                                    <Icon path={mdiBatteryCharging} size={.75}/> {telemetry.charging}
+                                                </Col>
+                                                <Col className={"p-2"} xs={12} sm={5} lg={4}>
+                                                    <Icon path={mdiPowerPlug} size={.75}/> {telemetry.usb_power}
+                                                </Col>
+                                            </Row>
                                         </Card.Text> : null
                                     }
 

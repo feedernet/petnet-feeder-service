@@ -457,7 +457,7 @@ class HopperLevelRef:
         device = device_results[0]
         latest_ref_query = hopper_level_references.select().order_by(
             desc(hopper_level_references.c.timestamp)
-        )
+        ).where(hopper_level_references.c.device_hid == device_id)
         latest_ref = await db.fetch_one(latest_ref_query)
         if not latest_ref:
             raise HTTPException(404, detail=f"Hopper level not set for {device_id}")

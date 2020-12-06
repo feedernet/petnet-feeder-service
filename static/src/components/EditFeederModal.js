@@ -11,10 +11,11 @@ import Form from "react-bootstrap/Form"
 import {mdiRestart, mdiDelete, mdiCheck} from '@mdi/js';
 import Icon from "@mdi/react";
 import {ianaTimeZones} from "../constants";
+import {HopperLevelFormComponent} from "./HopperLevelForm";
+import {FoodVolumeSlider} from "./FoodVolumeSlider";
 
 export const EditFeederModalComponent = function (props) {
     const zoneOptions = ianaTimeZones.map((tz) => <option value={tz}>{tz}</option>)
-
     return (
         <>
             <Modal show={props.show} onHide={props.handleClose} centered>
@@ -77,11 +78,36 @@ export const EditFeederModalComponent = function (props) {
                                 </Form.Control>
                             </Form.Group>
                         </Col>
+                        <Col xs={12} className={"mb-3"}>
+                            <Form.Group controlId="feeder-hopper-level">
+                                <Form.Label className={"m-0"}>Hopper Level</Form.Label>
+                                <div className={"mx-3"}>
+                                    <HopperLevelFormComponent
+                                        submitAfterChange
+                                        handleFormSubmit={props.setHopperLevel}
+                                        initialLevel={props.hopperLevel}
+                                    />
+                                </div>
+                            </Form.Group>
+                        </Col>
+                        <Col xs={12}>
+                            <Form.Group controlId="feeder-front-button-amount">
+                                <Form.Label className={"m-0"}>Manual Feed Amount</Form.Label>
+                                <Form.Text className="text-muted">
+                                    This is the cups of food that is dispensed when
+                                    you press the front button.
+                                </Form.Text>
+                                <div className={"mx-3"}>
+                                    <FoodVolumeSlider onAfterChange={props.handleSetRecipeServing} defaultValue={props.recipeServing}/>
+                                </div>
+                            </Form.Group>
+                        </Col>
                     </Row>
                     <hr/>
                     <Row>
                         <Col xs={12} sm={6} className={"my-1"}>
-                            <Button variant="danger" onClick={() => props.toggleConfirmDelete(true)} style={{width: "100%"}}>
+                            <Button variant="danger" onClick={() => props.toggleConfirmDelete(true)}
+                                    style={{width: "100%"}}>
                                 <Icon path={mdiDelete} size={.75}/> Delete
                             </Button>
                         </Col>

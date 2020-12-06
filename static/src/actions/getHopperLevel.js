@@ -5,7 +5,8 @@ import {createAction} from "redux-api-middleware";
 export const getHopperLevelAction = (deviceId) => {
     const meta = {
         method: 'GET',
-        endpoint: `${FEEDER_API_BASE}/${deviceId}/hopper`
+        endpoint: `${FEEDER_API_BASE}/${deviceId}/hopper`,
+        deviceId
     };
     return createAction({
         endpoint: meta.endpoint,
