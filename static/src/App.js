@@ -10,6 +10,7 @@ import FeederCardList from "./containers/FeederCardListContainer";
 import FeedHistory from "./containers/FeedHistoryTableContainer";
 import {getRootPath} from "./util";
 import ProjectLogo from "./images/feeder-project-logo.svg"
+import NewFeederWizard from "./containers/NewFeederWizard";
 
 const rootPath = getRootPath()
 
@@ -24,7 +25,8 @@ class App extends React.Component {
                     return <>
                         <FeederCardList {...props} />
                         <FeedHistory {...props} />
-                    </>;
+                        <NewFeederWizard/>
+                    </>
                 }
             },
             {

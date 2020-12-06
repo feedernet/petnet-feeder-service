@@ -2,11 +2,12 @@ import {FEEDER_API_BASE} from "../constants";
 import {modifyFeeder} from "../constants/feeder";
 import {createAction} from "redux-api-middleware";
 
-export const modifyFeederAction = (deviceId = "", name = null, timezone = null, frontButton = null) => {
+export const modifyFeederAction = (deviceId = "", name = null, timezone = null, frontButton = null, currentRecipe = null) => {
     const body = JSON.stringify({
         name,
         timezone,
-        frontButton
+        frontButton,
+        currentRecipe
     });
 
     const meta = {

@@ -40,7 +40,7 @@ async def commit_telemetry_data(gateway_id: str, payload: dict):
         logger.debug("Sending ping for %s", device_id)
         await KronosDevices.ping(gateway_hid=gateway_id, device_hid=device_id)
     if message_type == "sensor":
-        logger.info("Updating sensor information for %s", device_id)
+        logger.debug("Updating sensor information for %s", device_id)
         await DeviceTelemetryData.report(
             gateway_hid=gateway_id,
             device_hid=device_id,
@@ -130,9 +130,17 @@ class FeederClient(MQTTClient):
     async def send_cmd_utc_offset(self, gateway_id, device_id, utc_offset=0):
         await self.send_cmd(gateway_id, device_id, "utc_offset", {"utc_offset": utc_offset})
 
+    async def send_cmd_budget(self, gateway_id, device_id, recipe_id, tbsp_per_feeding, g_per_tbsp, budget_tbsp):
+        # The feeder seems to get unhappy if the recipe ID isn't 7-8 chars long and
+        # in r"[a-z]{1,2}[0-9]{6,7}" format. Whatever.
+        await self.send_cmd(gateway_id, device_id, "budget",
+                            {"recipe": f"E{str(recipe_id).zfill(7)}", "tbsp_per_feeding": tbsp_per_feeding,
+                             "g_per_tbsp": g_per_tbsp, "budget_tbsp": budget_tbsp})
+
     async def send_cmd_schedule(
             self,
             gateway_id,
+            device_id,
             active=True,
             feeding_id="aaaa",
             name="FEED2",
@@ -142,6 +150,7 @@ class FeederClient(MQTTClient):
     ):
         await self.send_cmd(
             gateway_id,
+            device_id,
             "schedule",
             {
                 "active": active,

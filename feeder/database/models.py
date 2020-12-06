@@ -84,6 +84,7 @@ devices = Table(
     Column("lastPingedAt", Integer(), nullable=True),
     Column("timezone", Text(), nullable=True),
     Column("frontButton", Boolean(), nullable=True),
+    Column("currentRecipe", Integer(), ForeignKey("recipes.id"), nullable=True)
 )
 
 
@@ -135,7 +136,8 @@ class KronosDevices:
         return results
 
     @classmethod
-    async def update(cls, *, device_hid: str, name: str = None, timezone: str = None, front_button: bool = None):
+    async def update(cls, *, device_hid: str, name: str = None, timezone: str = None, front_button: bool = None,
+                     recipe_id: int = None):
         values = {}
         if name is not None:
             values["name"] = name
@@ -143,6 +145,8 @@ class KronosDevices:
             values["timezone"] = timezone
         if front_button is not None:
             values["frontButton"] = front_button
+        if recipe_id is not None:
+            values["currentRecipe"] = recipe_id
         query = devices.update().where(devices.c.hid == device_hid).values(
             **values
         )
@@ -299,10 +303,208 @@ class FeedingResult:
         return await db.execute(query)
 
 
-schedules = Table(
-    "feeding_schedule",
+pets = Table(
+    "pets",
+    metadata,
+    Column("id", Integer(), primary_key=True),
+    Column("name", Integer(), nullable=False),
+    Column("image", Text(), nullable=True),
+    Column("animal_type", Text(), nullable=False),
+    Column("weight", Float(), nullable=False),
+    Column("birthday", Integer(), nullable=False),
+    Column("activity_level", Integer(), nullable=False),
+    Column("device_hid", Text(), ForeignKey("kronos_device.hid"), nullable=True)
+)
+
+
+class Pet:
+    @classmethod
+    async def get(cls, pet_id: int = None):
+        query = pets.select()
+        if pet_id is not None:
+            query = query.where(pets.c.id == pet_id)
+
+        results = await db.fetch_all(query)
+        if not results and pet_id:
+            logger.error("No pets found with ID: %d", pet_id)
+            raise HTTPException(404, detail=f"No pet found with ID {pet_id}")
+        elif not results:
+            raise HTTPException(404, detail=f"No pets found!")
+
+        return results
+
+    @classmethod
+    async def create(cls, *, name: str, animal_type: str, weight: float, birthday: int, image: str = None,
+                     activity_level: int, device_hid: str = None):
+        values = {
+            "name": name,
+            "animal_type": animal_type,
+            "weight": weight,
+            "birthday": birthday,
+            "activity_level": activity_level
+        }
+
+        if image is not None:
+            values["image"] = image
+
+        if device_hid is not None:
+            # Ensure the device exists
+            await KronosDevices.get(device_hid=device_hid)
+            values["device_hid"] = device_hid
+
+        query = pets.insert().values(**values)
+        return await db.execute(query)
+
+    @classmethod
+    async def delete(cls, pet_id: int):
+        query = pets.delete().where(pets.c.id == pet_id)
+        return await db.execute(query)
+
+    @classmethod
+    async def update(cls, pet_id: int, name: str = None, animal_type: str = None, weight: float = None,
+                     birthday: int = None, image: str = None, activity_level: int = None, device_hid: str = None):
+        values = {}
+        if name:
+            values["name"] = name
+        if animal_type:
+            values["animal_type"] = animal_type
+        if weight:
+            values["weight"] = weight
+        if birthday:
+            values["birthday"] = birthday
+        if activity_level:
+            values["activity_level"] = activity_level
+        if image:
+            values["image"] = image
+        if device_hid:
+            values["device_hid"] = device_hid
+
+        query = pets.update().where(pets.c.id == pet_id).values(**values)
+        return await db.execute(query)
+
+
+recipes = Table(
+    "recipes",
+    metadata,
+    Column("id", Integer(), primary_key=True),
+    Column("name", Text(), nullable=True),
+    Column("g_per_tbsp", Integer(), nullable=False),
+    Column("tbsp_per_feeding", Integer(), nullable=False),
+    Column("budget_tbsp", Integer(), nullable=False)
+)
+
+
+class StoredRecipe:
+    @classmethod
+    async def get(cls, recipe_id: int = None):
+        query = recipes.select()
+        if recipe_id is not None:
+            query = query.where(recipes.c.id == recipe_id)
+
+        return await db.fetch_all(query)
+
+    @classmethod
+    async def create(cls, *, name: str = "", g_per_tbsp: int, tbsp_per_feeding: int, budget_tbsp: int = 0):
+        query = recipes.insert().values(
+            name=name or None,
+            g_per_tbsp=g_per_tbsp,
+            tbsp_per_feeding=tbsp_per_feeding,
+            budget_tbsp=budget_tbsp or tbsp_per_feeding
+        )
+        return await db.execute(query)
+
+    @classmethod
+    async def update(cls, recipe_id: int, name: str = None, g_per_tbsp: int = None, tbsp_per_feeding: int = None,
+                     budget_tbsp: int = None):
+        values = {}
+        if name:
+            values["name"] = name
+        if g_per_tbsp:
+            values["g_per_tbsp"] = g_per_tbsp
+        if tbsp_per_feeding:
+            values["tbsp_per_feeding"] = tbsp_per_feeding
+        if budget_tbsp:
+            values["budget_tbsp"] = budget_tbsp
+        query = recipes.update().where(recipes.c.id == recipe_id).values(
+            **values
+        )
+        return await db.execute(query)
+
+
+# We will store a level reference every time someone manually updates the amount
+# of food in the hopper. From there we can find the latest reference and subtract
+# the total volume of all feed results since that reference. That will give us a
+# estimate of how much food remains.
+hopper_level_references = Table(
+    "hopper_references",
     metadata,
     Column("device_hid", Text(), ForeignKey("kronos_device.hid"), primary_key=True),
+    Column("timestamp", Integer(), primary_key=True),
+    Column("level", Integer(), nullable=False)
+)
+
+
+class HopperLevelRef:
+    @classmethod
+    async def get(cls, device_id):
+        # Fun fact: according to my napkin math, if you measured Jeff Bezos'
+        # wealth in rice like that viral TikTok, you could fit ~14% of it
+        # in the hopper of your smart pet feeder.
+        max_hopper_cups = 20.5
+        tbsp_per_cup = 16
+
+        device_results = await KronosDevices.get(device_hid=device_id)
+        device = device_results[0]
+        latest_ref_query = hopper_level_references.select().order_by(
+            desc(hopper_level_references.c.timestamp)
+        )
+        latest_ref = await db.fetch_one(latest_ref_query)
+        if not latest_ref:
+            raise HTTPException(404, detail=f"Hopper level not set for {device_id}")
+
+        logger.debug("Hopper level last set to %d on %d", latest_ref.level, latest_ref.timestamp)
+
+        dispensed_grams_query = select(
+            [func.sum(feeding_event.c.grams_expected)]
+        ).select_from(feeding_event).where(
+            feeding_event.c.start_time >= latest_ref.timestamp
+        ).where(feeding_event.c.device_hid == device_id)
+        # TODO: So, this isn't _technically_ the most correct way to do this.
+        # We are making the assumption that all of the dispensed feeds from the last reference
+        # are the current recipe. While this isn't an unfair assumption, since food level
+        # would change and should be updated by the user if the food changes, we are relying on
+        # the user to do the right thing... Which, yah, good luck with that.
+        dispensed_grams = await db.fetch_val(dispensed_grams_query)
+        if not dispensed_grams:
+            dispensed_grams = 0
+        logger.debug("%d grams of food have been dispensed since %d", dispensed_grams, latest_ref.timestamp)
+        recipe_query = recipes.select().where(recipes.c.id == device.currentRecipe)
+        recipe = await db.fetch_one(recipe_query)
+        if not recipe:
+            raise HTTPException(400, detail="No recipe set for device, cannot calculate hopper level!")
+        dispensed_cups = (dispensed_grams / recipe.g_per_tbsp) / tbsp_per_cup
+        logger.debug("Using recipeId (%d), at %d g/tbsp, that is %f cups", recipe.id, recipe.g_per_tbsp, dispensed_cups)
+        ref_level_cups = (latest_ref.level / 100) * max_hopper_cups
+        current_cups = ref_level_cups - dispensed_cups
+        logger.debug("%f cups minus %f cups equals %f cups remaining", ref_level_cups, dispensed_cups, current_cups)
+        return (current_cups / max_hopper_cups) * 100
+
+    @classmethod
+    async def set(cls, *, device_id: str, level: int):
+        target_device = await KronosDevices.get(device_hid=device_id)
+        query = hopper_level_references.insert().values(
+            device_hid=target_device[0].hid,
+            timestamp=get_current_timestamp(),
+            level=level
+        )
+        return await db.execute(query)
+
+
+schedules = Table(
+    "pet_feed_schedule",
+    metadata,
+    Column("pet_id", Text(), ForeignKey("pets.id"), primary_key=True),
     # This is the number of seconds since 12:00AM
-    Column("time", Integer(), primary_key=True)
+    Column("time", Integer(), primary_key=True),
+    Column("enabled", Boolean(), nullable=False)
 )

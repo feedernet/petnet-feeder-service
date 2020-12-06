@@ -7,12 +7,14 @@ from fastapi import HTTPException
 from sqlite3 import IntegrityError
 
 from feeder.api.models.kronos import Device, DeviceTelemetry, DeviceUpdate
-from feeder.util.feeder import APIRouterWithMQTTClient, paginate_response
-from feeder.database.models import KronosDevices, DeviceTelemetryData, FeedingResult
+from feeder.util.feeder import APIRouterWithMQTTClient, paginate_response, check_connection
+from feeder.database.models import KronosDevices, DeviceTelemetryData, FeedingResult, HopperLevelRef, StoredRecipe
 from feeder.api.models.feeder import (
     TriggerFeeding,
     GenericResponse,
-    FeedHistory
+    FeedHistory,
+    HopperLevel,
+    Recipe
 )
 
 logger = logging.getLogger(__name__)
@@ -22,7 +24,10 @@ router = APIRouterWithMQTTClient()
 @router.get("", response_model=List[Device])
 @router.get("/", response_model=List[Device])
 async def get_devices():
-    return await KronosDevices.get()
+    return [
+        check_connection(device, router.broker)
+        for device in await KronosDevices.get()
+    ]
 
 
 @router.get("/history", response_model=FeedHistory)
@@ -42,7 +47,10 @@ async def get_history(size: int = 10, page: int = 1):
 
 @router.get("/{device_id}", response_model=Device)
 async def get_single_device(device_id: str):
-    device = await KronosDevices.get(device_hid=device_id)
+    device = [
+        check_connection(device, router.broker)
+        for device in await KronosDevices.get(device_hid=device_id)
+    ]
     return device[0]
 
 
@@ -52,7 +60,8 @@ async def update_single_device(device_id: str, updated: DeviceUpdate):
         device_hid=device_id,
         name=updated.name,
         timezone=updated.timezone,
-        front_button=updated.frontButton
+        front_button=updated.frontButton,
+        recipe_id=updated.currentRecipe
     )
     devices = await KronosDevices.get(device_hid=device_id)
     device = devices[0]
@@ -74,6 +83,19 @@ async def update_single_device(device_id: str, updated: DeviceUpdate):
             gateway_id=device.gatewayHid,
             device_id=device_id,
             enable=updated.frontButton)
+
+    if updated.currentRecipe is not None:
+        recipe_results = await StoredRecipe.get(recipe_id=updated.currentRecipe)
+        if len(recipe_results) > 0:
+            recipe = recipe_results[0]
+            await router.client.send_cmd_budget(
+                gateway_id=device.gatewayHid,
+                device_id=device_id,
+                recipe_id=recipe.id,
+                tbsp_per_feeding=recipe.tbsp_per_feeding,
+                g_per_tbsp=recipe.g_per_tbsp,
+                budget_tbsp=recipe.budget_tbsp
+            )
 
     return device
 
@@ -108,6 +130,18 @@ async def get_history(device_id: str, size: int = 10, page: int = 1):
     )
 
 
+@router.post("/{device_id}/hopper", response_model=HopperLevel)
+async def set_hopper_level_reference(device_id: str, level: HopperLevel):
+    await HopperLevelRef.set(device_id=device_id, level=level.level)
+    return {"level": level.level}
+
+
+@router.get("/{device_id}/hopper", response_model=HopperLevel)
+async def get_hopper_level(device_id: str):
+    level = await HopperLevelRef.get(device_id)
+    return {"level": level}
+
+
 @router.post("/{device_id}/restart", response_model=GenericResponse)
 async def restart_feeder(device_id: str):
     devices = await KronosDevices.get(device_hid=device_id)
@@ -116,9 +150,56 @@ async def restart_feeder(device_id: str):
     await router.client.send_cmd_reboot(gateway_id=device.gatewayHid, device_id=device_id)
 
 
-@router.post("/{gateway_id}/{device_id}/feed", response_model=GenericResponse)
+@router.post("/{device_id}/feed", response_model=GenericResponse)
 async def trigger_feeding(device_id: str, feed: TriggerFeeding):
     devices = await KronosDevices.get(device_hid=device_id)
     device = devices[0]
     logging.debug("Dispensing %f cups of food from %s", feed.portion, device_id)
     await router.client.send_cmd_feed(gateway_id=device.gatewayHid, device_id=device_id, portion=feed.portion)
+
+
+@router.get("/{device_id}/recipe", response_model=Recipe)
+async def get_current_recipe(device_id: str):
+    devices = await KronosDevices.get(device_hid=device_id)
+    device = devices[0]
+    if not device.currentRecipe:
+        raise HTTPException(400, detail="No recipe set for this device!")
+    recipe = await StoredRecipe.get(recipe_id=device.currentRecipe)
+    return recipe[0]
+
+
+@router.put("/{device_id}/recipe", response_model=Recipe)
+async def create_or_update_recipe(device_id: str, recipe: Recipe):
+    devices = await KronosDevices.get(device_hid=device_id)
+    device = devices[0]
+    if not device.currentRecipe:
+        logger.debug("Setting initial recipe for feeder: %s", device_id)
+        new_recipe = await StoredRecipe.create(
+            g_per_tbsp=recipe.g_per_tbsp,
+            tbsp_per_feeding=recipe.tbsp_per_feeding,
+            name=recipe.name,
+            budget_tbsp=recipe.budget_tbsp
+        )
+        await KronosDevices.update(device_hid=device_id, recipe_id=new_recipe)
+        results = await StoredRecipe.get(recipe_id=new_recipe)
+    else:
+        logger.debug("Updating recipe for feeder: %s", device_id)
+        await StoredRecipe.update(
+            recipe_id=device.currentRecipe,
+            g_per_tbsp=recipe.g_per_tbsp,
+            tbsp_per_feeding=recipe.tbsp_per_feeding,
+            name=recipe.name,
+            budget_tbsp=recipe.budget_tbsp
+        )
+        results = await StoredRecipe.get(recipe_id=device.currentRecipe)
+
+    target_recipe = results[0]
+    await router.client.send_cmd_budget(
+        gateway_id=device.gatewayHid,
+        device_id=device.hid,
+        recipe_id=target_recipe.id,
+        tbsp_per_feeding=target_recipe.tbsp_per_feeding,
+        g_per_tbsp=target_recipe.g_per_tbsp,
+        budget_tbsp=target_recipe.budget_tbsp
+    )
+    return target_recipe

@@ -8,7 +8,7 @@ import Col from "react-bootstrap/Col";
 import ToggleButton from "react-bootstrap/ToggleButton";
 import ToggleButtonGroup from "react-bootstrap/ToggleButtonGroup";
 import Form from "react-bootstrap/Form"
-import {mdiRestart, mdiDelete, mdiCheck, mdiWindowClose} from '@mdi/js';
+import {mdiRestart, mdiDelete, mdiCheck} from '@mdi/js';
 import Icon from "@mdi/react";
 import {ianaTimeZones} from "../constants";
 

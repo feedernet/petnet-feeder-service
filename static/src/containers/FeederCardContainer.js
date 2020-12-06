@@ -13,6 +13,8 @@ import {triggerFeedingAction} from "../actions/triggerFeeding";
 import {formatUnixTimestamp, isStale} from "../util";
 import {restartFeederAction} from "../actions/restartFeeder";
 import {deleteFeederAction} from "../actions/deleteFeeder";
+import {showFeederWizard} from "../actions/newFeederWizard";
+import {NewFeederCardComponent} from "../components/NewFeederCard";
 
 class FeederCardContainer extends React.Component {
     state = {
@@ -82,7 +84,6 @@ class FeederCardContainer extends React.Component {
 
     dispense() {
         this.props.dispatchTriggerFeeding(
-            this.props.feeder.gatewayHid,
             this.props.feeder.hid,
             this.state.snackModalPortion
         ).then(() => {
@@ -114,22 +115,32 @@ class FeederCardContainer extends React.Component {
         // Check last seen date or show registration date.
         const lastPing = this.state.feeder.lastPingedAt ? this.state.feeder.lastPingedAt : this.state.feeder.discoveredAt
         const lastPingDate = formatUnixTimestamp(lastPing)
-        const stale = isStale(lastPing)
+        // Has the feeder sent a heartbeat in the last two minutes or is it actively connected to the broker?
+        const connected = this.state.feeder.connected || !isStale(lastPing)
         // This is to cover the case where we need to disable the buttons and telemetry
         // for devices that have registered themselves but not yet connected to MQTT
-        const justDiscovered = !stale && this.state.feeder.lastPingedAt === 0 || this.state.feeder.lastPingedAt === null
+        const justDiscovered = connected && (this.state.feeder.lastPingedAt === 0 || this.state.feeder.lastPingedAt === null)
 
         return <>
-            <FeederCardComponent
-                key={this.props.feeder.hid}
-                feeder={this.state.feeder}
-                telemetry={this.state.telemetry}
-                isStale={stale}
-                isJustDiscovered={justDiscovered}
-                lastPing={lastPingDate}
-                showSnackModal={() => this.setState({snackModal: true})}
-                showEditModal={() => this.setState({editModal: true})}
-            />
+            {
+                this.props.feeder.currentRecipe === null ?
+                    <NewFeederCardComponent
+                        key={this.props.feeder.hid}
+                        feeder={this.state.feeder}
+                        showNewFeederWizard={() => this.props.dispatchShowNewFeederWizard(this.props.feeder.hid)}
+                    /> :
+                    <FeederCardComponent
+                        key={this.props.feeder.hid}
+                        feeder={this.state.feeder}
+                        telemetry={this.state.telemetry}
+                        isStale={!connected}
+                        isJustDiscovered={justDiscovered}
+                        lastPing={lastPingDate}
+                        showSnackModal={() => this.setState({snackModal: true})}
+                        showEditModal={() => this.setState({editModal: true})}
+                    />
+            }
+
             <SnackModalComponent
                 show={this.state.snackModal}
                 handleClose={() => this.setState({snackModal: false})}
@@ -141,7 +152,7 @@ class FeederCardContainer extends React.Component {
             />
             <EditFeederModalComponent
                 show={this.state.editModal}
-                isStale={stale}
+                isStale={!connected}
                 isJustDiscovered={justDiscovered}
                 handleClose={() => this.setState({editModal: false})}
                 name={this.state.modFeederName}
@@ -183,6 +194,7 @@ FeederCardContainer.propTypes = {
     dispatchModifyFeeder: PropTypes.func,
     dispatchRestartFeeder: PropTypes.func,
     dispatchDeleteFeeder: PropTypes.func,
+    dispatchShowNewFeederWizard: PropTypes.func,
     restartFeederState: PropTypes.object,
     deleteFeederState: PropTypes.object
 };
@@ -190,7 +202,13 @@ FeederCardContainer.propTypes = {
 const FeederCard = withRouter(connect(
     (state) => {
         const {getFeederDevicesState, getFeederTelemetryState, modifyFeederState, restartFeederState, deleteFeederState} = state;
-        return {getFeederDevicesState, getFeederTelemetryState, modifyFeederState, restartFeederState, deleteFeederState};
+        return {
+            getFeederDevicesState,
+            getFeederTelemetryState,
+            modifyFeederState,
+            restartFeederState,
+            deleteFeederState
+        };
     }, (dispatch) => {
         return {
             dispatchGetFeeders() {
@@ -199,8 +217,8 @@ const FeederCard = withRouter(connect(
             dispatchGetFeederTelemetry(deviceId) {
                 return dispatch(getFeederTelemetryAction(deviceId))
             },
-            dispatchTriggerFeeding(gatewayId, deviceId, portion) {
-                return dispatch(triggerFeedingAction(gatewayId, deviceId, portion))
+            dispatchTriggerFeeding(deviceId, portion) {
+                return dispatch(triggerFeedingAction(deviceId, portion))
             },
             dispatchModifyFeeder(deviceId, name, timezone, frontButton) {
                 return dispatch(modifyFeederAction(deviceId, name, timezone, frontButton))
@@ -210,6 +228,9 @@ const FeederCard = withRouter(connect(
             },
             dispatchDeleteFeeder(deviceId) {
                 return dispatch(deleteFeederAction(deviceId))
+            },
+            dispatchShowNewFeederWizard(deviceId) {
+                return dispatch(showFeederWizard(deviceId))
             }
         };
     }

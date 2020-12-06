@@ -11,7 +11,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from feeder import settings
-from feeder.api.routers import kronos, feeder
+from feeder.api.routers import kronos, feeder, pet
 from feeder.config import LOGGING_CONFIG
 from feeder.util.mqtt import FeederClient, FeederBroker
 from feeder.util.mkcert import generate_self_signed_certificate, domain_in_subjects
@@ -45,8 +45,13 @@ frontend_template = Jinja2Templates(directory="static/build")
 loop = asyncio.get_event_loop()
 loop.set_exception_handler(handle_exception)
 client = FeederClient()
-feeder.router.client = client
 broker = FeederBroker()
+
+mqtt_enabled_routers = [feeder, pet]
+for mqtt_router in mqtt_enabled_routers:
+    mqtt_router.router.client = client
+    mqtt_router.router.broker = broker
+
 
 app = FastAPI(
     title=settings.app_name,
@@ -59,6 +64,7 @@ if frontend.exists():
     app.mount(f"{settings.app_root}/build", StaticFiles(directory="./static/build", html=True), name="static")
 app.include_router(kronos.router, prefix="/api/v1/kronos")
 app.include_router(feeder.router, prefix=f"{settings.app_root}/api/v1/feeder")
+app.include_router(pet.router, prefix=f"{settings.app_root}/api/v1/pet")
 
 
 @app.get("/testing", response_class=HTMLResponse)
