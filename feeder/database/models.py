@@ -450,6 +450,7 @@ class HopperLevelRef:
         # Kenny thinks it is a 40 cup hopper based on measurements... I'm not about to cover myself
         # in cat food to prove him right or wrong.
         max_hopper_cups = 40
+        tbsp_per_cup = 16
 
         device_results = await KronosDevices.get(device_hid=device_id)
         device = device_results[0]
@@ -480,12 +481,12 @@ class HopperLevelRef:
         recipe = await db.fetch_one(recipe_query)
         if not recipe:
             raise HTTPException(400, detail="No recipe set for device, cannot calculate hopper level!")
-        dispensed_cups = (dispensed_grams / recipe.g_per_tbsp) / 16
+        dispensed_cups = (dispensed_grams / recipe.g_per_tbsp) / tbsp_per_cup
         logger.debug("Using recipeId (%d), at %d g/tbsp, that is %f cups", recipe.id, recipe.g_per_tbsp, dispensed_cups)
         ref_level_cups = (latest_ref.level / 100) * max_hopper_cups
         current_cups = ref_level_cups - dispensed_cups
         logger.debug("%f cups minus %f cups equals %f cups remaining", ref_level_cups, dispensed_cups, current_cups)
-        return (current_cups / 40) * 100
+        return (current_cups / max_hopper_cups) * 100
 
     @classmethod
     async def set(cls, *, device_id: str, level: int):

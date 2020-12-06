@@ -85,7 +85,6 @@ async def update_single_device(device_id: str, updated: DeviceUpdate):
             enable=updated.frontButton)
 
     if updated.currentRecipe is not None:
-        print()
         recipe_results = await StoredRecipe.get(recipe_id=updated.currentRecipe)
         if len(recipe_results) > 0:
             recipe = recipe_results[0]

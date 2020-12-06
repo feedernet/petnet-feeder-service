@@ -19,8 +19,8 @@ export const setRecipeAction = (deviceId, g_per_tbsp = null, tbsp_per_feeding = 
         endpoint: meta.endpoint,
         types: [
             {type: createRecipe.CREATE_RECIPE, meta},
-            {type: createRecipe.CREATE_RECIPE, meta},
-            {type: createRecipe.CREATE_RECIPE, meta},
+            {type: createRecipe.CREATE_RECIPE_SUCCESS, meta},
+            {type: createRecipe.CREATE_RECIPE_FAILURE, meta},
         ],
         method: meta.method,
         credentials: 'include',

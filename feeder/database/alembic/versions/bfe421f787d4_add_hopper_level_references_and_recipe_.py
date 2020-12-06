@@ -1,4 +1,4 @@
-"""Add hopped level references and recipe table
+"""Add hopper level references and recipe table
 
 Revision ID: bfe421f787d4
 Revises: 8d04dcb08c5e
