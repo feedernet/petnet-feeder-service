@@ -447,9 +447,10 @@ hopper_level_references = Table(
 class HopperLevelRef:
     @classmethod
     async def get(cls, device_id):
-        # Kenny thinks it is a 40 cup hopper based on measurements... I'm not about to cover myself
-        # in cat food to prove him right or wrong.
-        max_hopper_cups = 40
+        # Fun fact: according to my napkin math, if you measured Jeff Bezos'
+        # wealth in rice like that viral TikTok, you could fit ~14% of it
+        # in the hopper of your smart pet feeder.
+        max_hopper_cups = 20.5
         tbsp_per_cup = 16
 
         device_results = await KronosDevices.get(device_hid=device_id)
