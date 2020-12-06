@@ -22,7 +22,7 @@ export const HopperLevelFormComponent = function (props) {
     return (
         <Formik
             initialValues={{
-                "level": 50
+                "level": props.hasOwnProperty("initialLevel") ? props.initialLevel : 50
             }}
             validationSchema={validationSchema}
             onSubmit={props.handleFormSubmit}
@@ -33,7 +33,9 @@ export const HopperLevelFormComponent = function (props) {
                   handleSubmit,
                   setFieldValue
               }) => {
-                props.handleRegisterFormSubmit(handleSubmit)
+                if (props.handleRegisterFormSubmit) {
+                    props.handleRegisterFormSubmit(handleSubmit)
+                }
                 return (
                     <form>
                         <Row className={"mt-4"}>
@@ -44,8 +46,16 @@ export const HopperLevelFormComponent = function (props) {
                                         max={100}
                                         step={5}
                                         onChange={(activity) => setFieldValue("level", activity)}
+                                        onAfterChange={() => {
+                                            if (props.submitAfterChange !== null && props.submitAfterChange) {
+                                                handleSubmit()
+                                            }
+                                        }}
                                         value={values.level}
                                         marks={levelMarks}
+                                        trackStyle={{backgroundColor: "#513C2C"}}
+                                        handleStyle={{borderColor: "#513C2C"}}
+                                        activeDotStyle={{borderColor: "#513C2C"}}
                                     />
                                     {errors.level ?
                                         <Form.Control.Feedback type="invalid">

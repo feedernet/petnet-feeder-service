@@ -51,13 +51,15 @@ export const displaySizes = {
 
 export const FoodVolumeSlider = function (props) {
     return (
-        <div className={"my-4 mx-2"}>
+        <div className={"my-4"}>
             <Slider
+                defaultValue={props.hasOwnProperty("defaultValue") ? props.defaultValue : 0.0625}
                 min={0.0625}
                 max={2}
                 step={0.0625}
                 marks={marks}
-                onChange={props.onChange}
+                onChange={props.hasOwnProperty("onChange") ? props.onChange : () => {}}
+                onAfterChange={props.hasOwnProperty("onAfterChange") ? props.onAfterChange : () => {}}
             />
         </div>
     )

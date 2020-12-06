@@ -1,7 +1,6 @@
 import React from "react";
 import Modal from "react-bootstrap/Modal";
-import Button from "react-bootstrap/Button"
-import Slider from "rc-slider";
+import Button from "react-bootstrap/Button";
 import 'rc-slider/assets/index.css';
 import {FoodVolumeSlider, displaySizes} from "./FoodVolumeSlider";
 
@@ -17,7 +16,9 @@ export const SnackModalComponent = function (props) {
                 <h1 style={{textAlign: "center"}}>
                     {displaySizes[props.currentPortion]} {props.currentPortion > 1 ? "cups" : "cup"}
                 </h1>
-                <FoodVolumeSlider onChange={(amount) => props.setPortion(amount)}/>
+                <div className={"mx-3"}>
+                    <FoodVolumeSlider defaultValue={props.currentPortion} onChange={(amount) => props.setPortion(amount)}/>
+                </div>
             </Modal.Body>
             <Modal.Footer>
                 <Button variant="secondary" onClick={props.handleClose}>
