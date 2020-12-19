@@ -12,7 +12,8 @@ RUN apk add --no-cache --virtual .build-deps \
         libffi-dev \
         openssl-dev \
         py3-pip \
-        python3-dev
+        python3-dev \
+        git
 RUN pip install pipenv
 WORKDIR /tmp
 COPY Pipfile* ./
