@@ -17,7 +17,7 @@ export const SnackModalComponent = function (props) {
                     {displaySizes[props.currentPortion]} {props.currentPortion > 1 ? "cups" : "cup"}
                 </h1>
                 <div className={"mx-3"}>
-                    <FoodVolumeSlider defaultValue={props.currentPortion} onChange={(amount) => props.setPortion(amount)}/>
+                    <FoodVolumeSlider value={props.currentPortion} onChange={(amount) => props.setPortion(amount)}/>
                 </div>
             </Modal.Body>
             <Modal.Footer>

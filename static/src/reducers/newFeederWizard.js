@@ -1,19 +1,20 @@
-import {newFeederWizard} from "../constants";
+import {modals} from "../constants";
 
 const newFeederWizardReducer = (state = {show: false, deviceHid: null}, action) => {
     switch (action.type) {
-        case newFeederWizard.SHOW_FEEDER_WIZARD:
+        case modals.SHOW_FEEDER_WIZARD:
             return {
                 show: true,
                 deviceHid: action.deviceHid
             }
-        case newFeederWizard.DISMISS_FEEDER_WIZARD:
+        case modals.DISMISS_FEEDER_WIZARD:
             return {
                 show: false,
                 deviceHid: null
             }
+        default:
+            return state
     }
-    return state
 }
 
 export default newFeederWizardReducer;

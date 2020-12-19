@@ -3,22 +3,15 @@ import PropTypes from "prop-types";
 import {withRouter} from 'react-router-dom';
 import {connect} from "react-redux";
 import {FeederCardComponent} from "../components/FeederCard";
-import {SnackModalComponent} from "../components/SnackModal";
-import {EditFeederModalComponent} from "../components/EditFeederModal";
 import {getFeederDevices} from "../actions/getFeederDevices";
 import {getFeederTelemetryAction} from "../actions/getFeederTelemetry";
-import {modifyFeederAction} from "../actions/modifyFeeder";
 import {feederDeviceShape, feederTelemetryShape} from "../shapes/feeder";
-import {triggerFeedingAction} from "../actions/triggerFeeding";
 import {formatUnixTimestamp, isStale} from "../util";
-import {restartFeederAction} from "../actions/restartFeeder";
-import {deleteFeederAction} from "../actions/deleteFeeder";
 import {showFeederWizard} from "../actions/newFeederWizard";
 import {NewFeederCardComponent} from "../components/NewFeederCard";
-import {setHopperLevelAction} from "../actions/setHopperLevel";
-import {getHopperLevelAction} from "../actions/getHopperLevel";
 import {getRecipeAction} from "../actions/getRecipe";
-import {setRecipeAction} from "../actions/setRecipe";
+import {showSnackModal} from "../actions/snackModal";
+import {showEditFeederModal} from "../actions/editFeederModal";
 
 class FeederCardContainer extends React.Component {
     state = {
@@ -36,12 +29,6 @@ class FeederCardContainer extends React.Component {
     constructor(props) {
         super(props);
         this.refreshFeederTelemetry = this.refreshFeederTelemetry.bind(this)
-        this.handleSubmitChange = this.handleSubmitChange.bind(this)
-        this.dispense = this.dispense.bind(this)
-        this.handleDeleteDevice = this.handleDeleteDevice.bind(this)
-        this.handleRestartDevice = this.handleRestartDevice.bind(this)
-        this.handleSetHopperLevel = this.handleSetHopperLevel.bind(this)
-        this.handleSetManualFeedPortion = this.handleSetManualFeedPortion.bind(this)
         this.state.feeder = props.feeder
     }
 
@@ -54,11 +41,7 @@ class FeederCardContainer extends React.Component {
             const rcpState = this.props.getRecipeState
             if (!rcpState._requestFailed && this.state.feeder.hid in rcpState.recipes) {
                 const inTbsp = rcpState.recipes[this.state.feeder.hid]["tbsp_per_feeding"] / 16
-                this.setState({
-                    snackModalPortion: inTbsp,
-                    manualFeedPortion: inTbsp
-                }, () => console.log(this.state))
-
+                this.setState({manualFeedPortion: inTbsp})
             }
         })
     }
@@ -81,68 +64,6 @@ class FeederCardContainer extends React.Component {
                     telemetry: this.props.getFeederTelemetryState.data
                 })
             }
-        })
-    }
-
-    handleSubmitChange(closeModal = true) {
-        this.props.dispatchModifyFeeder(
-            this.props.feeder.hid,
-            this.state.modFeederName,
-            this.state.feeder.timezone,
-            this.state.feeder.frontButton
-        ).then(() => {
-            if (!this.props.modifyFeederState._requestFailed) {
-                this.setState({
-                    feeder: this.props.modifyFeederState.device,
-                    editModal: !closeModal
-                })
-            }
-        })
-    }
-
-    dispense() {
-        this.props.dispatchTriggerFeeding(
-            this.props.feeder.hid,
-            this.state.snackModalPortion
-        ).then(() => {
-            this.setState({snackModal: false})
-        })
-    }
-
-    handleDeleteDevice() {
-        this.props.dispatchDeleteFeeder(this.state.feeder.hid).then(() => {
-            if (!this.props.deleteFeederState._requestFailed) {
-                this.setState({
-                    showConfirmDelete: false
-                })
-            }
-        })
-    }
-
-    handleRestartDevice() {
-        this.props.dispatchRestartFeeder(this.state.feeder.hid).then(() => {
-            if (!this.props.restartFeederState._requestFailed) {
-                this.setState({
-                    editModal: false
-                })
-            }
-        })
-    }
-
-    handleSetHopperLevel(values, actions) {
-        this.props.dispatchSetHopperLevel(this.state.feeder.hid, values.level).then(() => {
-            this.props.dispatchGetHopperLevel(this.state.feeder.hid)
-        })
-    }
-
-    handleSetManualFeedPortion(portion) {
-        const tbsp_in_cup = 16
-        this.props.dispatchSetRecipe(this.state.feeder.hid, portion * tbsp_in_cup).then(() => {
-            this.props.dispatchGetRecipe(this.state.feeder.hid)
-            this.setState({
-                snackModalPortion: portion,
-                manualFeedPortion: portion
-            })
         })
     }
 
@@ -171,55 +92,14 @@ class FeederCardContainer extends React.Component {
                         isStale={!connected}
                         isJustDiscovered={justDiscovered}
                         lastPing={lastPingDate}
-                        showSnackModal={() => this.setState({snackModal: true})}
-                        showEditModal={() => this.setState({editModal: true})}
+                        showSnackModal={() => this.props.dispatchShowSnackModal(
+                            this.props.feeder.hid, this.state.manualFeedPortion
+                        )}
+                        showEditModal={() => this.props.dispatchShowEditFeederModal(
+                            this.props.feeder, this.state.manualFeedPortion
+                        )}
                     />
             }
-
-            <SnackModalComponent
-                show={this.state.snackModal}
-                handleClose={() => this.setState({snackModal: false})}
-                handleDispense={this.dispense}
-                currentPortion={this.state.snackModalPortion}
-                setPortion={(portion) => {
-                    this.setState({snackModalPortion: portion})
-                }}
-            />
-            <EditFeederModalComponent
-                show={this.state.editModal}
-                isStale={!connected}
-                isJustDiscovered={justDiscovered}
-                handleClose={() => this.setState({editModal: false})}
-                name={this.state.modFeederName}
-                timezone={this.state.feeder.timezone}
-                frontButtonEnabled={this.state.feeder.frontButton}
-                handleNameChange={(name) => this.setState({modFeederName: name.target.value})}
-                handleTimezoneChange={(event) => {
-                    event.persist();
-                    this.setState(prevState => ({
-                        feeder: {...prevState.feeder, timezone: event.target.value}
-                    }), () => {
-                        this.handleSubmitChange(false)
-                    })
-                }}
-                handleFrontButtonChange={(event) => {
-                    event.persist();
-                    this.setState(prevState => ({
-                        feeder: {...prevState.feeder, frontButton: event.target.value === "true"}
-                    }), () => {
-                        this.handleSubmitChange(false)
-                    })
-                }}
-                handleRestart={this.handleRestartDevice}
-                handleSubmit={this.handleSubmitChange}
-                handleDelete={this.handleDeleteDevice}
-                toggleConfirmDelete={(show) => this.setState({showConfirmDelete: show, editModal: !show})}
-                showConfirmDelete={this.state.showConfirmDelete}
-                hopperLevel={this.props.getHopperLevelState.levels[this.state.feeder.hid]}
-                setHopperLevel={this.handleSetHopperLevel}
-                recipeServing={this.state.manualFeedPortion}
-                handleSetRecipeServing={this.handleSetManualFeedPortion}
-            />
         </>
     }
 }
@@ -228,18 +108,8 @@ FeederCardContainer.propTypes = {
     feeder: feederDeviceShape,
     getFeederTelemetryState: feederTelemetryShape,
     dispatchGetFeederTelemetry: PropTypes.func,
-    dispatchTriggerFeeding: PropTypes.func,
-    modifyFeederState: feederDeviceShape,
-    dispatchModifyFeeder: PropTypes.func,
-    dispatchRestartFeeder: PropTypes.func,
-    dispatchDeleteFeeder: PropTypes.func,
-    dispatchShowNewFeederWizard: PropTypes.func,
-    dispatchSetHopperLevel: PropTypes.func,
-    dispatchGetHopperLevel: PropTypes.func,
-    dispatchGetRecipe: PropTypes.func,
-    restartFeederState: PropTypes.object,
-    deleteFeederState: PropTypes.object,
-    getHopperLevelState: PropTypes.object,
+    dispatchShowSnackModal: PropTypes.func,
+    dispatchShowEditFeederModal: PropTypes.func,
     getRecipeState: PropTypes.object
 };
 
@@ -248,19 +118,11 @@ const FeederCard = withRouter(connect(
         const {
             getFeederDevicesState,
             getFeederTelemetryState,
-            modifyFeederState,
-            restartFeederState,
-            deleteFeederState,
-            getHopperLevelState,
             getRecipeState
         } = state;
         return {
             getFeederDevicesState,
             getFeederTelemetryState,
-            modifyFeederState,
-            restartFeederState,
-            deleteFeederState,
-            getHopperLevelState,
             getRecipeState
         };
     }, (dispatch) => {
@@ -271,32 +133,17 @@ const FeederCard = withRouter(connect(
             dispatchGetFeederTelemetry(deviceId) {
                 return dispatch(getFeederTelemetryAction(deviceId))
             },
-            dispatchTriggerFeeding(deviceId, portion) {
-                return dispatch(triggerFeedingAction(deviceId, portion))
-            },
-            dispatchModifyFeeder(deviceId, name, timezone, frontButton) {
-                return dispatch(modifyFeederAction(deviceId, name, timezone, frontButton))
-            },
-            dispatchRestartFeeder(deviceId) {
-                return dispatch(restartFeederAction(deviceId))
-            },
-            dispatchDeleteFeeder(deviceId) {
-                return dispatch(deleteFeederAction(deviceId))
-            },
             dispatchShowNewFeederWizard(deviceId) {
                 return dispatch(showFeederWizard(deviceId))
-            },
-            dispatchSetHopperLevel(deviceId, level) {
-                return dispatch(setHopperLevelAction(deviceId, level))
-            },
-            dispatchGetHopperLevel(deviceId) {
-                return dispatch(getHopperLevelAction(deviceId))
             },
             dispatchGetRecipe(deviceId) {
                 return dispatch(getRecipeAction(deviceId))
             },
-            dispatchSetRecipe(deviceId, tbsp_per_feeding = null) {
-                return dispatch(setRecipeAction(deviceId, null, tbsp_per_feeding, null, null))
+            dispatchShowSnackModal(deviceId, defaultPortion) {
+                return dispatch(showSnackModal(deviceId, defaultPortion))
+            },
+            dispatchShowEditFeederModal(feeder, defaultPortion) {
+                return dispatch(showEditFeederModal(feeder, defaultPortion))
             }
         };
     }
