@@ -37,6 +37,7 @@ class EditFeederModalContainer extends React.Component {
         if (prevProps.editFeederModalState.feeder.hid !== this.props.editFeederModalState.feeder.hid) {
             this.setState({
                 feeder,
+                manualFeedPortion: this.props.editFeederModalState.defaultPortion
             })
             if (this.hopperLevelValue) {
                 this.hopperLevelValue("level", this.props.getHopperLevelState.levels[feeder.hid])

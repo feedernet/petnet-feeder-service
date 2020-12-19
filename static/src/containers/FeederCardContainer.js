@@ -55,6 +55,15 @@ class FeederCardContainer extends React.Component {
         ) {
             this.setState({feeder: this.props.feeder})
         }
+
+        // If the recipe for this feeder is edited, we need to update
+        // the default portion in our state.
+        const rcpState = this.props.getRecipeState
+        if (
+            this.state.feeder.hid in rcpState.recipes &&
+            this.state.manualFeedPortion !== (rcpState.recipes[this.state.feeder.hid].tbsp_per_feeding / 16)) {
+            this.setState({manualFeedPortion: rcpState.recipes[this.state.feeder.hid].tbsp_per_feeding / 16})
+        }
     }
 
     refreshFeederTelemetry() {
