@@ -6,6 +6,7 @@ import pytz
 from fastapi import HTTPException
 from sqlite3 import IntegrityError
 
+from feeder import settings
 from feeder.api.models.kronos import Device, DeviceTelemetry, DeviceUpdate
 from feeder.util.feeder import APIRouterWithMQTTClient, paginate_response, check_connection
 from feeder.database.models import KronosDevices, DeviceTelemetryData, FeedingResult, HopperLevelRef, StoredRecipe
@@ -14,7 +15,8 @@ from feeder.api.models.feeder import (
     GenericResponse,
     FeedHistory,
     HopperLevel,
-    Recipe
+    Recipe,
+    RawMQTTMessage
 )
 
 logger = logging.getLogger(__name__)
@@ -97,7 +99,7 @@ async def update_single_device(device_id: str, updated: DeviceUpdate):
                 budget_tbsp=recipe.budget_tbsp
             )
 
-    return device
+    return check_connection(device, router.broker)
 
 
 @router.delete("/{device_id}")
@@ -156,6 +158,15 @@ async def trigger_feeding(device_id: str, feed: TriggerFeeding):
     device = devices[0]
     logging.debug("Dispensing %f cups of food from %s", feed.portion, device_id)
     await router.client.send_cmd_feed(gateway_id=device.gatewayHid, device_id=device_id, portion=feed.portion)
+
+
+@router.post("/{device_id}/raw")
+async def publish_raw_message(device_id: str, message: RawMQTTMessage):
+    if not settings.debug:
+        raise HTTPException(403, detail="Raw communication only available in DEBUG mode!")
+    devices = await KronosDevices.get(device_hid=device_id)
+    device = devices[0]
+    await router.client.send_cmd(device.gatewayHid, device.hid, message.command, message.args)
 
 
 @router.get("/{device_id}/recipe", response_model=Recipe)
