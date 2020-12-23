@@ -47,3 +47,8 @@ class Recipe(BaseModel):
     tbsp_per_feeding: Optional[int]
     g_per_tbsp: Optional[int]
     budget_tbsp: Optional[int]
+
+
+class RawMQTTMessage(BaseModel):
+    command: str
+    args: dict = {}

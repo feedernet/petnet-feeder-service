@@ -36,6 +36,9 @@ export const HopperLevelFormComponent = function (props) {
                 if (props.handleRegisterFormSubmit) {
                     props.handleRegisterFormSubmit(handleSubmit)
                 }
+                if (props.handleRegisterSetFieldValue) {
+                    props.handleRegisterSetFieldValue(setFieldValue)
+                }
                 return (
                     <form>
                         <Row className={"mt-4"}>

@@ -14,6 +14,8 @@ import getHopperLevelReducer from "./getHopperLevel";
 import setRecipeReducer from "./setRecipe";
 import newFeederWizardReducer from "./newFeederWizard";
 import getRecipeReducer from "./getRecipe";
+import snackModalReducer from "./snackModal";
+import editFeederModalReducer from "./editFeederModal";
 
 export default combineReducers({
     getFeederDevicesState: getFeederDevicesReducer,
@@ -30,5 +32,7 @@ export default combineReducers({
     getHopperLevelState: getHopperLevelReducer,
     setRecipeState: setRecipeReducer,
     newFeederWizardState: newFeederWizardReducer,
-    getRecipeState: getRecipeReducer
+    getRecipeState: getRecipeReducer,
+    snackModalState: snackModalReducer,
+    editFeederModalState: editFeederModalReducer
 })

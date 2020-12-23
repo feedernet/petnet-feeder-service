@@ -18,7 +18,7 @@ export const EditFeederModalComponent = function (props) {
     const zoneOptions = ianaTimeZones.map((tz) => <option value={tz}>{tz}</option>)
     return (
         <>
-            <Modal show={props.show} onHide={props.handleClose} centered>
+            <Modal show={props.show && !props.showConfirmDelete} onHide={props.handleClose} centered>
                 <Modal.Header closeButton>
                     <Modal.Title>Edit Feeder</Modal.Title>
                 </Modal.Header>
@@ -46,19 +46,19 @@ export const EditFeederModalComponent = function (props) {
                                     type="radio"
                                     name="options"
                                     defaultValue={props.frontButtonEnabled} style={{width: "100%"}}
-                                    onClick={props.isStale || props.isJustDiscovered ? null : props.handleFrontButtonChange}
+                                    onClick={props.isStale ? null : props.handleFrontButtonChange}
                                 >
                                     <ToggleButton
                                         value={true}
                                         variant={!props.frontButtonEnabled ? "light" : "success"}
-                                        disabled={props.isStale || props.isJustDiscovered}
+                                        disabled={props.isStale}
                                     >
                                         On
                                     </ToggleButton>
                                     <ToggleButton
                                         value={false}
                                         variant={props.frontButtonEnabled || props.frontButtonEnabled === null ? "light" : "danger"}
-                                        disabled={props.isStale || props.isJustDiscovered}
+                                        disabled={props.isStale}
                                     >
                                         Off
                                     </ToggleButton>
@@ -72,7 +72,7 @@ export const EditFeederModalComponent = function (props) {
                                     as="select"
                                     value={props.timezone}
                                     onChange={props.handleTimezoneChange}
-                                    disabled={props.isStale || props.isJustDiscovered}
+                                    disabled={props.isStale}
                                 >
                                     {zoneOptions}
                                 </Form.Control>
@@ -86,6 +86,7 @@ export const EditFeederModalComponent = function (props) {
                                         submitAfterChange
                                         handleFormSubmit={props.setHopperLevel}
                                         initialLevel={props.hopperLevel}
+                                        handleRegisterSetFieldValue={props.handleRegisterHopperLevelControl}
                                     />
                                 </div>
                             </Form.Group>
@@ -98,7 +99,12 @@ export const EditFeederModalComponent = function (props) {
                                     you press the front button.
                                 </Form.Text>
                                 <div className={"mx-3"}>
-                                    <FoodVolumeSlider onAfterChange={props.handleSetRecipeServing} defaultValue={props.recipeServing}/>
+                                    <FoodVolumeSlider
+                                        onChange={(portion) => props.handleSetRecipeServing(portion, false)}
+                                        onAfterChange={(portion) => props.handleSetRecipeServing(portion, true)}
+                                        value={props.recipeServing}
+                                        disabled={props.isStale}
+                                    />
                                 </div>
                             </Form.Group>
                         </Col>
@@ -116,7 +122,7 @@ export const EditFeederModalComponent = function (props) {
                                 variant="warning"
                                 onClick={props.handleRestart}
                                 style={{width: "100%"}}
-                                disabled={props.isStale || props.isJustDiscovered}
+                                disabled={props.isStale}
                             >
                                 <Icon path={mdiRestart} size={.75}/> Restart
                             </Button>
