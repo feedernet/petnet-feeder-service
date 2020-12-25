@@ -5,6 +5,7 @@ import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
 import FeederLight from "../images/feeder_white.png";
+import FeederDark from "../images/feeder_black.png";
 import {feederDeviceShape, feederTelemetryShape} from "../shapes/feeder";
 import Icon from '@mdi/react'
 import {
@@ -44,7 +45,7 @@ export const FeederCardComponent = function (props) {
                     <Row style={{alignItems: "center"}}>
                         <Col md={12} lg={2}>
                             <img
-                                src={FeederLight}
+                                src={props.feeder.black ? FeederDark : FeederLight}
                                 alt={"feeder"}
                                 style={{
                                     maxHeight: 250,

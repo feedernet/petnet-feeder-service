@@ -51,7 +51,8 @@ class FeederCardContainer extends React.Component {
             this.props.feeder.lastPingedAt !== prevProps.feeder.lastPingedAt ||
             this.props.feeder.name !== prevProps.feeder.name ||
             this.props.feeder.timezone !== prevProps.feeder.timezone ||
-            this.props.feeder.frontButton !== prevProps.feeder.frontButton
+            this.props.feeder.frontButton !== prevProps.feeder.frontButton ||
+            this.props.feeder.black !== prevProps.feeder.black
         ) {
             this.setState({feeder: this.props.feeder})
         }

@@ -84,7 +84,8 @@ devices = Table(
     Column("lastPingedAt", Integer(), nullable=True),
     Column("timezone", Text(), nullable=True),
     Column("frontButton", Boolean(), nullable=True),
-    Column("currentRecipe", Integer(), ForeignKey("recipes.id"), nullable=True)
+    Column("currentRecipe", Integer(), ForeignKey("recipes.id"), nullable=True),
+    Column("black", Boolean(), nullable=True)
 )
 
 
@@ -137,7 +138,7 @@ class KronosDevices:
 
     @classmethod
     async def update(cls, *, device_hid: str, name: str = None, timezone: str = None, front_button: bool = None,
-                     recipe_id: int = None):
+                     recipe_id: int = None, black: bool = None):
         values = {}
         if name is not None:
             values["name"] = name
@@ -147,6 +148,8 @@ class KronosDevices:
             values["frontButton"] = front_button
         if recipe_id is not None:
             values["currentRecipe"] = recipe_id
+        if black is not None:
+            values["black"] = black
         query = devices.update().where(devices.c.hid == device_hid).values(
             **values
         )

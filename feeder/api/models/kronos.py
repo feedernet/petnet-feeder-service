@@ -77,6 +77,7 @@ class Device(NewDevice):
     timezone: Optional[str]
     connected: bool = False
     currentRecipe: Optional[int]
+    black: Optional[bool] = False
 
     class Config:
         orm_mode = True
@@ -87,6 +88,7 @@ class DeviceUpdate(BaseModel):
     timezone: Optional[str]
     frontButton: Optional[bool]
     currentRecipe: Optional[int]
+    black: Optional[bool]
 
 
 class DeviceTelemetry(BaseModel):

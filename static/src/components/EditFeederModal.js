@@ -46,12 +46,12 @@ export const EditFeederModalComponent = function (props) {
                                     type="radio"
                                     name="options"
                                     defaultValue={props.frontButtonEnabled} style={{width: "100%"}}
-                                    onClick={props.isStale ? null : props.handleFrontButtonChange}
                                 >
                                     <ToggleButton
                                         value={true}
                                         variant={!props.frontButtonEnabled ? "light" : "success"}
                                         disabled={props.isStale}
+                                        onClick={props.isStale ? null : (event) => props.handleFrontButtonChange(event, true)}
                                     >
                                         On
                                     </ToggleButton>
@@ -59,6 +59,7 @@ export const EditFeederModalComponent = function (props) {
                                         value={false}
                                         variant={props.frontButtonEnabled || props.frontButtonEnabled === null ? "light" : "danger"}
                                         disabled={props.isStale}
+                                        onClick={props.isStale ? null : (event) => props.handleFrontButtonChange(event, false)}
                                     >
                                         Off
                                     </ToggleButton>
@@ -66,6 +67,31 @@ export const EditFeederModalComponent = function (props) {
                             </div>
                         </Col>
                         <Col xs={12} sm={6} className={"mb-3"}>
+                            <label htmlFor={"feeder-button"}>Device Color</label>
+                            <div>
+                                <ToggleButtonGroup
+                                    type="radio"
+                                    name="options"
+                                    defaultValue={props.isBlack} style={{width: "100%"}}
+                                >
+                                    <ToggleButton
+                                        value={true}
+                                        variant={props.isBlack ? "dark" : "light"}
+                                        onClick={(event) => props.handleColorChange(event, true)}
+                                    >
+                                        Black
+                                    </ToggleButton>
+                                    <ToggleButton
+                                        value={false}
+                                        variant={!props.isBlack || props.isBlack === null ? "secondary" : "light"}
+                                        onClick={(event) => props.handleColorChange(event, false)}
+                                    >
+                                        White
+                                    </ToggleButton>
+                                </ToggleButtonGroup>
+                            </div>
+                        </Col>
+                        <Col xs={12} className={"mb-3"}>
                             <Form.Group controlId="feeder-timezone">
                                 <Form.Label>Timezone</Form.Label>
                                 <Form.Control

@@ -63,7 +63,8 @@ async def update_single_device(device_id: str, updated: DeviceUpdate):
         name=updated.name,
         timezone=updated.timezone,
         front_button=updated.frontButton,
-        recipe_id=updated.currentRecipe
+        recipe_id=updated.currentRecipe,
+        black=updated.black
     )
     devices = await KronosDevices.get(device_hid=device_id)
     device = devices[0]

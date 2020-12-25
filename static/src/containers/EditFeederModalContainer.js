@@ -47,6 +47,7 @@ class EditFeederModalContainer extends React.Component {
 
     updateAndSubmit(event, field, value, closeModal = true) {
         event.persist();
+        event.preventDefault();
         this.setState(prevState => {
             let updatedFeeder = {...prevState.feeder}
             updatedFeeder[field] = value
@@ -61,14 +62,15 @@ class EditFeederModalContainer extends React.Component {
             this.state.feeder.hid,
             this.state.feeder.name,
             this.state.feeder.timezone,
-            this.state.feeder.frontButton
+            this.state.feeder.frontButton,
+            this.state.feeder.black
         ).then(() => {
             if (!this.props.modifyFeederState._requestFailed) {
                 this.setState({
                     feeder: this.props.modifyFeederState.device
                 })
+                this.props.dispatchGetFeeders()
                 if (closeModal) {
-                    this.props.dispatchGetFeeders()
                     this.props.dispatchDismissEditFeederModal()
                 }
             }
@@ -127,6 +129,7 @@ class EditFeederModalContainer extends React.Component {
                 name={this.state.feeder.name}
                 timezone={this.state.feeder.timezone}
                 frontButtonEnabled={this.state.feeder.frontButton}
+                isBlack={this.state.feeder.black}
                 handleNameChange={(event) => {
                     event.persist();
                     this.setState(prevState => ({
@@ -135,7 +138,8 @@ class EditFeederModalContainer extends React.Component {
                 }
                 }
                 handleTimezoneChange={(event) => this.updateAndSubmit(event, "timezone", event.target.value, false)}
-                handleFrontButtonChange={(event) => this.updateAndSubmit(event, "frontButton", event.target.value === "true", false)}
+                handleFrontButtonChange={(event, enabled) => this.updateAndSubmit(event, "frontButton", enabled, false)}
+                handleColorChange={(event, black) => this.updateAndSubmit(event, "black", black, false)}
                 handleRestart={this.handleRestartDevice}
                 handleSubmit={this.handleSubmitChange}
                 handleDelete={this.handleDeleteDevice}
@@ -191,8 +195,8 @@ const EditFeederModal = withRouter(connect(
             dispatchDismissEditFeederModal() {
                 return dispatch(dismissEditFeederModal());
             },
-            dispatchModifyFeeder(deviceId, name, timezone, frontButton) {
-                return dispatch(modifyFeederAction(deviceId, name, timezone, frontButton))
+            dispatchModifyFeeder(deviceId, name, timezone, frontButton, black) {
+                return dispatch(modifyFeederAction(deviceId, name, timezone, frontButton, null, black))
             },
             dispatchRestartFeeder(deviceId) {
                 return dispatch(restartFeederAction(deviceId))
