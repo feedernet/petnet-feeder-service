@@ -72,7 +72,7 @@ export const PetCardComponent = function (props) {
                     }}>{''}</div>
                     let tooltipMessage = `Meal will dispense at ${formattedTime}.`
                     if (accomplished && dispensed && !event.result.fail) {
-                        tooltipMessage = "Meal Dispensed"
+                        tooltipMessage = `Dispensed ${event.result.grams_actual}g`
                         indicator = <img src={MealSuccess} alt={"scheduled meal"} height={24} width={24}
                                          style={{filter: 'drop-shadow(0 2px 4px rgba(0,0,0, 0.5))'}}/>
                     } else if (accomplished && dispensed && event.result.fail) {
@@ -98,7 +98,7 @@ export const PetCardComponent = function (props) {
             </Step>
         )
     })
-    console.log(schedulePcts)
+
     return (
         <Card style={{marginBottom: 20}}>
             <Card.Body>

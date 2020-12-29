@@ -4,9 +4,11 @@ import {withRouter} from 'react-router-dom';
 import {connect} from "react-redux";
 import {PetCardComponent} from "../components/PetCard";
 import {getPetScheduleAction} from "../actions/getPetSchedule";
+import {showSnackModal} from "../actions/snackModal";
 
 class PetCardContainer extends React.Component {
     state = {
+        manualFeedPortion: 0.0625,
         pctDayElapsed: 0,
         events: []
     }
@@ -18,6 +20,19 @@ class PetCardContainer extends React.Component {
 
     componentDidMount() {
         this.refreshSchedule()
+    }
+
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        // If the recipe for this feeder is edited, we need to update
+        // the default portion in our state.
+        const deviceId = this.props.pet.device_hid
+        const rcpState = this.props.getRecipeState
+        if (
+            deviceId in rcpState.recipes &&
+            this.state.manualFeedPortion !== (rcpState.recipes[deviceId].tbsp_per_feeding / 16)
+        ) {
+            this.setState({manualFeedPortion: rcpState.recipes[deviceId].tbsp_per_feeding / 16})
+        }
     }
 
     refreshSchedule() {
@@ -39,6 +54,9 @@ class PetCardContainer extends React.Component {
             pet={this.props.pet}
             pctDayElapsed={this.state.pctDayElapsed}
             events={this.state.events}
+            showSnackModal={
+                () => this.props.dispatchShowSnackModal(this.props.pet.device_hid, this.state.manualFeedPortion)
+            }
         />
     }
 }
@@ -46,17 +64,22 @@ class PetCardContainer extends React.Component {
 PetCardContainer.propTypes = {
     pet: PropTypes.object,
     getPetScheduleState: PropTypes.object,
-    dispatchGetPetSchedule: PropTypes.func
+    getRecipeState: PropTypes.object,
+    dispatchGetPetSchedule: PropTypes.func,
+    dispatchShowSnackModal: PropTypes.func
 };
 
 const PetCard = withRouter(connect(
     (state) => {
-        const {getPetScheduleState} = state;
-        return {getPetScheduleState};
+        const {getPetScheduleState, getRecipeState} = state;
+        return {getPetScheduleState, getRecipeState};
     }, (dispatch) => {
         return {
             dispatchGetPetSchedule(pet_id) {
                 return dispatch(getPetScheduleAction(pet_id))
+            },
+            dispatchShowSnackModal(deviceId, defaultPortion) {
+                return dispatch(showSnackModal(deviceId, defaultPortion))
             }
         };
     }
