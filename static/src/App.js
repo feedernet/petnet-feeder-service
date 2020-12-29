@@ -4,7 +4,7 @@ import Container from "react-bootstrap/Container";
 import Navbar from "react-bootstrap/Navbar";
 import Nav from "react-bootstrap/Nav";
 import Icon from '@mdi/react'
-import {mdiSilverwareForkKnife, mdiCog} from '@mdi/js';
+import {mdiSilverwareForkKnife, mdiCog, mdiPaw} from '@mdi/js';
 import {ErrorComponent} from "./components/Error";
 import FeederCardList from "./containers/FeederCardListContainer";
 import FeedHistory from "./containers/FeedHistoryTableContainer";
@@ -13,6 +13,7 @@ import ProjectLogo from "./images/feeder-project-logo.svg"
 import NewFeederWizard from "./containers/NewFeederWizard";
 import SnackModal from "./containers/SnackModalContainer";
 import EditFeederModal from "./containers/EditFeederModalContainer";
+import PetCardList from "./containers/PetCardListContainer";
 
 const rootPath = getRootPath()
 
@@ -25,6 +26,7 @@ class App extends React.Component {
                 exact: true,
                 render: props => {
                     return <>
+                        <PetCardList {...props} />
                         <FeederCardList {...props} />
                         <FeedHistory {...props} />
                         <NewFeederWizard/>
@@ -58,8 +60,12 @@ class App extends React.Component {
                         <Navbar.Toggle aria-controls="basic-navbar-nav"/>
                         <Navbar.Collapse id="basic-navbar-nav">
                             <Nav className="mr-auto">
-                                <Link to={rootPath} component={Nav.Link}>
-                                    <Icon path={mdiSilverwareForkKnife} size={.75}/> Feeders
+                                <Link
+                                    to={rootPath}
+                                    component={Nav.Link}
+                                    active={window.location.pathname === `${rootPath}/`}
+                                >
+                                    <Icon path={mdiPaw} size={.75}/> Home
                                 </Link>
                                 <Link to={`${rootPath}/settings`} component={Nav.Link}>
                                     <Icon path={mdiCog} size={.75}/> Settings

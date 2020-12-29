@@ -16,6 +16,7 @@ import newFeederWizardReducer from "./newFeederWizard";
 import getRecipeReducer from "./getRecipe";
 import snackModalReducer from "./snackModal";
 import editFeederModalReducer from "./editFeederModal";
+import getPetScheduleReducer from "./getPetSchedule";
 
 export default combineReducers({
     getFeederDevicesState: getFeederDevicesReducer,
@@ -34,5 +35,6 @@ export default combineReducers({
     newFeederWizardState: newFeederWizardReducer,
     getRecipeState: getRecipeReducer,
     snackModalState: snackModalReducer,
-    editFeederModalState: editFeederModalReducer
+    editFeederModalState: editFeederModalReducer,
+    getPetScheduleState: getPetScheduleReducer
 })

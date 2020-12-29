@@ -1,7 +1,8 @@
 from typing import List
+from feeder.util import get_relative_timestamp
 from feeder.util.feeder import APIRouterWithMQTTClient
-from feeder.api.models.pet import RegisteredPet
-from feeder.database.models import Pet
+from feeder.api.models.pet import RegisteredPet, PetSchedule, ScheduledFeed
+from feeder.database.models import Pet, FeedingSchedule, FeedingResult
 
 # Right now this doesn't use the MQTT client, but when a pet is assigned
 # a feeder or a scheduled feed, we will need to send that to the feeder.
@@ -36,7 +37,7 @@ async def get_pet(pet_id: int):
 
 
 @router.put("/{pet_id}", response_model=RegisteredPet)
-async def update_pet(pet_id, update: RegisteredPet):
+async def update_pet(pet_id: int, update: RegisteredPet):
     pet_id = await Pet.update(
         pet_id=pet_id,
         name=update.name,
@@ -48,3 +49,54 @@ async def update_pet(pet_id, update: RegisteredPet):
         device_hid=update.device_hid,
     )
     return await get_pet(pet_id)
+
+
+async def get_schedule_for_pet(pet: RegisteredPet):
+    schedule = await FeedingSchedule.get_for_pet(pet.id)
+    for idx, event in enumerate(schedule):
+        target_time = get_relative_timestamp(event["time"])
+        dispense_result = await FeedingResult.dispensed_at(
+            device_id=pet.device_hid, timestamp=target_time
+        )
+        schedule[idx] = {
+            **event,
+            "result": dispense_result
+        }
+
+    return {"events": schedule}
+
+
+@router.get("/{pet_id}/schedule", response_model=PetSchedule)
+async def get_schedule(pet_id: int):
+    pet = await get_pet(pet_id)
+    return await get_schedule_for_pet(pet)
+
+
+@router.post("/{pet_id}/schedule", response_model=PetSchedule)
+async def new_feed_event(pet_id: int, updated_event: ScheduledFeed):
+    pet = await get_pet(pet_id)
+    await FeedingSchedule.create_event(
+        pet_id=pet_id,
+        name=updated_event.name,
+        time=updated_event.time
+    )
+    return await get_schedule_for_pet(pet)
+
+
+@router.put("/{pet_id}/schedule/{event_id}", response_model=PetSchedule)
+async def update_feed_event(pet_id: int, event_id: int, updated_event: ScheduledFeed):
+    pet = await get_pet(pet_id)
+    await FeedingSchedule.update_event(
+        event_id=event_id,
+        name=updated_event.name,
+        time=updated_event.time,
+        enabled=updated_event.enabled
+    )
+    return await get_schedule_for_pet(pet)
+
+
+@router.delete("/{pet_id}/schedule/{event_id}", response_model=PetSchedule)
+async def delete_feed_event(pet_id: int, event_id: int):
+    pet = await get_pet(pet_id)
+    await FeedingSchedule.delete_event(event_id=event_id)
+    return await get_schedule_for_pet(pet)

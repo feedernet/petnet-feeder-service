@@ -23,6 +23,7 @@
     "react-router": "^5.2.0",
     "react-router-dom": "^5.2.0",
     "react-scripts": "^4.0.0",
+    "react-step-progress-bar": "^1.0.3",
     "react-step-wizard": "^5.3.5",
     "redux": "^4.0.5",
     "redux-api-middleware": "^3.2.1",

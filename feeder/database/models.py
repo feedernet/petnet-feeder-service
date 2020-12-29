@@ -17,6 +17,7 @@ from sqlalchemy import (
     func,
     select,
     desc,
+    asc
 )
 from sqlalchemy.sql.expression import literal
 
@@ -378,6 +379,20 @@ class FeedingResult:
         query = feeding_event.delete().where(feeding_event.c.device_hid == device_id)
         return await db.execute(query)
 
+    @staticmethod
+    async def dispensed_at(device_id: str, timestamp: int, window_minutes: int = 5):
+        offset = window_minutes * 60 * 1000000  # minute -> second (60) -> microsec (1000000)
+        query = feeding_event.select().where(
+            feeding_event.c.device_hid == device_id
+        ).where(
+            feeding_event.c.timestamp >= timestamp - offset
+        ).where(
+            feeding_event.c.timestamp <= timestamp + offset
+        )
+        results = await db.fetch_all(query)
+        if results:
+            return results[0]
+
 
 pets = Table(
     "pets",
@@ -443,6 +458,7 @@ class Pet:
 
     @classmethod
     async def delete(cls, pet_id: int):
+        await FeedingSchedule.clear_for_pet(pet_id=pet_id)
         query = pets.delete().where(pets.c.id == pet_id)
         return await db.execute(query)
 
@@ -630,10 +646,54 @@ class HopperLevelRef:
 
 
 schedules = Table(
-    "pet_feed_schedule",
+    "feeding_schedules",
     metadata,
-    Column("pet_id", Text(), ForeignKey("pets.id"), primary_key=True),
+    Column("event_id", Integer(), primary_key=True, autoincrement=True),
+    Column("pet_id", Text(), ForeignKey("pets.id"), nullable=False),
     # This is the number of seconds since 12:00AM
     Column("time", Integer(), primary_key=True),
     Column("enabled", Boolean(), nullable=False),
+    Column("name", Text(), nullable=False)
 )
+
+
+class FeedingSchedule:
+    @classmethod
+    async def get_for_pet(cls, pet_id: int):
+        query = schedules.select().where(schedules.c.pet_id == pet_id).order_by(
+            asc(schedules.c.time)
+        )
+        return await db.fetch_all(query)
+
+    @classmethod
+    async def clear_for_pet(cls, pet_id: int):
+        query = schedules.delete().where(schedules.c.pet_id == pet_id)
+        return await db.execute(query)
+
+    @classmethod
+    async def create_event(cls, pet_id: int, name: str, time: int):
+        query = schedules.insert().values(
+            pet_id=pet_id,
+            time=time,
+            enabled=True,
+            name=name
+        )
+        return await db.execute(query)
+
+    @classmethod
+    async def update_event(cls, event_id: int, name: str = None, time: int = None, enabled: bool = None):
+        values = {}
+        if name is not None:
+            values["name"] = name
+        if time is not None:
+            values["time"] = time
+        if enabled is not None:
+            values["enabled"] = enabled
+
+        query = schedules.update().where(schedules.c.event_id == event_id).values(**values)
+        return await db.execute(query)
+
+    @classmethod
+    async def delete_event(cls, event_id: int):
+        query = schedules.delete().where(schedules.c.event_id == event_id)
+        return await db.execute(query)
