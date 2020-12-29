@@ -14,6 +14,7 @@ import NewFeederWizard from "./containers/NewFeederWizard";
 import SnackModal from "./containers/SnackModalContainer";
 import EditFeederModal from "./containers/EditFeederModalContainer";
 import PetCardList from "./containers/PetCardListContainer";
+import EditPetModal from "./containers/EditPetModalContainer";
 
 const rootPath = getRootPath()
 
@@ -32,6 +33,7 @@ class App extends React.Component {
                         <NewFeederWizard/>
                         <SnackModal/>
                         <EditFeederModal/>
+                        <EditPetModal/>
                     </>
                 }
             },

@@ -7,7 +7,7 @@ export class CreatePetFormContainer extends React.Component {
     state = {
         petImage: AddPhotoIcon,
         petImageScale: 1,
-        petImageAngle: 0
+        petImageAngle: 0,
     }
 
     constructor(props) {
@@ -15,6 +15,9 @@ export class CreatePetFormContainer extends React.Component {
         this.handleRegisterAvatarEditor = this.handleRegisterAvatarEditor.bind(this)
         this.handleRegisterFormSubmitToParent = this.handleRegisterFormSubmitToParent.bind(this)
         this.handleSendFormCallback = this.handleSendFormCallback.bind(this)
+        if (this.props.defaultValues && this.props.defaultValues.hasOwnProperty("image")) {
+            this.state.petImage = this.props.defaultValues.image
+        }
     }
 
     handleRegisterAvatarEditor(editor) {
@@ -52,6 +55,7 @@ export class CreatePetFormContainer extends React.Component {
     render() {
         return <CreatePetFormComponent
             petImage={this.state.petImage}
+            defaultValues={this.props.defaultValues}
             handleSetPetImage={image => this.setState({petImage: image})}
             petImageScale={this.state.petImageScale}
             handleScaleImage={scale => this.setState({petImageScale: scale})}

@@ -45,10 +45,10 @@ export const PetCardComponent = function (props) {
     const petAge = Math.abs(ageDate.getUTCFullYear() - 1970);
     const petWeightPounds = Math.round(props.pet.weight / 454)
     let petActivity = "Active"
-    if (props.pet.activity_level > 4) {
+    if (props.pet.activity_level < 4) {
         petActivity = "Lazy"
-    } else if (props.pet.activity_level > 8) {
-        petActivity = "Moderate"
+    } else if (props.pet.activity_level <= 8) {
+        petActivity = "Normal"
     }
 
     let schedulePcts = []
@@ -167,10 +167,10 @@ export const PetCardComponent = function (props) {
                                     <Button style={{width: "100%"}} className={"my-1"}
                                             disabled={props.isStale || props.isJustDiscovered}
                                             variant="success">
-                                        <Icon path={mdiClock} size={.75}/> Scheduling
+                                        <Icon path={mdiClock} size={.75}/> Schedule
                                     </Button>
                                     <Button style={{width: "100%", opacity: 1}} className={"my-1"} variant="warning"
-                                            onClick={props.showEditModal}>
+                                            onClick={props.showEditPetModal}>
                                         <Icon path={mdiPencil} size={.75}/> Edit Pet
                                     </Button>
                                 </Col>

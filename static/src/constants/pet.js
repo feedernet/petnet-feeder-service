@@ -16,6 +16,12 @@ export const modifyPet = {
     MOD_PET_FAILURE: "MOD_PET_FAILURE",
 }
 
+export const deletePet = {
+    DELETE_PET: "DELETE_PET",
+    DELETE_PET_SUCCESS: "DELETE_PET_SUCCESS",
+    DELETE_PET_FAILURE: "DELETE_PET_FAILURE",
+}
+
 export const getPetSchedule = {
     GET_PET_SCHEDULE: "GET_PET_SCHEDULE",
     GET_PET_SCHEDULE_SUCCESS: "GET_PET_SCHEDULE_SUCCESS",

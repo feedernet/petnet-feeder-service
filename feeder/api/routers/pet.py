@@ -51,6 +51,11 @@ async def update_pet(pet_id: int, update: RegisteredPet):
     return await get_pet(pet_id)
 
 
+@router.delete("/{pet_id}")
+async def delete_pet(pet_id: int):
+    await Pet.delete(pet_id=pet_id)
+
+
 async def get_schedule_for_pet(pet: RegisteredPet):
     schedule = await FeedingSchedule.get_for_pet(pet.id)
     for idx, event in enumerate(schedule):

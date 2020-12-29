@@ -4,6 +4,8 @@ import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
+import OverlayTrigger from "react-bootstrap/OverlayTrigger";
+import Tooltip from "react-bootstrap/Tooltip";
 import FeederLight from "../images/feeder_white.png";
 import FeederDark from "../images/feeder_black.png";
 import {feederDeviceShape, feederTelemetryShape} from "../shapes/feeder";
@@ -31,13 +33,22 @@ export const FeederCardComponent = function (props) {
     }
     if (props.telemetry) {
         telemetry = {
-            rssi: props.telemetry.rssi ? props.telemetry.rssi: 0,
+            rssi: props.telemetry.rssi ? props.telemetry.rssi : 0,
             charging: props.telemetry.charging ? "Charging" : "Charged",
             usb_power: props.telemetry.usb_power ? "Plugged In" : "On Battery"
         }
     }
-
+    const petAvatars = props.pets.map((pet) =>
+        <OverlayTrigger placement={"top"} overlay={<Tooltip>{pet.name}</Tooltip>}>
+            <img
+                src={pet.image}
+                alt={pet.name}
+                style={{width: 25, height: 25, borderRadius: '50%', marginTop: -3}}
+                className={"mr-1"}
+            />
+        </OverlayTrigger>)
     return (
+
         <Card style={{marginBottom: 20}}>
             <Card.Body>
                 <Container>
@@ -61,6 +72,10 @@ export const FeederCardComponent = function (props) {
                                     <div>
                                         <Card.Title>
                                             {feederName}
+                                            <div style={{display: "inline-block"}} className={"ml-2"}>
+                                                {petAvatars}
+                                            </div>
+
                                         </Card.Title>
                                         <Card.Subtitle className="mb-2 text-muted">
                                             Last Seen: {props.lastPing}

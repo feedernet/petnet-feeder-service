@@ -21,12 +21,24 @@ class PetCardListContainer extends React.Component {
         this.refreshPets()
     }
 
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        if (this.props.getPetsState.pets !== prevProps.getPetsState.pets) {
+            this.setState({
+                pets: this.props.getPetsState.pets
+            })
+        }
+    }
+
     refreshPets() {
         this.setState({loading: true}, () => {
             this.props.dispatchGetPets().then(() => {
                 if (!this.props.getPetsState._requestFailed) {
                     this.setState({
                         pets: this.props.getPetsState.pets,
+                        loading: false
+                    })
+                } else {
+                    this.setState({
                         loading: false
                     })
                 }
@@ -43,7 +55,16 @@ class PetCardListContainer extends React.Component {
         return (
             <>
                 <h2 style={{marginBottom: 20}} className={"d-none d-sm-block"}>Pets</h2>
-                {this.state.loading ? <p>Loading...</p> : petArray}
+                {
+                    this.state.loading ?
+                        <p className={"text-center"}>Loading...</p>:
+                        petArray
+                }
+                {
+                    this.state.pets.length === 0 && !this.state.loading ?
+                    <p className={"text-center"}>No Pets Found</p>:
+                    null
+                }
             </>
         )
     }

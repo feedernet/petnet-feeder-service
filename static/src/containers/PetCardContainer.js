@@ -5,27 +5,42 @@ import {connect} from "react-redux";
 import {PetCardComponent} from "../components/PetCard";
 import {getPetScheduleAction} from "../actions/getPetSchedule";
 import {showSnackModal} from "../actions/snackModal";
+import {showEditPetModal} from "../actions/editPetModal";
 
 class PetCardContainer extends React.Component {
+    refreshInterval;
     state = {
         manualFeedPortion: 0.0625,
         pctDayElapsed: 0,
-        events: []
+        events: [],
+        pet: {}
     }
 
     constructor(props) {
         super(props);
+        this.state.pet = props.pet
         this.refreshSchedule = this.refreshSchedule.bind(this)
     }
 
     componentDidMount() {
         this.refreshSchedule()
+        this.refreshInterval = setInterval(
+            this.refreshSchedule.bind(this), 60000
+        );
+    }
+
+    componentWillUnmount() {
+        clearInterval(this.refreshInterval)
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
+        if (prevProps.pet !== this.props.pet) {
+            this.setState({pet: this.props.pet})
+        }
+
         // If the recipe for this feeder is edited, we need to update
         // the default portion in our state.
-        const deviceId = this.props.pet.device_hid
+        const deviceId = this.state.pet.device_hid
         const rcpState = this.props.getRecipeState
         if (
             deviceId in rcpState.recipes &&
@@ -51,11 +66,14 @@ class PetCardContainer extends React.Component {
 
     render() {
         return <PetCardComponent
-            pet={this.props.pet}
+            pet={this.state.pet}
             pctDayElapsed={this.state.pctDayElapsed}
             events={this.state.events}
             showSnackModal={
-                () => this.props.dispatchShowSnackModal(this.props.pet.device_hid, this.state.manualFeedPortion)
+                () => this.props.dispatchShowSnackModal(this.state.pet.device_hid, this.state.manualFeedPortion)
+            }
+            showEditPetModal={
+                () => this.props.dispatchShowEditPetModal(this.state.pet)
             }
         />
     }
@@ -66,7 +84,8 @@ PetCardContainer.propTypes = {
     getPetScheduleState: PropTypes.object,
     getRecipeState: PropTypes.object,
     dispatchGetPetSchedule: PropTypes.func,
-    dispatchShowSnackModal: PropTypes.func
+    dispatchShowSnackModal: PropTypes.func,
+    dispatchShowEditPetModal: PropTypes.func
 };
 
 const PetCard = withRouter(connect(
@@ -80,6 +99,9 @@ const PetCard = withRouter(connect(
             },
             dispatchShowSnackModal(deviceId, defaultPortion) {
                 return dispatch(showSnackModal(deviceId, defaultPortion))
+            },
+            dispatchShowEditPetModal(pet) {
+                return dispatch(showEditPetModal(pet))
             }
         };
     }
