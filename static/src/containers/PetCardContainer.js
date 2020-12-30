@@ -6,6 +6,7 @@ import {PetCardComponent} from "../components/PetCard";
 import {getPetScheduleAction} from "../actions/getPetSchedule";
 import {showSnackModal} from "../actions/snackModal";
 import {showEditPetModal} from "../actions/editPetModal";
+import {showScheduleModal} from "../actions/scheduleModal";
 
 class PetCardContainer extends React.Component {
     refreshInterval;
@@ -48,9 +49,15 @@ class PetCardContainer extends React.Component {
         ) {
             this.setState({manualFeedPortion: rcpState.recipes[deviceId].tbsp_per_feeding / 16})
         }
+
+        const petId = this.state.pet.id
+        if (this.state.events !== this.props.getPetScheduleState.schedules[petId]) {
+            this.setState({events: this.props.getPetScheduleState.schedules[petId]})
+        }
     }
 
     refreshSchedule() {
+        const petId = this.state.pet.id
         const d = new Date();
         const pctDayElapsed = (d.getHours() * 3600 + d.getMinutes() * 60 + d.getSeconds() + d.getMilliseconds() / 1000) / 864;
 
@@ -58,7 +65,7 @@ class PetCardContainer extends React.Component {
             if (!this.props.getPetScheduleState._requestFailed) {
                 this.setState({
                     pctDayElapsed,
-                    events: this.props.getPetScheduleState.schedule.events
+                    events: this.props.getPetScheduleState.schedules[petId]
                 })
             }
         })
@@ -75,6 +82,9 @@ class PetCardContainer extends React.Component {
             showEditPetModal={
                 () => this.props.dispatchShowEditPetModal(this.state.pet)
             }
+            showScheduleModal={
+                () => this.props.dispatchShowScheduleModal(this.state.pet)
+            }
         />
     }
 }
@@ -85,7 +95,8 @@ PetCardContainer.propTypes = {
     getRecipeState: PropTypes.object,
     dispatchGetPetSchedule: PropTypes.func,
     dispatchShowSnackModal: PropTypes.func,
-    dispatchShowEditPetModal: PropTypes.func
+    dispatchShowEditPetModal: PropTypes.func,
+    dispatchShowScheduleModal: PropTypes.func
 };
 
 const PetCard = withRouter(connect(
@@ -102,6 +113,9 @@ const PetCard = withRouter(connect(
             },
             dispatchShowEditPetModal(pet) {
                 return dispatch(showEditPetModal(pet))
+            },
+            dispatchShowScheduleModal(pet) {
+                return dispatch(showScheduleModal(pet))
             }
         };
     }

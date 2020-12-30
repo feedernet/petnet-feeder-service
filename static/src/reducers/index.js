@@ -19,6 +19,7 @@ import editFeederModalReducer from "./editFeederModal";
 import getPetScheduleReducer from "./getPetSchedule";
 import editPetModalReducer from "./editPetModal";
 import deletePetReducer from "./deletePet";
+import scheduleModalReducer from "./scheduleModal";
 
 export default combineReducers({
     getFeederDevicesState: getFeederDevicesReducer,
@@ -40,5 +41,6 @@ export default combineReducers({
     editFeederModalState: editFeederModalReducer,
     getPetScheduleState: getPetScheduleReducer,
     editPetModalState: editPetModalReducer,
-    deletePetState: deletePetReducer
+    deletePetState: deletePetReducer,
+    scheduleModalState: scheduleModalReducer
 })

@@ -19,6 +19,7 @@ class ScheduledFeed(BaseModel):
     name: Optional[str]
     time: Optional[int]
     enabled: Optional[bool]
+    portion: Optional[float]
     result: Optional[FeedEvent] = None
 
 

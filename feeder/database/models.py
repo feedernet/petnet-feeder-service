@@ -653,7 +653,8 @@ schedules = Table(
     # This is the number of seconds since 12:00AM
     Column("time", Integer(), primary_key=True),
     Column("enabled", Boolean(), nullable=False),
-    Column("name", Text(), nullable=False)
+    Column("name", Text(), nullable=False),
+    Column("portion", Float(), nullable=False)
 )
 
 
@@ -671,17 +672,19 @@ class FeedingSchedule:
         return await db.execute(query)
 
     @classmethod
-    async def create_event(cls, pet_id: int, name: str, time: int):
+    async def create_event(cls, pet_id: int, name: str, time: int, portion: float):
         query = schedules.insert().values(
             pet_id=pet_id,
             time=time,
             enabled=True,
-            name=name
+            name=name,
+            portion=portion
         )
         return await db.execute(query)
 
     @classmethod
-    async def update_event(cls, event_id: int, name: str = None, time: int = None, enabled: bool = None):
+    async def update_event(cls, event_id: int, name: str = None, time: int = None, enabled: bool = None,
+                           portion: float = None):
         values = {}
         if name is not None:
             values["name"] = name
@@ -689,6 +692,8 @@ class FeedingSchedule:
             values["time"] = time
         if enabled is not None:
             values["enabled"] = enabled
+        if portion is not None:
+            values["portion"] = portion
 
         query = schedules.update().where(schedules.c.event_id == event_id).values(**values)
         return await db.execute(query)

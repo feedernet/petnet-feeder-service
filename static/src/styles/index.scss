@@ -40,3 +40,23 @@ code {
 .pet-avatar-container:hover {
   box-shadow: 0 0 0 4px #28AFB0 !important;
 }
+
+@media (min-width: 767px) {
+  .schedule-modal .modal-dialog {
+    max-width: 700px !important;
+  }
+}
+
+
+//react-timekeeper overrides
+:root {
+  --dropdown-shadow: none;
+  --main-box-shadow: none;
+  --clock-wrapper-bg: #fff;
+  --clock-bg: #f4f4f4;
+  --top-text-color: #000;
+  --top-colon-color: #000;
+  --meridiem-selected-bg-color: rgb(150, 219, 250);
+  --meridiem-selected-text-color: #fff;
+  --top-selected-color: rgb(150, 219, 250);
+}

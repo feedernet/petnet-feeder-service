@@ -20,7 +20,7 @@ import MealSuccess from "../images/pet_schedule_meal.png";
 import MealError from "../images/pet_schedule_error.png";
 import MealMissed from "../images/pet_schedule_missed.png"
 
-const secSinceMidnightFormatter = (secSinceMidnight) => {
+export const secSinceMidnightFormatter = (secSinceMidnight) => {
     let options = {
         hour12: true,
         hour: "numeric"
@@ -54,7 +54,12 @@ export const PetCardComponent = function (props) {
     let schedulePcts = []
     let scheduleSteps = []
 
-    props.events.forEach((event) => {
+    let events = []
+    if (props.hasOwnProperty("events") && props.events && props.events.length > 0) {
+        events = props.events
+    }
+
+    events.forEach((event) => {
         secSinceMidnightFormatter(event.time)
         schedulePcts.push(event.time / 864)
         scheduleSteps.push(
@@ -166,7 +171,7 @@ export const PetCardComponent = function (props) {
                                     </Button>
                                     <Button style={{width: "100%"}} className={"my-1"}
                                             disabled={props.isStale || props.isJustDiscovered}
-                                            variant="success">
+                                            variant="success" onClick={props.showScheduleModal}>
                                         <Icon path={mdiClock} size={.75}/> Schedule
                                     </Button>
                                     <Button style={{width: "100%", opacity: 1}} className={"my-1"} variant="warning"

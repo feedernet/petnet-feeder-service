@@ -83,7 +83,8 @@ async def new_feed_event(pet_id: int, updated_event: ScheduledFeed):
     await FeedingSchedule.create_event(
         pet_id=pet_id,
         name=updated_event.name,
-        time=updated_event.time
+        time=updated_event.time,
+        portion=updated_event.portion
     )
     return await get_schedule_for_pet(pet)
 
@@ -95,7 +96,8 @@ async def update_feed_event(pet_id: int, event_id: int, updated_event: Scheduled
         event_id=event_id,
         name=updated_event.name,
         time=updated_event.time,
-        enabled=updated_event.enabled
+        enabled=updated_event.enabled,
+        portion=updated_event.portion
     )
     return await get_schedule_for_pet(pet)
 
