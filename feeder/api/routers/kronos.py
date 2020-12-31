@@ -17,9 +17,7 @@ from feeder.util.feeder import paginate_response, generate_feeder_hid
 from feeder.database.models import KronosGateways, KronosDevices
 
 logger = logging.getLogger(__name__)
-kronos_headers = {
-    "content-type": "application/json;charset=UTF-8"
-}
+kronos_headers = {"content-type": "application/json;charset=UTF-8"}
 
 router = APIRouter()
 
@@ -28,8 +26,7 @@ router = APIRouter()
 async def get_gateways():
     all_gateways = await KronosGateways.get()
     formatted_feeders = [
-        {"pri": f"arw:pgs:gwy:{gateway['hid']}", **gateway}
-        for gateway in all_gateways
+        {"pri": f"arw:pgs:gwy:{gateway['hid']}", **gateway} for gateway in all_gateways
     ]
 
     return paginate_response(
@@ -97,6 +94,6 @@ async def get_static_gateway_conf(gateway_id: str):
         "key": {
             "apiKey": gateways[0]["apiKey"],
             "secretKey": "gEhFrm2hRvW2Km47lgt9xRBCtT9uH2Lx77WxYliNGJI=",
-        }
+        },
     }
     return JSONResponse(content=static_config, headers=kronos_headers)

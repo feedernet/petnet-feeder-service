@@ -8,15 +8,25 @@ from sqlite3 import IntegrityError
 
 from feeder import settings
 from feeder.api.models.kronos import Device, DeviceTelemetry, DeviceUpdate
-from feeder.util.feeder import APIRouterWithMQTTClient, paginate_response, check_connection
-from feeder.database.models import KronosDevices, DeviceTelemetryData, FeedingResult, HopperLevelRef, StoredRecipe
+from feeder.util.feeder import (
+    APIRouterWithMQTTClient,
+    paginate_response,
+    check_connection,
+)
+from feeder.database.models import (
+    KronosDevices,
+    DeviceTelemetryData,
+    FeedingResult,
+    HopperLevelRef,
+    StoredRecipe,
+)
 from feeder.api.models.feeder import (
     TriggerFeeding,
     GenericResponse,
     FeedHistory,
     HopperLevel,
     Recipe,
-    RawMQTTMessage
+    RawMQTTMessage,
 )
 
 logger = logging.getLogger(__name__)
@@ -27,23 +37,19 @@ router = APIRouterWithMQTTClient()
 @router.get("/", response_model=List[Device])
 async def get_devices():
     return [
-        check_connection(device, router.broker)
-        for device in await KronosDevices.get()
+        check_connection(device, router.broker) for device in await KronosDevices.get()
     ]
 
 
 @router.get("/history", response_model=FeedHistory)
 async def get_history(size: int = 10, page: int = 1):
     count_all = await FeedingResult.count()
-    history = await FeedingResult.get(
-        offset=page * size,
-        limit=size
-    )
+    history = await FeedingResult.get(offset=page * size, limit=size)
     return paginate_response(
         entities=[{**result} for result in history],
         current_page=page,
         max_page_size=size,
-        total_override=count_all
+        total_override=count_all,
     )
 
 
@@ -64,7 +70,7 @@ async def update_single_device(device_id: str, updated: DeviceUpdate):
         timezone=updated.timezone,
         front_button=updated.frontButton,
         recipe_id=updated.currentRecipe,
-        black=updated.black
+        black=updated.black,
     )
     devices = await KronosDevices.get(device_hid=device_id)
     device = devices[0]
@@ -74,9 +80,8 @@ async def update_single_device(device_id: str, updated: DeviceUpdate):
             timezone = pytz.timezone(updated.timezone)
             offset = int(datetime.datetime.now(timezone).utcoffset().total_seconds())
             await router.client.send_cmd_utc_offset(
-                gateway_id=device.gatewayHid,
-                device_id=device_id,
-                utc_offset=offset)
+                gateway_id=device.gatewayHid, device_id=device_id, utc_offset=offset
+            )
         except pytz.exceptions.UnknownTimeZoneError:
             logger.exception("Unable to set timezone!")
             raise HTTPException(500, detail="Unknown timezone!")
@@ -85,7 +90,8 @@ async def update_single_device(device_id: str, updated: DeviceUpdate):
         await router.client.send_cmd_button(
             gateway_id=device.gatewayHid,
             device_id=device_id,
-            enable=updated.frontButton)
+            enable=updated.frontButton,
+        )
 
     if updated.currentRecipe is not None:
         recipe_results = await StoredRecipe.get(recipe_id=updated.currentRecipe)
@@ -97,7 +103,7 @@ async def update_single_device(device_id: str, updated: DeviceUpdate):
                 recipe_id=recipe.id,
                 tbsp_per_feeding=recipe.tbsp_per_feeding,
                 g_per_tbsp=recipe.g_per_tbsp,
-                budget_tbsp=recipe.budget_tbsp
+                budget_tbsp=recipe.budget_tbsp,
             )
 
     return check_connection(device, router.broker)
@@ -121,15 +127,13 @@ async def get_device_telemetry(device_id: str):
 async def get_history(device_id: str, size: int = 10, page: int = 1):
     count_all = await FeedingResult.count(device_hid=device_id)
     history = await FeedingResult.get(
-        device_hid=device_id,
-        offset=page * size,
-        limit=size
+        device_hid=device_id, offset=page * size, limit=size
     )
     return paginate_response(
         entities=[{**result} for result in history],
         current_page=page,
         max_page_size=size,
-        total_override=count_all
+        total_override=count_all,
     )
 
 
@@ -150,7 +154,9 @@ async def restart_feeder(device_id: str):
     devices = await KronosDevices.get(device_hid=device_id)
     device = devices[0]
     logger.debug("Restarting %s", device_id)
-    await router.client.send_cmd_reboot(gateway_id=device.gatewayHid, device_id=device_id)
+    await router.client.send_cmd_reboot(
+        gateway_id=device.gatewayHid, device_id=device_id
+    )
 
 
 @router.post("/{device_id}/feed", response_model=GenericResponse)
@@ -158,16 +164,22 @@ async def trigger_feeding(device_id: str, feed: TriggerFeeding):
     devices = await KronosDevices.get(device_hid=device_id)
     device = devices[0]
     logging.debug("Dispensing %f cups of food from %s", feed.portion, device_id)
-    await router.client.send_cmd_feed(gateway_id=device.gatewayHid, device_id=device_id, portion=feed.portion)
+    await router.client.send_cmd_feed(
+        gateway_id=device.gatewayHid, device_id=device_id, portion=feed.portion
+    )
 
 
 @router.post("/{device_id}/raw")
 async def publish_raw_message(device_id: str, message: RawMQTTMessage):
     if not settings.debug:
-        raise HTTPException(403, detail="Raw communication only available in DEBUG mode!")
+        raise HTTPException(
+            403, detail="Raw communication only available in DEBUG mode!"
+        )
     devices = await KronosDevices.get(device_hid=device_id)
     device = devices[0]
-    await router.client.send_cmd(device.gatewayHid, device.hid, message.command, message.args)
+    await router.client.send_cmd(
+        device.gatewayHid, device.hid, message.command, message.args
+    )
 
 
 @router.get("/{device_id}/recipe", response_model=Recipe)
@@ -190,7 +202,7 @@ async def create_or_update_recipe(device_id: str, recipe: Recipe):
             g_per_tbsp=recipe.g_per_tbsp,
             tbsp_per_feeding=recipe.tbsp_per_feeding,
             name=recipe.name,
-            budget_tbsp=recipe.budget_tbsp
+            budget_tbsp=recipe.budget_tbsp,
         )
         await KronosDevices.update(device_hid=device_id, recipe_id=new_recipe)
         results = await StoredRecipe.get(recipe_id=new_recipe)
@@ -201,7 +213,7 @@ async def create_or_update_recipe(device_id: str, recipe: Recipe):
             g_per_tbsp=recipe.g_per_tbsp,
             tbsp_per_feeding=recipe.tbsp_per_feeding,
             name=recipe.name,
-            budget_tbsp=recipe.budget_tbsp
+            budget_tbsp=recipe.budget_tbsp,
         )
         results = await StoredRecipe.get(recipe_id=device.currentRecipe)
 
@@ -212,6 +224,6 @@ async def create_or_update_recipe(device_id: str, recipe: Recipe):
         recipe_id=target_recipe.id,
         tbsp_per_feeding=target_recipe.tbsp_per_feeding,
         g_per_tbsp=target_recipe.g_per_tbsp,
-        budget_tbsp=target_recipe.budget_tbsp
+        budget_tbsp=target_recipe.budget_tbsp,
     )
     return target_recipe

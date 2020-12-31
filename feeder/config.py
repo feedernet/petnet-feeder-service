@@ -25,7 +25,7 @@ LOGGING_CONFIG = {
             "propagate": False,
         },
         "hbmqtt": {"handlers": ["default"], "level": "INFO", "propagate": False},
-        "databases": {"handlers": ["default"], "level": "INFO", "propagate": False}
+        "databases": {"handlers": ["default"], "level": "INFO", "propagate": False},
     },
 }
 

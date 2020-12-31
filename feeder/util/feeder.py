@@ -26,7 +26,9 @@ class APIRouterWithMQTTClient(APIRouter):
         self._broker = broker
 
 
-def paginate_response(entities: list, current_page=1, max_page_size=10, total_override=0) -> dict:
+def paginate_response(
+    entities: list, current_page=1, max_page_size=10, total_override=0
+) -> dict:
     list_length = len(entities)
     offset = (current_page - 1) * max_page_size
     page_size = max_page_size

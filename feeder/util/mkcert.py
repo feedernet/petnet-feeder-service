@@ -23,9 +23,7 @@ sans = [
 ]
 
 if settings.domain:
-    sans.append(
-        x509.DNSName(settings.domain)
-    )
+    sans.append(x509.DNSName(settings.domain))
 
 
 def generate_self_signed_certificate():
@@ -77,15 +75,18 @@ def domain_in_subjects(certificate_path: str, domain: str) -> bool:
         pem_data = pem_file.read().encode("utf-8")
         cert = x509.load_pem_x509_certificate(pem_data, default_backend())
         try:
-            extension = cert.extensions.get_extension_for_oid(ExtensionOID.SUBJECT_ALTERNATIVE_NAME)
+            extension = cert.extensions.get_extension_for_oid(
+                ExtensionOID.SUBJECT_ALTERNATIVE_NAME
+            )
             ext_value = cast(x509.SubjectAlternativeName, extension.value)
             alt_names = ext_value.get_values_for_type(DNSName)
         except ExtensionNotFound:
-            logger.warning("Failed to load SAN extension, cannot read certificate SANs!")
+            logger.warning(
+                "Failed to load SAN extension, cannot read certificate SANs!"
+            )
             return False
 
     # Check if domain is in list or parent domain with wildcard.
     # Example: domain is pet.domain.com and list has *.domain.com
     parent_wildcard = f"*.{'.'.join(domain.split('.')[1:])}"
     return domain in alt_names or parent_wildcard in alt_names
-

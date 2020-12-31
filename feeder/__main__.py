@@ -20,7 +20,7 @@ from feeder.database.models import KronosDevices
 
 
 def handle_exception(loop, context):
-    if 'exception' in context:
+    if "exception" in context:
         logging.error("Caught global exception:", exc_info=context["exception"])
     else:
         msg = context["message"]
@@ -61,7 +61,11 @@ app = FastAPI(
 
 frontend = Path("./static/build/index.html")
 if frontend.exists():
-    app.mount(f"{settings.app_root}/build", StaticFiles(directory="./static/build", html=True), name="static")
+    app.mount(
+        f"{settings.app_root}/build",
+        StaticFiles(directory="./static/build", html=True),
+        name="static",
+    )
 app.include_router(kronos.router, prefix="/api/v1/kronos")
 app.include_router(feeder.router, prefix=f"{settings.app_root}/api/v1/feeder")
 app.include_router(pet.router, prefix=f"{settings.app_root}/api/v1/pet")
@@ -86,7 +90,12 @@ async def render_frontend(full_path: str, request: Request):
         if settings.app_root:
             build_path = f"{settings.app_root[1:]}/build"
         return frontend_template.TemplateResponse(
-            "index.html", {"request": request, "build_path": build_path, "root_path": settings.app_root}
+            "index.html",
+            {
+                "request": request,
+                "build_path": build_path,
+                "root_path": settings.app_root,
+            },
         )
 
     logger.warning("Caught frontend request without built frontend.")
@@ -117,10 +126,16 @@ if __name__ == "__main__":
             logger.info("Writing new private key to %s", private_key)
             f.write(certificate_pair[1])
     elif not domain_in_subjects(public_key, settings.domain) and settings.domain:
-        logger.warning("The certificates provided are not valid for %s!", settings.domain)
-        logger.warning("If you aren't using these certificates in your SSL proxy, " +
-                       "you can ignore this message.")
-        logger.warning("To generate new certificates, please delete the existing " +
-                       "certificates and restart this application.")
+        logger.warning(
+            "The certificates provided are not valid for %s!", settings.domain
+        )
+        logger.warning(
+            "If you aren't using these certificates in your SSL proxy, "
+            + "you can ignore this message."
+        )
+        logger.warning(
+            "To generate new certificates, please delete the existing "
+            + "certificates and restart this application."
+        )
 
     uvicorn.run("feeder.__main__:app", host="0.0.0.0", port=settings.http_port)

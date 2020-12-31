@@ -61,6 +61,7 @@ class NewDevice(BaseModel):
         'softwareVersion': '2.8.0'
     }
     """
+
     name: Optional[str]
     type: Optional[str]
     uid: Optional[str]

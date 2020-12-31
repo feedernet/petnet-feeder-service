@@ -8,18 +8,17 @@ logger = logging.getLogger(__name__)
 
 
 class PetnetTopicPlugin(BaseTopicPlugin):
-    feeder_sub_topic_regex = re.compile(
-        r"krs/(api|cmd)/stg/(?P<gateway_id>.*)$")
-    username_regex = re.compile(r'^/pegasus:(?P<gateway_id>.*)$')
+    feeder_sub_topic_regex = re.compile(r"krs/(api|cmd)/stg/(?P<gateway_id>.*)$")
+    username_regex = re.compile(r"^/pegasus:(?P<gateway_id>.*)$")
 
     async def topic_filtering(self, *args, **kwargs):
         filter_result = super().topic_filtering(*args, **kwargs)
         if not filter_result:
             return False
 
-        session = kwargs.get('session', None)
-        topic = kwargs.get('topic', None)
-        logger.debug('username: %s, topic: %s', session.username, topic)
+        session = kwargs.get("session", None)
+        topic = kwargs.get("topic", None)
+        logger.debug("username: %s, topic: %s", session.username, topic)
 
         if session.username == local_username:
             return True
@@ -31,15 +30,15 @@ class PetnetTopicPlugin(BaseTopicPlugin):
         if not user_match:
             return False
 
-        gateway_id = user_match.group('gateway_id')
+        gateway_id = user_match.group("gateway_id")
 
         topic_match = self.feeder_sub_topic_regex.match(topic)
         if not topic_match:
             return False
 
-        target_id = topic_match.group('gateway_id')
+        target_id = topic_match.group("gateway_id")
         if gateway_id != target_id:
-            logger.warning('Gateway %s tried to subscribe to %s', gateway_id, target_id)
+            logger.warning("Gateway %s tried to subscribe to %s", gateway_id, target_id)
             return False
 
         return True
