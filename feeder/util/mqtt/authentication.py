@@ -1,9 +1,9 @@
 import re
 import logging
+from secrets import token_hex
 
 from hbmqtt.plugins.authentication import BaseAuthPlugin
 from feeder.database.models import KronosGateways
-from secrets import token_hex
 
 logger = logging.getLogger(__name__)
 local_username = "local_%s" % token_hex(8)
@@ -13,7 +13,9 @@ local_password = token_hex(16)
 class PetnetAuthPlugin(BaseAuthPlugin):
     username_regex = re.compile(r"^/pegasus:(?P<gateway_id>.*)$")
 
-    async def authenticate(self, *args, **kwargs):
+    async def authenticate(
+        self, *args, **kwargs
+    ):  # pylint: disable=invalid-overridden-method
         authenticated = super().authenticate(*args, **kwargs)
         if not authenticated:
             return False
@@ -39,5 +41,5 @@ class PetnetAuthPlugin(BaseAuthPlugin):
                     "Feeder (%s) failed to provide the right password!", gateway_id
                 )
             return success
-        except Exception:
+        except Exception:  # pylint: disable=broad-except
             return False

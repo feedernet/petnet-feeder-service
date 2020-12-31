@@ -4,7 +4,7 @@ import random
 import re
 import string
 
-from hbmqtt.client import MQTTClient, ClientException
+from hbmqtt.client import MQTTClient
 from hbmqtt.mqtt.constants import QOS_2
 
 from feeder.database.models import KronosDevices, DeviceTelemetryData, FeedingResult
@@ -99,7 +99,9 @@ class FeederClient(MQTTClient):
             await commit_telemetry_data(gateway_id, payload)
         else:
             logger.info(
-                f"Unknown message: {packet.variable_header.topic_name} => {packet.payload.data}"
+                "Unknown message: %s => %s",
+                packet.variable_header.topic_name,
+                packet.payload.data,
             )
 
     async def create_request_ack(self, gateway_id, request_id):
@@ -193,8 +195,6 @@ class FeederClient(MQTTClient):
                 packet = message.publish_packet
                 await self.handle_message(packet)
 
-        except ClientException as ce:
-            logging.error(f"mqtt-client exception: {ce}")
-        except Exception:
+        except Exception:  # pylint: disable=broad-except
             # We cannot let the client error out!
             logger.exception("Unhandled error in MQTT client!")

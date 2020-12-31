@@ -1,10 +1,10 @@
 import logging
 import datetime
 from typing import List
+from sqlite3 import IntegrityError
 
 import pytz
 from fastapi import HTTPException
-from sqlite3 import IntegrityError
 
 from feeder import settings
 from feeder.api.models.kronos import Device, DeviceTelemetry, DeviceUpdate
@@ -110,7 +110,7 @@ async def update_single_device(device_id: str, updated: DeviceUpdate):
 
 
 @router.delete("/{device_id}")
-async def get_single_device(device_id: str):
+async def delete_single_device(device_id: str):
     try:
         await KronosDevices.delete(device_id)
     except IntegrityError:
@@ -124,7 +124,7 @@ async def get_device_telemetry(device_id: str):
 
 
 @router.get("/{device_id}/history", response_model=FeedHistory)
-async def get_history(device_id: str, size: int = 10, page: int = 1):
+async def get_device_history(device_id: str, size: int = 10, page: int = 1):
     count_all = await FeedingResult.count(device_hid=device_id)
     history = await FeedingResult.get(
         device_hid=device_id, offset=page * size, limit=size

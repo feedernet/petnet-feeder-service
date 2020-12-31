@@ -1,7 +1,6 @@
 from os.path import abspath
-
-from feeder import settings
 from hbmqtt.broker import Broker
+from feeder import settings
 
 
 class FeederBroker(Broker):

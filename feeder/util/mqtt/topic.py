@@ -11,7 +11,9 @@ class PetnetTopicPlugin(BaseTopicPlugin):
     feeder_sub_topic_regex = re.compile(r"krs/(api|cmd)/stg/(?P<gateway_id>.*)$")
     username_regex = re.compile(r"^/pegasus:(?P<gateway_id>.*)$")
 
-    async def topic_filtering(self, *args, **kwargs):
+    async def topic_filtering(
+        self, *args, **kwargs
+    ):  # pylint: disable=invalid-overridden-method
         filter_result = super().topic_filtering(*args, **kwargs)
         if not filter_result:
             return False

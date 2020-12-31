@@ -1,9 +1,9 @@
 import logging
 from typing import Optional
-
-from fastapi import APIRouter, Query, HTTPException
-from fastapi.responses import JSONResponse
 from sqlite3 import IntegrityError
+
+from fastapi import APIRouter, Query
+from fastapi.responses import JSONResponse
 
 from feeder.api.models.kronos import (
     PaginatedGatewayList,
@@ -80,9 +80,9 @@ async def register_feeder(device: NewDevice):
 async def gateway_checkin(gateway_id: str):
     try:
         await KronosGateways.create(hid=gateway_id)
-        logger.debug(f"New gateway seen: {gateway_id}")
+        logger.debug("New gateway seen: %s", gateway_id)
     except IntegrityError:
-        logger.debug(f"Check-in for gateway: {gateway_id}")
+        logger.debug("Check-in for gateway: %s", gateway_id)
 
 
 @router.get("/gateways/{gateway_id}/config", response_model=GatewayConfiguration)

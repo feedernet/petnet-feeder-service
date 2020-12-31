@@ -1,4 +1,10 @@
+# pylint: disable=no-value-for-parameter
+# SQLAlchemy uses parameter injecting decorators... pylint no-likey
+# https://github.com/sqlalchemy/sqlalchemy/issues/4656
+
 import logging
+from sqlite3 import IntegrityError
+
 from fastapi import HTTPException
 from sqlalchemy import (
     Boolean,
@@ -13,7 +19,6 @@ from sqlalchemy import (
     desc,
 )
 from sqlalchemy.sql.expression import literal
-from sqlite3 import IntegrityError
 
 from feeder.util.feeder import generate_api_key, generate_feeder_hid
 from feeder.util import get_current_timestamp
@@ -400,8 +405,9 @@ class Pet:
         if not results and pet_id:
             logger.error("No pets found with ID: %d", pet_id)
             raise HTTPException(404, detail=f"No pet found with ID {pet_id}")
-        elif not results:
-            raise HTTPException(404, detail=f"No pets found!")
+
+        if not results:
+            raise HTTPException(404, detail="No pets found!")
 
         return results
 

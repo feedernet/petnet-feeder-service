@@ -1,4 +1,3 @@
-import os
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
@@ -20,7 +19,7 @@ fileConfig(config.config_file_name)
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-from feeder.database import models
+from feeder.database import models  # noqa: E402,F401
 
 # target_metadata = mymodel.Base.metadata
 target_metadata = metadata

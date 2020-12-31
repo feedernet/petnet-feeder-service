@@ -1,7 +1,7 @@
 """Creating Initial Tables
 
 Revision ID: 390373fdfa3c
-Revises: 
+Revises:
 Create Date: 2020-10-12 11:52:09.035148
 
 """

@@ -2,9 +2,9 @@ import os
 import logging
 from logging.config import dictConfig
 import asyncio
-import uvicorn
 from pathlib import Path
 
+import uvicorn
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -24,7 +24,7 @@ def handle_exception(loop, context):
         logging.error("Caught global exception:", exc_info=context["exception"])
     else:
         msg = context["message"]
-        logging.error(f"Caught global exception: {msg}")
+        logging.error("Caught global exception: %s", msg)
 
 
 logger = logging.getLogger("feeder")
@@ -42,8 +42,8 @@ private_key = os.path.abspath(settings.mqtts_private_key)
 
 templates = Jinja2Templates(directory="feeder/templates")
 frontend_template = Jinja2Templates(directory="static/build")
-loop = asyncio.get_event_loop()
-loop.set_exception_handler(handle_exception)
+async_loop = asyncio.get_event_loop()
+async_loop.set_exception_handler(handle_exception)
 client = FeederClient()
 broker = FeederBroker()
 
@@ -105,8 +105,8 @@ async def render_frontend(full_path: str, request: Request):
 @app.on_event("startup")
 async def startup_event():
     await db.connect()
-    loop.create_task(broker.start())
-    loop.create_task(client.start())
+    async_loop.create_task(broker.start())
+    async_loop.create_task(client.start())
 
 
 @app.on_event("shutdown")
@@ -130,12 +130,11 @@ if __name__ == "__main__":
             "The certificates provided are not valid for %s!", settings.domain
         )
         logger.warning(
-            "If you aren't using these certificates in your SSL proxy, "
-            + "you can ignore this message."
-        )
-        logger.warning(
-            "To generate new certificates, please delete the existing "
-            + "certificates and restart this application."
+            """If you aren't using these certificates in your SSL proxy,
+you can ignore this message.
+To generate new certificates, please delete the existing certificates and restart
+this application.
+"""
         )
 
     uvicorn.run("feeder.__main__:app", host="0.0.0.0", port=settings.http_port)

@@ -58,7 +58,9 @@ def generate_feeder_hid(uid: str) -> str:
     return hashlib.sha1(uid.encode("utf-8")).hexdigest()
 
 
-def check_connection(device: "Device", broker: "FeederBroker") -> "Device":
+def check_connection(
+    device: "Device", broker: "FeederBroker"  # noqa: F821
+) -> "Device":  # noqa: F821
     # This is kinda gross... we are tapping into their internal sessions
     # storage.
     # TODO: If we end up forking HBMQTT, we should add an interface for this.
