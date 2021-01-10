@@ -1,31 +1,13 @@
 import os
 import logging
 from logging.config import dictConfig
-import asyncio
-from pathlib import Path
 
 import uvicorn
-from fastapi import FastAPI, Request, HTTPException
-from fastapi.responses import HTMLResponse
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
 
 from feeder import settings
-from feeder.api.routers import kronos, feeder, pet
+from feeder.main import get_application
 from feeder.config import LOGGING_CONFIG
-from feeder.util.mqtt import FeederClient, FeederBroker
 from feeder.util.mkcert import generate_self_signed_certificate, domain_in_subjects
-from feeder.database.session import db
-from feeder.database.models import KronosDevices
-
-
-def handle_exception(loop, context):
-    if "exception" in context:
-        logging.error("Caught global exception:", exc_info=context["exception"])
-    else:
-        msg = context["message"]
-        logging.error("Caught global exception: %s", msg)
-
 
 logger = logging.getLogger("feeder")
 if settings.debug:
@@ -37,85 +19,12 @@ if settings.debug:
     LOGGING_CONFIG["loggers"]["hbmqtt.mqtt.protocol.handler"] = {"level": "INFO"}
 dictConfig(LOGGING_CONFIG)
 
-public_key = os.path.abspath(settings.mqtts_public_key)
-private_key = os.path.abspath(settings.mqtts_private_key)
-
-templates = Jinja2Templates(directory="feeder/templates")
-frontend_template = Jinja2Templates(directory="static/build")
-async_loop = asyncio.get_event_loop()
-async_loop.set_exception_handler(handle_exception)
-client = FeederClient()
-broker = FeederBroker()
-
-mqtt_enabled_routers = [feeder, pet]
-for mqtt_router in mqtt_enabled_routers:
-    mqtt_router.router.client = client
-    mqtt_router.router.broker = broker
-
-
-app = FastAPI(
-    title=settings.app_name,
-    description=settings.app_description,
-    version="1.0",
-)
-
-frontend = Path("./static/build/index.html")
-if frontend.exists():
-    app.mount(
-        f"{settings.app_root}/build",
-        StaticFiles(directory="./static/build", html=True),
-        name="static",
-    )
-app.include_router(kronos.router, prefix="/api/v1/kronos")
-app.include_router(feeder.router, prefix=f"{settings.app_root}/api/v1/feeder")
-app.include_router(pet.router, prefix=f"{settings.app_root}/api/v1/pet")
-
-
-@app.get("/testing", response_class=HTMLResponse)
-async def read_item(request: Request):
-    devices = await KronosDevices.get()
-    return templates.TemplateResponse(
-        "welcome.html", {"request": request, "devices": devices}
-    )
-
-
-@app.get(f"{settings.app_root}/{{full_path:path}}", response_class=HTMLResponse)
-async def render_frontend(full_path: str, request: Request):
-    frontend_paths = ["settings", "feeders", ""]
-    if full_path not in frontend_paths:
-        raise HTTPException(status_code=404)
-
-    if frontend.exists():
-        build_path = "build"
-        if settings.app_root:
-            build_path = f"{settings.app_root[1:]}/build"
-        return frontend_template.TemplateResponse(
-            "index.html",
-            {
-                "request": request,
-                "build_path": build_path,
-                "root_path": settings.app_root,
-            },
-        )
-
-    logger.warning("Caught frontend request without built frontend.")
-    raise HTTPException(status_code=500, detail="Frontend not built!")
-
-
-@app.on_event("startup")
-async def startup_event():
-    await db.connect()
-    async_loop.create_task(broker.start())
-    async_loop.create_task(client.start())
-
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    await asyncio.gather([broker.shutdown()], return_exceptions=True)
-    await db.disconnect()
-
+app = get_application()
 
 if __name__ == "__main__":
+    public_key = os.path.abspath(settings.mqtts_public_key)
+    private_key = os.path.abspath(settings.mqtts_private_key)
+
     if not os.path.exists(public_key) and not os.path.exists(private_key):
         logger.warning("Generating self-signed key pair!")
         certificate_pair = generate_self_signed_certificate()
