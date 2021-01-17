@@ -39,6 +39,7 @@ def paginate_response(
     if page_size and not total_override:
         page_count = math.ceil(list_length / page_size)
     elif page_size and total_override:
+        list_length = total_override
         page_count = math.ceil(total_override / page_size)
 
     return {

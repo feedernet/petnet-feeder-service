@@ -63,7 +63,6 @@ class KronosGateways:
             raise HTTPException(
                 status_code=400, detail=f"Unregistered Gateway ({gateway_hid})"
             )
-        results = await db.fetch_all(query)
         return results
 
     @classmethod

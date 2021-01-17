@@ -15,17 +15,6 @@ from feeder.database.session import db
 logger = logging.getLogger("feeder")
 
 
-async def startup_event():
-    await db.connect()
-    async_loop.create_task(broker.start())
-    async_loop.create_task(client.start())
-
-
-async def shutdown_event():
-    await asyncio.gather([broker.shutdown()], return_exceptions=True)
-    await db.disconnect()
-
-
 def handle_exception(loop, context):
     if "exception" in context:
         logging.error("Caught global exception:", exc_info=context["exception"])
@@ -34,26 +23,49 @@ def handle_exception(loop, context):
         logging.error("Caught global exception: %s", msg)
 
 
+frontend = Path("./static/build/index.html")
 frontend_template = Jinja2Templates(directory="static/build")
-async_loop = asyncio.get_event_loop()
-async_loop.set_exception_handler(handle_exception)
-client = FeederClient()
-broker = FeederBroker()
 
-mqtt_enabled_routers = [feeder, pet]
-for mqtt_router in mqtt_enabled_routers:
-    mqtt_router.router.client = client
-    mqtt_router.router.broker = broker
+
+async def render_frontend(full_path: str, request: Request):
+    frontend_paths = ["settings", "feeders", ""]
+    if full_path not in frontend_paths:
+        raise HTTPException(status_code=404)
+
+    if frontend.exists():
+        build_path = "build"
+        if settings.app_root:
+            build_path = f"{settings.app_root[1:]}/build"
+        return frontend_template.TemplateResponse(
+            "index.html",
+            {
+                "request": request,
+                "build_path": build_path,
+                "root_path": settings.app_root,
+            },
+        )
+
+    logger.warning("Caught frontend request without built frontend.")
+    raise HTTPException(status_code=500, detail="Frontend not built!")
 
 
 def get_application() -> FastAPI:
+    async_loop = asyncio.get_event_loop()
+    async_loop.set_exception_handler(handle_exception)
+    client = FeederClient()
+    broker = FeederBroker()
+
+    mqtt_enabled_routers = [feeder, pet]
+    for mqtt_router in mqtt_enabled_routers:
+        mqtt_router.router.client = client
+        mqtt_router.router.broker = broker
+
     app = FastAPI(
         title=settings.app_name,
         description=settings.app_description,
         version="1.0",
     )
 
-    frontend = Path("./static/build/index.html")
     if frontend.exists():
         app.mount(
             f"{settings.app_root}/build",
@@ -64,29 +76,22 @@ def get_application() -> FastAPI:
     app.include_router(feeder.router, prefix=f"{settings.app_root}/api/v1/feeder")
     app.include_router(pet.router, prefix=f"{settings.app_root}/api/v1/pet")
 
-    app.add_event_handler("startup", startup_event)
-    app.add_event_handler("shutdown", shutdown_event)
+    @app.on_event("startup")
+    async def startup_event():  # pylint: disable=unused-variable
+        await db.connect()
+        async_loop.create_task(broker.start())
+        async_loop.create_task(client.start())
 
-    @app.get(f"{settings.app_root}/{{full_path:path}}", response_class=HTMLResponse)
-    async def render_frontend(full_path: str, request: Request):
-        frontend_paths = ["settings", "feeders", ""]
-        if full_path not in frontend_paths:
-            raise HTTPException(status_code=404)
+    @app.on_event("shutdown")
+    async def shutdown_event():  # pylint: disable=unused-variable
+        await asyncio.gather([await broker.shutdown()], return_exceptions=True)
+        await db.disconnect()
 
-        if frontend.exists():
-            build_path = "build"
-            if settings.app_root:
-                build_path = f"{settings.app_root[1:]}/build"
-            return frontend_template.TemplateResponse(
-                "index.html",
-                {
-                    "request": request,
-                    "build_path": build_path,
-                    "root_path": settings.app_root,
-                },
-            )
-
-        logger.warning("Caught frontend request without built frontend.")
-        raise HTTPException(status_code=500, detail="Frontend not built!")
+    app.add_api_route(
+        path=f"{settings.app_root}/{{full_path:path}}",
+        methods=["GET"],
+        endpoint=render_frontend,
+        response_class=HTMLResponse,
+    )
 
     return app

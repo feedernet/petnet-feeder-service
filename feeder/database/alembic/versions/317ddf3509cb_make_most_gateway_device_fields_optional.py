@@ -34,6 +34,25 @@ def upgrade():
 
 
 def downgrade():
+    connection = op.get_bind()
+    for field_name in [
+        "uid",
+        "type",
+        "softwareVersion",
+        "softwareName",
+        "osName",
+        "sdkVersion",
+        "name",
+    ]:
+        connection.execute(
+            f"UPDATE kronos_gateway SET {field_name} = 'unknown' WHERE {field_name} IS NULL"
+        )
+
+    for field_name in ["uid", "type", "softwareVersion", "softwareName", "name"]:
+        connection.execute(
+            f"UPDATE kronos_device SET {field_name} = 'unknown' WHERE {field_name} IS NULL"
+        )
+
     with op.batch_alter_table("kronos_gateway") as batch_op:
         batch_op.alter_column("uid", existing_type=sa.TEXT(), nullable=False)
         batch_op.alter_column("type", existing_type=sa.TEXT(), nullable=False)
