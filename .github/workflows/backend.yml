@@ -6,11 +6,15 @@ on:
       - 'feeder/**'
       - 'tests/**'
       - '.github/workflows/backend.yml'
+      - 'tox.ini'
+      - 'setup.py'
   pull_request:
     paths:
       - 'feeder/**'
       - 'tests/**'
       - '.github/workflows/backend.yml'
+      - 'tox.ini'
+      - 'setup.py'
 
 jobs:
   build:
