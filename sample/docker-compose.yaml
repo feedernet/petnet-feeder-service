@@ -1,7 +1,7 @@
 ---
 version: "2.1"
 services:
-  feeder-service:
+  petnet-feeder-service:
     # For Raspberry Pi devices using older processors, we need to specify certain versions
     # in order to make sure docker pulls down the right container. Uncomment the line
     # which fits the device you are running this on.
