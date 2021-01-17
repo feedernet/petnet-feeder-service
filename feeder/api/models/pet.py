@@ -11,4 +11,3 @@ class RegisteredPet(BaseModel):
     birthday: Optional[int]
     activity_level: Optional[int]
     device_hid: Optional[str]
-

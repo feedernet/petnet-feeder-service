@@ -4,7 +4,7 @@ import random
 import re
 import string
 
-from hbmqtt.client import MQTTClient, ClientException
+from hbmqtt.client import MQTTClient
 from hbmqtt.mqtt.constants import QOS_2
 
 from feeder.database.models import KronosDevices, DeviceTelemetryData, FeedingResult
@@ -48,7 +48,7 @@ async def commit_telemetry_data(gateway_id: str, payload: dict):
             usb_power=bool(payload["i|usb"]),
             charging=bool(payload["i|chg"]),
             ir=bool(payload["i|ir"]),
-            rssi=payload["i|rssi"]
+            rssi=payload["i|rssi"],
         )
     if message_type == "feed_result":
         logger.info("Committing feed result data for %s", device_id)
@@ -69,7 +69,7 @@ async def commit_telemetry_data(gateway_id: str, payload: dict):
             vol=payload.get("b|vol"),
             bowl=payload.get("b|bowl"),
             recipe_id=payload.get("s|rid"),
-            error=payload.get("s|err")
+            error=payload.get("s|err"),
         )
 
 
@@ -99,7 +99,9 @@ class FeederClient(MQTTClient):
             await commit_telemetry_data(gateway_id, payload)
         else:
             logger.info(
-                f"Unknown message: {packet.variable_header.topic_name} => {packet.payload.data}"
+                "Unknown message: %s => %s",
+                packet.variable_header.topic_name,
+                packet.payload.data,
             )
 
     async def create_request_ack(self, gateway_id, request_id):
@@ -122,31 +124,51 @@ class FeederClient(MQTTClient):
         await self.send_cmd(gateway_id, device_id, "feed", {"portion": portion})
 
     async def send_cmd_button(self, gateway_id, device_id, enable=True):
-        await self.send_cmd(gateway_id, device_id, "button_enable_remote", {"enable": enable})
+        await self.send_cmd(
+            gateway_id, device_id, "button_enable_remote", {"enable": enable}
+        )
 
     async def send_cmd_reboot(self, gateway_id, device_id):
         await self.send_cmd(gateway_id, device_id, "reboot", {})
 
     async def send_cmd_utc_offset(self, gateway_id, device_id, utc_offset=0):
-        await self.send_cmd(gateway_id, device_id, "utc_offset", {"utc_offset": utc_offset})
+        await self.send_cmd(
+            gateway_id, device_id, "utc_offset", {"utc_offset": utc_offset}
+        )
 
-    async def send_cmd_budget(self, gateway_id, device_id, recipe_id, tbsp_per_feeding, g_per_tbsp, budget_tbsp):
+    async def send_cmd_budget(
+        self,
+        gateway_id,
+        device_id,
+        recipe_id,
+        tbsp_per_feeding,
+        g_per_tbsp,
+        budget_tbsp,
+    ):
         # The feeder seems to get unhappy if the recipe ID isn't 7-8 chars long and
         # in r"[a-z]{1,2}[0-9]{6,7}" format. Whatever.
-        await self.send_cmd(gateway_id, device_id, "budget",
-                            {"recipe": f"E{str(recipe_id).zfill(7)}", "tbsp_per_feeding": tbsp_per_feeding,
-                             "g_per_tbsp": g_per_tbsp, "budget_tbsp": budget_tbsp})
-
-    async def send_cmd_schedule(
-            self,
+        await self.send_cmd(
             gateway_id,
             device_id,
-            active=True,
-            feeding_id="aaaa",
-            name="FEED2",
-            portion=0.0625,
-            reminder=False,
-            time=43100,
+            "budget",
+            {
+                "recipe": f"E{str(recipe_id).zfill(7)}",
+                "tbsp_per_feeding": tbsp_per_feeding,
+                "g_per_tbsp": g_per_tbsp,
+                "budget_tbsp": budget_tbsp,
+            },
+        )
+
+    async def send_cmd_schedule(
+        self,
+        gateway_id,
+        device_id,
+        active=True,
+        feeding_id="aaaa",
+        name="FEED2",
+        portion=0.0625,
+        reminder=False,
+        time=43100,
     ):
         await self.send_cmd(
             gateway_id,
@@ -163,7 +185,9 @@ class FeederClient(MQTTClient):
         )
 
     async def start(self):
-        await self.connect("mqtt://%s:%s@localhost:1883/" % (local_username, local_password))
+        await self.connect(
+            "mqtt://%s:%s@localhost:1883/" % (local_username, local_password)
+        )
         await self.subscribe([("#", QOS_2)])
         try:
             while True:
@@ -171,8 +195,6 @@ class FeederClient(MQTTClient):
                 packet = message.publish_packet
                 await self.handle_message(packet)
 
-        except ClientException as ce:
-            logging.error(f"mqtt-client exception: {ce}")
-        except Exception:
+        except Exception:  # pylint: disable=broad-except
             # We cannot let the client error out!
             logger.exception("Unhandled error in MQTT client!")

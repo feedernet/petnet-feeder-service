@@ -26,7 +26,9 @@ class APIRouterWithMQTTClient(APIRouter):
         self._broker = broker
 
 
-def paginate_response(entities: list, current_page=1, max_page_size=10, total_override=0) -> dict:
+def paginate_response(
+    entities: list, current_page=1, max_page_size=10, total_override=0
+) -> dict:
     list_length = len(entities)
     offset = (current_page - 1) * max_page_size
     page_size = max_page_size
@@ -37,6 +39,7 @@ def paginate_response(entities: list, current_page=1, max_page_size=10, total_ov
     if page_size and not total_override:
         page_count = math.ceil(list_length / page_size)
     elif page_size and total_override:
+        list_length = total_override
         page_count = math.ceil(total_override / page_size)
 
     return {
@@ -56,7 +59,9 @@ def generate_feeder_hid(uid: str) -> str:
     return hashlib.sha1(uid.encode("utf-8")).hexdigest()
 
 
-def check_connection(device: "Device", broker: "FeederBroker") -> "Device":
+def check_connection(
+    device: "Device", broker: "FeederBroker"  # noqa: F821
+) -> "Device":  # noqa: F821
     # This is kinda gross... we are tapping into their internal sessions
     # storage.
     # TODO: If we end up forking HBMQTT, we should add an interface for this.

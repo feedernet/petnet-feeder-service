@@ -1,8 +1,24 @@
+# pylint: disable=no-value-for-parameter
+# SQLAlchemy uses parameter injecting decorators... pylint no-likey
+# https://github.com/sqlalchemy/sqlalchemy/issues/4656
+
 import logging
-from fastapi import HTTPException
-from sqlalchemy import Boolean, Column, Integer, ForeignKey, Table, Text, Float, func, select, desc
-from sqlalchemy.sql.expression import literal
 from sqlite3 import IntegrityError
+
+from fastapi import HTTPException
+from sqlalchemy import (
+    Boolean,
+    Column,
+    Integer,
+    ForeignKey,
+    Table,
+    Text,
+    Float,
+    func,
+    select,
+    desc,
+)
+from sqlalchemy.sql.expression import literal
 
 from feeder.util.feeder import generate_api_key, generate_feeder_hid
 from feeder.util import get_current_timestamp
@@ -47,7 +63,6 @@ class KronosGateways:
             raise HTTPException(
                 status_code=400, detail=f"Unregistered Gateway ({gateway_hid})"
             )
-        results = await db.fetch_all(query)
         return results
 
     @classmethod
@@ -85,7 +100,7 @@ devices = Table(
     Column("timezone", Text(), nullable=True),
     Column("frontButton", Boolean(), nullable=True),
     Column("currentRecipe", Integer(), ForeignKey("recipes.id"), nullable=True),
-    Column("black", Boolean(), nullable=True)
+    Column("black", Boolean(), nullable=True),
 )
 
 
@@ -101,7 +116,8 @@ class KronosDevices:
         results = await db.fetch_all(query)
         if gateway_hid and not results:
             raise HTTPException(
-                status_code=400, detail=f"No devices registered for Gateway: {gateway_hid}"
+                status_code=400,
+                detail=f"No devices registered for Gateway: {gateway_hid}",
             )
         if device_hid and not results:
             raise HTTPException(
@@ -129,16 +145,28 @@ class KronosDevices:
 
     @classmethod
     async def ping(cls, *, gateway_hid, device_hid):
-        await KronosDevices.get_or_insert(gateway_hid=gateway_hid, device_hid=device_hid)
-        query = devices.update().where(devices.c.hid == device_hid).values(
-            lastPingedAt=get_current_timestamp()
+        await KronosDevices.get_or_insert(
+            gateway_hid=gateway_hid, device_hid=device_hid
+        )
+        query = (
+            devices.update()
+            .where(devices.c.hid == device_hid)
+            .values(lastPingedAt=get_current_timestamp())
         )
         results = await db.execute(query)
         return results
 
     @classmethod
-    async def update(cls, *, device_hid: str, name: str = None, timezone: str = None, front_button: bool = None,
-                     recipe_id: int = None, black: bool = None):
+    async def update(
+        cls,
+        *,
+        device_hid: str,
+        name: str = None,
+        timezone: str = None,
+        front_button: bool = None,
+        recipe_id: int = None,
+        black: bool = None,
+    ):
         values = {}
         if name is not None:
             values["name"] = name
@@ -150,9 +178,7 @@ class KronosDevices:
             values["currentRecipe"] = recipe_id
         if black is not None:
             values["black"] = black
-        query = devices.update().where(devices.c.hid == device_hid).values(
-            **values
-        )
+        query = devices.update().where(devices.c.hid == device_hid).values(**values)
         results = await db.execute(query)
         return results
 
@@ -177,7 +203,7 @@ sensor_data = Table(
     Column("usb_power", Boolean(), nullable=False),
     Column("charging", Boolean(), nullable=False),
     Column("ir", Boolean(), nullable=False),
-    Column("rssi", Integer(), nullable=False)
+    Column("rssi", Integer(), nullable=False),
 )
 
 
@@ -193,26 +219,41 @@ class DeviceTelemetryData:
         return results[0]
 
     @classmethod
-    async def report(cls, *, gateway_hid: str, device_hid: str, voltage: float, usb_power: bool, charging: bool,
-                     ir: bool, rssi: int):
+    async def report(
+        cls,
+        *,
+        gateway_hid: str,
+        device_hid: str,
+        voltage: float,
+        usb_power: bool,
+        charging: bool,
+        ir: bool,
+        rssi: int,
+    ):
         sensors = {
             "timestamp": get_current_timestamp(),
             "voltage": voltage,
             "usb_power": usb_power,
             "charging": charging,
             "ir": ir,
-            "rssi": rssi
+            "rssi": rssi,
         }
-        query_last_report = sensor_data.select().where(sensor_data.c.device_hid == device_hid)
+        query_last_report = sensor_data.select().where(
+            sensor_data.c.device_hid == device_hid
+        )
         last_report = await db.fetch_all(query_last_report)
 
         if last_report:
-            query = sensor_data.update().where(sensor_data.c.device_hid == device_hid).values(
-                **sensors
+            query = (
+                sensor_data.update()
+                .where(sensor_data.c.device_hid == device_hid)
+                .values(**sensors)
             )
         else:
             # We may have never seen this device before, so make sure the device exists.
-            device = await KronosDevices.get_or_insert(device_hid=device_hid, gateway_hid=gateway_hid)
+            device = await KronosDevices.get_or_insert(
+                device_hid=device_hid, gateway_hid=gateway_hid
+            )
             query = sensor_data.insert().values(device_hid=device.hid, **sensors)
 
         results = await db.execute(query)
@@ -238,13 +279,25 @@ feeding_event = Table(
     Column("hopper_start", Integer(), nullable=False, default=0, server_default="0"),
     Column("hopper_end", Integer(), nullable=False, default=0, server_default="0"),
     Column("source", Integer(), nullable=True, default=0, server_default="0"),
-    Column("fail", Boolean(), nullable=False, default=False, server_default=literal(False)),
-    Column("trip", Boolean(), nullable=True, default=False, server_default=literal(False)),
-    Column("lrg", Boolean(), nullable=True, default=False, server_default=literal(False)),
-    Column("vol", Boolean(), nullable=True, default=False, server_default=literal(False)),
-    Column("bowl", Boolean(), nullable=True, default=False, server_default=literal(False)),
+    Column(
+        "fail", Boolean(), nullable=False, default=False, server_default=literal(False)
+    ),
+    Column(
+        "trip", Boolean(), nullable=True, default=False, server_default=literal(False)
+    ),
+    Column(
+        "lrg", Boolean(), nullable=True, default=False, server_default=literal(False)
+    ),
+    Column(
+        "vol", Boolean(), nullable=True, default=False, server_default=literal(False)
+    ),
+    Column(
+        "bowl", Boolean(), nullable=True, default=False, server_default=literal(False)
+    ),
     Column("error", Text(), nullable=True),
-    Column("recipe_id", Text(), nullable=False, default="UNKNOWN", server_default="UNKNOWN"),
+    Column(
+        "recipe_id", Text(), nullable=False, default="UNKNOWN", server_default="UNKNOWN"
+    ),
 )
 
 
@@ -252,9 +305,11 @@ class FeedingResult:
     @classmethod
     async def get(cls, device_hid="", offset=0, limit=10):
         join = feeding_event.join(devices, feeding_event.c.device_hid == devices.c.hid)
-        query = select(
-            [feeding_event, devices.c.name.label("device_name")]
-        ).select_from(join).order_by(desc(feeding_event.c.start_time))
+        query = (
+            select([feeding_event, devices.c.name.label("device_name")])
+            .select_from(join)
+            .order_by(desc(feeding_event.c.start_time))
+        )
         if device_hid:
             query = query.where(feeding_event.c.device_hid == device_hid)
         query.offset(offset).limit(limit)
@@ -272,9 +327,27 @@ class FeedingResult:
         return await db.fetch_val(query)
 
     @classmethod
-    async def report(cls, *, device_hid: str, start_time: int, end_time: int, pour: int, full: int, grams_expected: int,
-                     grams_actual: int, hopper_start: int, hopper_end: int, recipe_id: str, fail: bool, source=None,
-                     trip=None, lrg=None, vol=None, bowl=None, error=None):
+    async def report(
+        cls,
+        *,
+        device_hid: str,
+        start_time: int,
+        end_time: int,
+        pour: int,
+        full: int,
+        grams_expected: int,
+        grams_actual: int,
+        hopper_start: int,
+        hopper_end: int,
+        recipe_id: str,
+        fail: bool,
+        source=None,
+        trip=None,
+        lrg=None,
+        vol=None,
+        bowl=None,
+        error=None,
+    ):
         query = feeding_event.insert().values(
             device_hid=device_hid,
             timestamp=get_current_timestamp(),
@@ -293,7 +366,7 @@ class FeedingResult:
             vol=vol,
             bowl=bowl,
             recipe_id=recipe_id,
-            error=error
+            error=error,
         )
         try:
             return await db.execute(query)
@@ -316,7 +389,7 @@ pets = Table(
     Column("weight", Float(), nullable=False),
     Column("birthday", Integer(), nullable=False),
     Column("activity_level", Integer(), nullable=False),
-    Column("device_hid", Text(), ForeignKey("kronos_device.hid"), nullable=True)
+    Column("device_hid", Text(), ForeignKey("kronos_device.hid"), nullable=True),
 )
 
 
@@ -331,20 +404,30 @@ class Pet:
         if not results and pet_id:
             logger.error("No pets found with ID: %d", pet_id)
             raise HTTPException(404, detail=f"No pet found with ID {pet_id}")
-        elif not results:
-            raise HTTPException(404, detail=f"No pets found!")
+
+        if not results:
+            raise HTTPException(404, detail="No pets found!")
 
         return results
 
     @classmethod
-    async def create(cls, *, name: str, animal_type: str, weight: float, birthday: int, image: str = None,
-                     activity_level: int, device_hid: str = None):
+    async def create(
+        cls,
+        *,
+        name: str,
+        animal_type: str,
+        weight: float,
+        birthday: int,
+        image: str = None,
+        activity_level: int,
+        device_hid: str = None,
+    ):
         values = {
             "name": name,
             "animal_type": animal_type,
             "weight": weight,
             "birthday": birthday,
-            "activity_level": activity_level
+            "activity_level": activity_level,
         }
 
         if image is not None:
@@ -364,8 +447,17 @@ class Pet:
         return await db.execute(query)
 
     @classmethod
-    async def update(cls, pet_id: int, name: str = None, animal_type: str = None, weight: float = None,
-                     birthday: int = None, image: str = None, activity_level: int = None, device_hid: str = None):
+    async def update(
+        cls,
+        pet_id: int,
+        name: str = None,
+        animal_type: str = None,
+        weight: float = None,
+        birthday: int = None,
+        image: str = None,
+        activity_level: int = None,
+        device_hid: str = None,
+    ):
         values = {}
         if name:
             values["name"] = name
@@ -393,7 +485,7 @@ recipes = Table(
     Column("name", Text(), nullable=True),
     Column("g_per_tbsp", Integer(), nullable=False),
     Column("tbsp_per_feeding", Integer(), nullable=False),
-    Column("budget_tbsp", Integer(), nullable=False)
+    Column("budget_tbsp", Integer(), nullable=False),
 )
 
 
@@ -407,18 +499,31 @@ class StoredRecipe:
         return await db.fetch_all(query)
 
     @classmethod
-    async def create(cls, *, name: str = "", g_per_tbsp: int, tbsp_per_feeding: int, budget_tbsp: int = 0):
+    async def create(
+        cls,
+        *,
+        name: str = "",
+        g_per_tbsp: int,
+        tbsp_per_feeding: int,
+        budget_tbsp: int = 0,
+    ):
         query = recipes.insert().values(
             name=name or None,
             g_per_tbsp=g_per_tbsp,
             tbsp_per_feeding=tbsp_per_feeding,
-            budget_tbsp=budget_tbsp or tbsp_per_feeding
+            budget_tbsp=budget_tbsp or tbsp_per_feeding,
         )
         return await db.execute(query)
 
     @classmethod
-    async def update(cls, recipe_id: int, name: str = None, g_per_tbsp: int = None, tbsp_per_feeding: int = None,
-                     budget_tbsp: int = None):
+    async def update(
+        cls,
+        recipe_id: int,
+        name: str = None,
+        g_per_tbsp: int = None,
+        tbsp_per_feeding: int = None,
+        budget_tbsp: int = None,
+    ):
         values = {}
         if name:
             values["name"] = name
@@ -428,9 +533,7 @@ class StoredRecipe:
             values["tbsp_per_feeding"] = tbsp_per_feeding
         if budget_tbsp:
             values["budget_tbsp"] = budget_tbsp
-        query = recipes.update().where(recipes.c.id == recipe_id).values(
-            **values
-        )
+        query = recipes.update().where(recipes.c.id == recipe_id).values(**values)
         return await db.execute(query)
 
 
@@ -443,7 +546,7 @@ hopper_level_references = Table(
     metadata,
     Column("device_hid", Text(), ForeignKey("kronos_device.hid"), primary_key=True),
     Column("timestamp", Integer(), primary_key=True),
-    Column("level", Integer(), nullable=False)
+    Column("level", Integer(), nullable=False),
 )
 
 
@@ -458,20 +561,25 @@ class HopperLevelRef:
 
         device_results = await KronosDevices.get(device_hid=device_id)
         device = device_results[0]
-        latest_ref_query = hopper_level_references.select().order_by(
-            desc(hopper_level_references.c.timestamp)
-        ).where(hopper_level_references.c.device_hid == device_id)
+        latest_ref_query = (
+            hopper_level_references.select()
+            .order_by(desc(hopper_level_references.c.timestamp))
+            .where(hopper_level_references.c.device_hid == device_id)
+        )
         latest_ref = await db.fetch_one(latest_ref_query)
         if not latest_ref:
             raise HTTPException(404, detail=f"Hopper level not set for {device_id}")
 
-        logger.debug("Hopper level last set to %d on %d", latest_ref.level, latest_ref.timestamp)
+        logger.debug(
+            "Hopper level last set to %d on %d", latest_ref.level, latest_ref.timestamp
+        )
 
-        dispensed_grams_query = select(
-            [func.sum(feeding_event.c.grams_expected)]
-        ).select_from(feeding_event).where(
-            feeding_event.c.start_time >= latest_ref.timestamp
-        ).where(feeding_event.c.device_hid == device_id)
+        dispensed_grams_query = (
+            select([func.sum(feeding_event.c.grams_expected)])
+            .select_from(feeding_event)
+            .where(feeding_event.c.start_time >= latest_ref.timestamp)
+            .where(feeding_event.c.device_hid == device_id)
+        )
         # TODO: So, this isn't _technically_ the most correct way to do this.
         # We are making the assumption that all of the dispensed feeds from the last reference
         # are the current recipe. While this isn't an unfair assumption, since food level
@@ -480,16 +588,32 @@ class HopperLevelRef:
         dispensed_grams = await db.fetch_val(dispensed_grams_query)
         if not dispensed_grams:
             dispensed_grams = 0
-        logger.debug("%d grams of food have been dispensed since %d", dispensed_grams, latest_ref.timestamp)
+        logger.debug(
+            "%d grams of food have been dispensed since %d",
+            dispensed_grams,
+            latest_ref.timestamp,
+        )
         recipe_query = recipes.select().where(recipes.c.id == device.currentRecipe)
         recipe = await db.fetch_one(recipe_query)
         if not recipe:
-            raise HTTPException(400, detail="No recipe set for device, cannot calculate hopper level!")
+            raise HTTPException(
+                400, detail="No recipe set for device, cannot calculate hopper level!"
+            )
         dispensed_cups = (dispensed_grams / recipe.g_per_tbsp) / tbsp_per_cup
-        logger.debug("Using recipeId (%d), at %d g/tbsp, that is %f cups", recipe.id, recipe.g_per_tbsp, dispensed_cups)
+        logger.debug(
+            "Using recipeId (%d), at %d g/tbsp, that is %f cups",
+            recipe.id,
+            recipe.g_per_tbsp,
+            dispensed_cups,
+        )
         ref_level_cups = (latest_ref.level / 100) * max_hopper_cups
         current_cups = ref_level_cups - dispensed_cups
-        logger.debug("%f cups minus %f cups equals %f cups remaining", ref_level_cups, dispensed_cups, current_cups)
+        logger.debug(
+            "%f cups minus %f cups equals %f cups remaining",
+            ref_level_cups,
+            dispensed_cups,
+            current_cups,
+        )
         return (current_cups / max_hopper_cups) * 100
 
     @classmethod
@@ -498,7 +622,7 @@ class HopperLevelRef:
         query = hopper_level_references.insert().values(
             device_hid=target_device[0].hid,
             timestamp=get_current_timestamp(),
-            level=level
+            level=level,
         )
         return await db.execute(query)
 
@@ -509,5 +633,5 @@ schedules = Table(
     Column("pet_id", Text(), ForeignKey("pets.id"), primary_key=True),
     # This is the number of seconds since 12:00AM
     Column("time", Integer(), primary_key=True),
-    Column("enabled", Boolean(), nullable=False)
+    Column("enabled", Boolean(), nullable=False),
 )
