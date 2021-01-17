@@ -5,10 +5,12 @@ on:
     paths:
       - 'feeder/**'
       - 'tests/**'
+      - '.github/workflows/backend.yml'
   pull_request:
     paths:
       - 'feeder/**'
       - 'tests/**'
+      - '.github/workflows/backend.yml'
 
 jobs:
   build:
