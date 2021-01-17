@@ -73,7 +73,9 @@ disable=
     # We should get rid of these once we have written docstrings ;)
     missing-function-docstring,
     missing-class-docstring,
-    missing-module-docstring
+    missing-module-docstring,
+    # This is buggy/broken on Py3.9: https://github.com/PyCQA/pylint/issues/3882
+    unsubscriptable-object
 
 
 [REPORTS]
