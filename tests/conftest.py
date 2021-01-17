@@ -1,6 +1,7 @@
+import string
 import tempfile
 import pathlib
-from time import time
+import random
 from os import environ
 from typing import Callable, Tuple
 
@@ -51,16 +52,15 @@ def testing_environment(
     test_certificates: Tuple[str, str], find_free_port: Callable
 ) -> None:
     location = pathlib.Path(tempfile.gettempdir())
-    tstamp = int(time())
+    rand_str = "".join(random.choices(string.ascii_letters + string.digits, k=6))
 
     # Have sqlite use an im-memory database
-    db_path = location / f"feedernet.{tstamp}.db"
-    print(db_path)
+    db_path = location / f"feedernet.{rand_str}.db"
     environ["DATABASE_PATH"] = str(db_path)
 
     # Write certificates to temporary files
-    priv_path = location / f"feedernet-priv.{tstamp}.pem"
-    cert_path = location / f"feedernet-cert.{tstamp}.pem"
+    priv_path = location / f"feedernet-priv.{rand_str}.pem"
+    cert_path = location / f"feedernet-cert.{rand_str}.pem"
     with open(priv_path, "w") as cert_file:
         cert_file.write(test_certificates[0])
 
