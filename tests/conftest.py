@@ -96,10 +96,10 @@ async def apply_migrations() -> None:
 
 @pytest.fixture
 def app(apply_migrations: None) -> FastAPI:
-    from feeder.main import get_application
+    from feeder.main import create_application
 
     print("Starting application with DB:", environ["DATABASE_PATH"])
-    return get_application()
+    return create_application()
 
 
 @pytest.fixture

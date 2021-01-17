@@ -8,10 +8,11 @@ pytest = "*"
 pytest-asyncio = "*"
 tox-pipenv = "*"
 black = "20.8b1"
+tox = "*"
 
 [packages]
 cryptography = "*"
-hbmqtt = {editable = false, git = "git+https://github.com/petnet-independence-project/hbmqtt"}
+hbmqtt = {editable = false, git = "git+https://github.com/feedernet/hbmqtt"}
 jinja2 = "*"
 aiofiles = "*"
 fastapi = "*"

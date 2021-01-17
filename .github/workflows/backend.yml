@@ -2,19 +2,15 @@ name: Backend Testing/Linting
 
 on:
   push:
-    paths:
-      - 'feeder/**'
-      - 'tests/**'
-      - '.github/workflows/backend.yml'
-      - 'tox.ini'
-      - 'setup.py'
+    paths-ignore:
+      - 'static/**'
+      - 'sample/**'
+      - '**.md'
   pull_request:
-    paths:
-      - 'feeder/**'
-      - 'tests/**'
-      - '.github/workflows/backend.yml'
-      - 'tox.ini'
-      - 'setup.py'
+    paths-ignore:
+      - 'static/**'
+      - 'sample/**'
+      - '**.md'
 
 jobs:
   build:

@@ -49,7 +49,7 @@ async def render_frontend(full_path: str, request: Request):
     raise HTTPException(status_code=500, detail="Frontend not built!")
 
 
-def get_application() -> FastAPI:
+def create_application() -> FastAPI:
     async_loop = asyncio.get_event_loop()
     async_loop.set_exception_handler(handle_exception)
     client = FeederClient()

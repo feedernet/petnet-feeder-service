@@ -5,7 +5,7 @@ from logging.config import dictConfig
 import uvicorn
 
 from feeder import settings
-from feeder.main import get_application
+from feeder.main import create_application
 from feeder.config import LOGGING_CONFIG
 from feeder.util.mkcert import generate_self_signed_certificate, domain_in_subjects
 
@@ -19,7 +19,7 @@ if settings.debug:
     LOGGING_CONFIG["loggers"]["hbmqtt.mqtt.protocol.handler"] = {"level": "INFO"}
 dictConfig(LOGGING_CONFIG)
 
-app = get_application()
+app = create_application()
 
 if __name__ == "__main__":
     public_key = os.path.abspath(settings.mqtts_public_key)
