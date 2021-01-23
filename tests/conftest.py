@@ -105,3 +105,21 @@ def app(apply_migrations: None) -> FastAPI:
 @pytest.fixture
 def client(app: FastAPI) -> TestClient:
     return TestClient(app)
+
+
+@pytest.fixture
+@pytest.mark.asyncio
+async def with_registered_gateway() -> None:
+    from tests.test_database_models import SAMPLE_GATEWAY
+    from feeder.database.models import KronosGateways
+
+    await KronosGateways.create(**SAMPLE_GATEWAY)
+
+
+@pytest.fixture
+@pytest.mark.asyncio
+async def with_registered_device(with_registered_gateway: None) -> None:
+    from tests.test_database_models import SAMPLE_DEVICE
+    from feeder.database.models import KronosDevices
+
+    await KronosDevices.create(**SAMPLE_DEVICE)
