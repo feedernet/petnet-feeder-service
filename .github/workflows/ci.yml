@@ -34,12 +34,12 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push 64-bit
+      - name: Build and push latest
         uses: docker/build-push-action@v2
         with:
           context: .
           file: ./Dockerfile
-          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name != 'pull_request' }}
           tags: tedder42/petnet-feeder-service:latest
           
@@ -50,7 +50,7 @@ jobs:
           file: ./Dockerfile
           platforms: linux/arm/v7
           push: ${{ github.event_name != 'pull_request' }}
-          tags: tedder42/petnet-feeder-service:latest-arm7, tedder42/petnet-feeder-service:latest-pib2
+          tags: tedder42/petnet-feeder-service:latest-arm7, tedder42/petnet-feeder-service:latest-pib2, tedder42/petnet-feeder-service:latest
           
       - name: Build and push ARMv6
         uses: docker/build-push-action@v2
