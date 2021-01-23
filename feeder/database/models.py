@@ -370,7 +370,7 @@ class FeedingResult:
         )
         try:
             return await db.execute(query)
-        except IntegrityError as exc:
+        except IntegrityError:
             logger.exception("Unable to save feed result!")
 
     @classmethod
