@@ -10,6 +10,7 @@ SAMPLE_GATEWAY = {
     "softwareName": "SMART FEEDER",
     "softwareVersion": "2.8.0",
     "sdkVersion": "1.3.12",
+    "apiKey": "api-key",
 }
 
 SAMPLE_DEVICE_HID = "c3d89400068631f8138a57286982bea94370693d"

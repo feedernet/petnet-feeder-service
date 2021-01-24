@@ -9,6 +9,7 @@ import pytest
 import alembic.config
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+from hbmqtt.client import MQTTClient, QOS_2
 
 from tests.certificates import PRIVATE_KEY, PUBLIC_KEY
 
@@ -123,3 +124,28 @@ async def with_registered_device(with_registered_gateway: None) -> None:
     from feeder.database.models import KronosDevices
 
     await KronosDevices.create(**SAMPLE_DEVICE)
+
+
+@pytest.fixture
+@pytest.mark.asyncio
+async def mqtt_client() -> MQTTClient:
+    from feeder.util.mqtt.authentication import local_username, local_password
+    from feeder.util.mqtt.broker import FeederBroker
+    from feeder.util.mqtt.client import FeederClient
+    from feeder import settings
+
+    broker = FeederBroker()
+    await broker.start()
+    client = FeederClient()
+    await client.connect(
+        f"mqtt://{local_username}:{local_password}@localhost:{settings.mqtt_port}"
+    )
+    await client.subscribe([("#", QOS_2)])
+    message = await client.deliver_message()
+    packet = message.publish_packet
+    assert b"HBMQTT version" in packet.payload.data
+
+    yield client
+
+    await client.disconnect()
+    await broker.shutdown()
