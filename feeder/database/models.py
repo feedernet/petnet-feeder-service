@@ -17,7 +17,7 @@ from sqlalchemy import (
     func,
     select,
     desc,
-    asc
+    asc,
 )
 from sqlalchemy.sql.expression import literal
 
@@ -381,13 +381,14 @@ class FeedingResult:
 
     @staticmethod
     async def dispensed_at(device_id: str, timestamp: int, window_minutes: int = 5):
-        offset = window_minutes * 60 * 1000000  # minute -> second (60) -> microsec (1000000)
-        query = feeding_event.select().where(
-            feeding_event.c.device_hid == device_id
-        ).where(
-            feeding_event.c.timestamp >= timestamp - offset
-        ).where(
-            feeding_event.c.timestamp <= timestamp + offset
+        offset = (
+            window_minutes * 60 * 1000000
+        )  # minute -> second (60) -> microsec (1000000)
+        query = (
+            feeding_event.select()
+            .where(feeding_event.c.device_hid == device_id)
+            .where(feeding_event.c.timestamp >= timestamp - offset)
+            .where(feeding_event.c.timestamp <= timestamp + offset)
         )
         results = await db.fetch_all(query)
         if results:
@@ -654,15 +655,17 @@ schedules = Table(
     Column("time", Integer(), primary_key=True),
     Column("enabled", Boolean(), nullable=False),
     Column("name", Text(), nullable=False),
-    Column("portion", Float(), nullable=False)
+    Column("portion", Float(), nullable=False),
 )
 
 
 class FeedingSchedule:
     @classmethod
     async def get_for_pet(cls, pet_id: int):
-        query = schedules.select().where(schedules.c.pet_id == pet_id).order_by(
-            asc(schedules.c.time)
+        query = (
+            schedules.select()
+            .where(schedules.c.pet_id == pet_id)
+            .order_by(asc(schedules.c.time))
         )
         return await db.fetch_all(query)
 
@@ -674,17 +677,19 @@ class FeedingSchedule:
     @classmethod
     async def create_event(cls, pet_id: int, name: str, time: int, portion: float):
         query = schedules.insert().values(
-            pet_id=pet_id,
-            time=time,
-            enabled=True,
-            name=name,
-            portion=portion
+            pet_id=pet_id, time=time, enabled=True, name=name, portion=portion
         )
         return await db.execute(query)
 
     @classmethod
-    async def update_event(cls, event_id: int, name: str = None, time: int = None, enabled: bool = None,
-                           portion: float = None):
+    async def update_event(
+        cls,
+        event_id: int,
+        name: str = None,
+        time: int = None,
+        enabled: bool = None,
+        portion: float = None,
+    ):
         values = {}
         if name is not None:
             values["name"] = name
@@ -695,7 +700,9 @@ class FeedingSchedule:
         if portion is not None:
             values["portion"] = portion
 
-        query = schedules.update().where(schedules.c.event_id == event_id).values(**values)
+        query = (
+            schedules.update().where(schedules.c.event_id == event_id).values(**values)
+        )
         return await db.execute(query)
 
     @classmethod

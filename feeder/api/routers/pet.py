@@ -63,10 +63,7 @@ async def get_schedule_for_pet(pet: RegisteredPet):
         dispense_result = await FeedingResult.dispensed_at(
             device_id=pet.device_hid, timestamp=target_time
         )
-        schedule[idx] = {
-            **event,
-            "result": dispense_result
-        }
+        schedule[idx] = {**event, "result": dispense_result}
 
     return {"events": schedule}
 
@@ -84,7 +81,7 @@ async def new_feed_event(pet_id: int, updated_event: ScheduledFeed):
         pet_id=pet_id,
         name=updated_event.name,
         time=updated_event.time,
-        portion=updated_event.portion
+        portion=updated_event.portion,
     )
     return await get_schedule_for_pet(pet)
 
@@ -97,7 +94,7 @@ async def update_feed_event(pet_id: int, event_id: int, updated_event: Scheduled
         name=updated_event.name,
         time=updated_event.time,
         enabled=updated_event.enabled,
-        portion=updated_event.portion
+        portion=updated_event.portion,
     )
     return await get_schedule_for_pet(pet)
 

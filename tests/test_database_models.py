@@ -463,18 +463,24 @@ async def test_create_pets(with_registered_device: None):
 
 @pytest.mark.asyncio
 async def test_delete_pet():
-    from feeder.database.models import Pet
+    from feeder.database.models import Pet, FeedingSchedule
 
     pet_id = await Pet.create(
         name="Fido", animal_type="dog", weight=1000, birthday=1, activity_level=5
     )
     assert pet_id == 1
+    event_id = await FeedingSchedule.create_event(
+        pet_id=pet_id, name="Test", time=3600, portion=0.0625
+    )
+    assert event_id == 1
+    assert len(await FeedingSchedule.get_for_pet(pet_id=pet_id)) == 1
 
     await Pet.delete(pet_id=1)
     with pytest.raises(HTTPException) as exc:
         await Pet.get(pet_id=1)
     assert exc.value.status_code == 404
     assert exc.value.detail == "No pet found with ID 1"
+    assert len(await FeedingSchedule.get_for_pet(pet_id=pet_id)) == 0
 
 
 @pytest.mark.asyncio
@@ -692,3 +698,116 @@ async def test_set_hopper_level(with_registered_device: None):
 
     level = await HopperLevelRef.get(device_id=SAMPLE_DEVICE_HID)
     assert int(level) == 84
+
+
+@pytest.mark.asyncio
+async def test_get_and_create_pet_schedule():
+    from feeder.database.models import Pet, FeedingSchedule
+
+    pet_id = await Pet.create(
+        name="Fido", animal_type="dog", weight=1000, birthday=1, activity_level=5
+    )
+    assert pet_id == 1
+
+    assert len(await FeedingSchedule.get_for_pet(1)) == 0
+
+    event_id = await FeedingSchedule.create_event(
+        pet_id=pet_id, name="Test", time=3600, portion=0.0625
+    )
+
+    assert event_id == 1
+    results = await FeedingSchedule.get_for_pet(1)
+    assert len(results) == 1
+    result = results[0]
+    assert result.event_id == 1
+    assert int(result.pet_id) == pet_id
+    assert result.time == 3600
+    assert result.enabled
+    assert result.name == "Test"
+    assert result.portion == 0.0625
+
+
+@pytest.mark.asyncio
+async def test_update_pet_schedule_single_call():
+    from feeder.database.models import Pet, FeedingSchedule
+
+    pet_id = await Pet.create(
+        name="Fido", animal_type="dog", weight=1000, birthday=1, activity_level=5
+    )
+    assert pet_id == 1
+    event_id = await FeedingSchedule.create_event(
+        pet_id=pet_id, name="Test", time=3600, portion=0.0625
+    )
+    assert event_id == 1
+
+    event_id = await FeedingSchedule.update_event(
+        event_id=event_id, name="New Name", time=7200, enabled=False, portion=1.0625
+    )
+    assert event_id == 1
+
+    results = await FeedingSchedule.get_for_pet(1)
+    assert len(results) == 1
+    result = results[0]
+    assert result.event_id == 1
+    assert int(result.pet_id) == pet_id
+    assert result.time == 7200
+    assert not result.enabled
+    assert result.name == "New Name"
+    assert result.portion == 1.0625
+
+
+@pytest.mark.asyncio
+async def test_update_pet_schedule_multi_call():
+    from feeder.database.models import Pet, FeedingSchedule
+
+    pet_id = await Pet.create(
+        name="Fido", animal_type="dog", weight=1000, birthday=1, activity_level=5
+    )
+    assert pet_id == 1
+    event_id = await FeedingSchedule.create_event(
+        pet_id=pet_id, name="Test", time=3600, portion=0.0625
+    )
+    assert event_id == 1
+
+    event_id = await FeedingSchedule.update_event(event_id=event_id, name="New Name")
+    assert event_id == 1
+    event_id = await FeedingSchedule.update_event(event_id=event_id, time=7200)
+    assert event_id == 1
+    event_id = await FeedingSchedule.update_event(
+        event_id=event_id,
+        enabled=False,
+    )
+    assert event_id == 1
+    event_id = await FeedingSchedule.update_event(event_id=event_id, portion=1.0625)
+    assert event_id == 1
+
+    results = await FeedingSchedule.get_for_pet(1)
+    assert len(results) == 1
+    result = results[0]
+    assert result.event_id == 1
+    assert int(result.pet_id) == pet_id
+    assert result.time == 7200
+    assert not result.enabled
+    assert result.name == "New Name"
+    assert result.portion == 1.0625
+
+
+@pytest.mark.asyncio
+async def test_delete_pet_schedule_event():
+    from feeder.database.models import Pet, FeedingSchedule
+
+    pet_id = await Pet.create(
+        name="Fido", animal_type="dog", weight=1000, birthday=1, activity_level=5
+    )
+    assert pet_id == 1
+    event_id = await FeedingSchedule.create_event(
+        pet_id=pet_id, name="Test", time=3600, portion=0.0625
+    )
+    assert event_id == 1
+
+    event_id = await FeedingSchedule.delete_event(
+        event_id=event_id,
+    )
+    assert event_id == 1
+
+    assert len(await FeedingSchedule.get_for_pet(1)) == 0
