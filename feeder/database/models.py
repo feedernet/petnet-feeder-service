@@ -189,7 +189,7 @@ class KronosDevices:
         await FeedingResult.clear_for_device(device_id)
 
         device_query = devices.delete().where(devices.c.hid == device_id)
-        gateway_query = gateways.delete().where(gateways.c.hid == device[0].hid)
+        gateway_query = gateways.delete().where(gateways.c.hid == device[0].gatewayHid)
         await db.execute(device_query)
         await db.execute(gateway_query)
 
@@ -472,6 +472,8 @@ class Pet:
         if image:
             values["image"] = image
         if device_hid:
+            # Ensure the device exists
+            await KronosDevices.get(device_hid=device_hid)
             values["device_hid"] = device_hid
 
         query = pets.update().where(pets.c.id == pet_id).values(**values)

@@ -35,6 +35,7 @@ def upgrade():
 
 def downgrade():
     connection = op.get_bind()
+    connection.execute("pragma foreign_keys=OFF")
     for field_name in [
         "uid",
         "type",
@@ -71,3 +72,5 @@ def downgrade():
         )
         batch_op.alter_column("softwareName", existing_type=sa.TEXT(), nullable=False)
         batch_op.alter_column("name", existing_type=sa.TEXT(), nullable=False)
+
+    connection.execute("pragma foreign_keys=ON")
