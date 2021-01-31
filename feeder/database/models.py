@@ -411,10 +411,12 @@ pets = Table(
 
 class Pet:
     @classmethod
-    async def get(cls, pet_id: int = None):
+    async def get(cls, pet_id: int = None, device_hid: str = None):
         query = pets.select()
         if pet_id is not None:
             query = query.where(pets.c.id == pet_id)
+        if device_hid is not None:
+            query = query.where(pets.c.device_hid == device_hid)
 
         results = await db.fetch_all(query)
         if not results and pet_id:

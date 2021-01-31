@@ -3,11 +3,18 @@ import logging
 import random
 import re
 import string
+from typing import List
 
+import semver
 from hbmqtt.client import MQTTClient
 from hbmqtt.mqtt.constants import QOS_2
 
-from feeder.database.models import KronosDevices, DeviceTelemetryData, FeedingResult
+from feeder.database.models import (
+    KronosDevices,
+    DeviceTelemetryData,
+    FeedingResult,
+    FeedingSchedule,
+)
 from feeder.util.mqtt.authentication import local_username, local_password
 
 logger = logging.getLogger(__name__)
@@ -160,29 +167,63 @@ class FeederClient(MQTTClient):
         )
 
     async def send_cmd_schedule(
-        self,
-        gateway_id,
-        device_id,
-        active=True,
-        feeding_id="aaaa",
-        name="FEED2",
-        portion=0.0625,
-        reminder=False,
-        time=43100,
+        self, gateway_id, device_id, events: List[FeedingSchedule]
     ):
-        await self.send_cmd(
-            gateway_id,
-            device_id,
-            "schedule",
+        # We are going to default to the old API version because the
+        # older firmwares aren't great at consistently reporting their
+        # version info. We can assume is a feeder doesn't have a version,
+        # it is using the legacy scheduling API.
+        software_version = "2.3.2"
+        results = await KronosDevices.get(device_hid=device_id)
+        device = results[0]
+        if device.softwareVersion is not None:
+            logger.debug("Setting softwareVersion to %s", device.softwareVersion)
+            software_version = device.softwareVersion
+
+        schedule_array = [
             {
-                "active": active,
-                "feeding_id": feeding_id,
-                "name": name,
-                "portion": portion,
-                "reminder": reminder,
-                "time": time,
-            },
-        )
+                "active": event.enabled,
+                "automatic": True,
+                "feeding_id": (
+                    f"{device_id[:16]}_feed{event.event_id}_"
+                    f"{int(event.time / 3600)}:{str(int(event.time / 60 % 60)).zfill(2)}"
+                    f"{'AM' if event.time / 3600 < 12 else 'PM'}"
+                ),
+                "name": f"FEED{index}",
+                "portion": event.portion,
+                "reminder": True,
+                "time": event.time,
+            }
+            for index, event in enumerate(events)
+        ]
+
+        # TODO: Actually figure out when they implemented the newer scheduling API...
+        # We know >=2.7 uses the new API and that 2.3.2 uses the legacy API.
+        # Assuming 2.5.X because that is smack dab in between 3 and 7.
+        if semver.compare("2.5.0", software_version) == 1:
+            # If we are running on 2.4.0 or lower, use the legacy scheduling API
+            await self.send_cmd(gateway_id, device_id, "schedule", schedule_array)
+        else:
+            # If we are running 2.5.0 or higher, use the new API.
+            # TODO: We could probably be smarter about how we are handling events and
+            # TODO: actually take advantage of the new API. For now, this should work.
+            await self.send_cmd(gateway_id, device_id, "schedule_clear", {})
+            await self.send_cmd(
+                gateway_id,
+                device_id,
+                "schedule_mod_start",
+                {"size": len(schedule_array)},
+            )
+            await self.send_cmd(
+                gateway_id,
+                device_id,
+                "schedule_add",
+                [
+                    {"index": index, "data": event}
+                    for index, event in enumerate(schedule_array)
+                ],
+            )
+            await self.send_cmd(gateway_id, device_id, "schedule_mod_end", {})
 
     async def start(self):
         await self.connect(

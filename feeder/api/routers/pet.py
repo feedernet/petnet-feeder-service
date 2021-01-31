@@ -1,8 +1,11 @@
 from typing import List
+
+from fastapi.exceptions import HTTPException
+
 from feeder.util import get_relative_timestamp
 from feeder.util.feeder import APIRouterWithMQTTClient
 from feeder.api.models.pet import RegisteredPet, PetSchedule, ScheduledFeed
-from feeder.database.models import Pet, FeedingSchedule, FeedingResult
+from feeder.database.models import Pet, FeedingSchedule, FeedingResult, KronosDevices
 
 # Right now this doesn't use the MQTT client, but when a pet is assigned
 # a feeder or a scheduled feed, we will need to send that to the feeder.
@@ -68,6 +71,21 @@ async def get_schedule_for_pet(pet: RegisteredPet):
     return {"events": schedule}
 
 
+async def get_combined_device_schedule(device_hid: str):
+    """
+    Because we allow for multiple pets to be assigned to a feeder,
+    we need to enumerate all scheduled events for all of those pets.
+    """
+    all_events = []
+    pets = await Pet.get(device_hid=device_hid)
+    for pet in pets:
+        # TODO: There are definitely some edge cases here...
+        # What if two pets have an event at the same time?
+        all_events += await FeedingSchedule.get_for_pet(pet_id=pet.id)
+
+    return all_events
+
+
 @router.get("/{pet_id}/schedule", response_model=PetSchedule)
 async def get_schedule(pet_id: int):
     pet = await get_pet(pet_id)
@@ -77,18 +95,45 @@ async def get_schedule(pet_id: int):
 @router.post("/{pet_id}/schedule", response_model=PetSchedule)
 async def new_feed_event(pet_id: int, updated_event: ScheduledFeed):
     pet = await get_pet(pet_id)
+
+    if not pet.device_hid:
+        return HTTPException(
+            400, detail="Can't schedule event on pet without assigned feeder!"
+        )
+
+    results = await KronosDevices.get(device_hid=pet.device_hid)
+    if not results:
+        return HTTPException(500, detail="Assigned device doesn't exist!")
+    device = results[0]
+
     await FeedingSchedule.create_event(
         pet_id=pet_id,
         name=updated_event.name,
         time=updated_event.time,
         portion=updated_event.portion,
     )
-    return await get_schedule_for_pet(pet)
+
+    events = await get_combined_device_schedule(device.hid)
+    await router.client.send_cmd_schedule(device.gatewayHid, device.hid, events=events)
+
+    schedule = await get_schedule_for_pet(pet)
+    return schedule
 
 
 @router.put("/{pet_id}/schedule/{event_id}", response_model=PetSchedule)
 async def update_feed_event(pet_id: int, event_id: int, updated_event: ScheduledFeed):
     pet = await get_pet(pet_id)
+
+    if not pet.device_hid:
+        return HTTPException(
+            400, detail="Can't update event on pet without assigned feeder!"
+        )
+
+    results = await KronosDevices.get(device_hid=pet.device_hid)
+    if not results:
+        return HTTPException(500, detail="Assigned device doesn't exist!")
+    device = results[0]
+
     await FeedingSchedule.update_event(
         event_id=event_id,
         name=updated_event.name,
@@ -96,11 +141,30 @@ async def update_feed_event(pet_id: int, event_id: int, updated_event: Scheduled
         enabled=updated_event.enabled,
         portion=updated_event.portion,
     )
+
+    events = await get_combined_device_schedule(device.hid)
+    await router.client.send_cmd_schedule(device.gatewayHid, device.hid, events=events)
+
     return await get_schedule_for_pet(pet)
 
 
 @router.delete("/{pet_id}/schedule/{event_id}", response_model=PetSchedule)
 async def delete_feed_event(pet_id: int, event_id: int):
     pet = await get_pet(pet_id)
+
+    if not pet.device_hid:
+        return HTTPException(
+            400, detail="Can't update event on pet without assigned feeder!"
+        )
+
+    results = await KronosDevices.get(device_hid=pet.device_hid)
+    if not results:
+        return HTTPException(500, detail="Assigned device doesn't exist!")
+    device = results[0]
+
     await FeedingSchedule.delete_event(event_id=event_id)
+
+    events = await get_combined_device_schedule(device.hid)
+    await router.client.send_cmd_schedule(device.gatewayHid, device.hid, events=events)
+
     return await get_schedule_for_pet(pet)

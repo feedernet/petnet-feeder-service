@@ -23,6 +23,7 @@ databases = "*"
 aiosqlite = "*"
 typing-extensions = "*"
 pytz = "*"
+semver = "*"
 
 [pipenv]
 allow_prereleases = true
