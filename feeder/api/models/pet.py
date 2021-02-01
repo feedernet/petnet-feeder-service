@@ -1,5 +1,6 @@
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel
+from feeder.api.models.feeder import FeedEvent
 
 
 class RegisteredPet(BaseModel):
@@ -11,3 +12,16 @@ class RegisteredPet(BaseModel):
     birthday: Optional[int]
     activity_level: Optional[int]
     device_hid: Optional[str]
+
+
+class ScheduledFeed(BaseModel):
+    event_id: Optional[int]
+    name: Optional[str]
+    time: Optional[int]
+    enabled: Optional[bool]
+    portion: Optional[float]
+    result: Optional[FeedEvent] = None
+
+
+class PetSchedule(BaseModel):
+    events: List[ScheduledFeed]

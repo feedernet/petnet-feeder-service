@@ -22,7 +22,8 @@ class FeederCardContainer extends React.Component {
         editModal: false,
         modFeederName: "",
         showConfirmDelete: false,
-        manualFeedPortion: 0
+        manualFeedPortion: 0,
+        pets: []
     }
 
 
@@ -44,6 +45,12 @@ class FeederCardContainer extends React.Component {
                 this.setState({manualFeedPortion: inTbsp})
             }
         })
+
+        this.setState({
+            pets: this.props.getPetsState.pets.filter(
+                (pet) => pet.device_hid === this.state.feeder.hid
+            )
+        })
     }
 
     componentDidUpdate(prevProps, prevState, snapshot) {
@@ -64,6 +71,14 @@ class FeederCardContainer extends React.Component {
             this.state.feeder.hid in rcpState.recipes &&
             this.state.manualFeedPortion !== (rcpState.recipes[this.state.feeder.hid].tbsp_per_feeding / 16)) {
             this.setState({manualFeedPortion: rcpState.recipes[this.state.feeder.hid].tbsp_per_feeding / 16})
+        }
+
+        if (prevProps.getPetsState.pets !== this.props.getPetsState.pets) {
+            this.setState({
+                pets: this.props.getPetsState.pets.filter(
+                    (pet) => pet.device_hid === this.state.feeder.hid
+                )
+            })
         }
     }
 
@@ -108,6 +123,7 @@ class FeederCardContainer extends React.Component {
                         showEditModal={() => this.props.dispatchShowEditFeederModal(
                             this.props.feeder, this.state.manualFeedPortion
                         )}
+                        pets={this.state.pets}
                     />
             }
         </>
@@ -117,6 +133,7 @@ class FeederCardContainer extends React.Component {
 FeederCardContainer.propTypes = {
     feeder: feederDeviceShape,
     getFeederTelemetryState: feederTelemetryShape,
+    getPetsState: PropTypes.object,
     dispatchGetFeederTelemetry: PropTypes.func,
     dispatchShowSnackModal: PropTypes.func,
     dispatchShowEditFeederModal: PropTypes.func,
@@ -128,12 +145,14 @@ const FeederCard = withRouter(connect(
         const {
             getFeederDevicesState,
             getFeederTelemetryState,
-            getRecipeState
+            getRecipeState,
+            getPetsState
         } = state;
         return {
             getFeederDevicesState,
             getFeederTelemetryState,
-            getRecipeState
+            getRecipeState,
+            getPetsState
         };
     }, (dispatch) => {
         return {

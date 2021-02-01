@@ -177,6 +177,13 @@ async def publish_raw_message(device_id: str, message: RawMQTTMessage):
         )
     devices = await KronosDevices.get(device_hid=device_id)
     device = devices[0]
+    logger.debug(
+        "RAW MQTT MESSAGE [GW: %s] [D: %s] CMD: %s ARGS: %s",
+        device.gatewayHid,
+        device.hid,
+        message.command,
+        message.args,
+    )
     await router.client.send_cmd(
         device.gatewayHid, device.hid, message.command, message.args
     )

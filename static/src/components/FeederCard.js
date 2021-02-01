@@ -4,6 +4,8 @@ import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 import Col from "react-bootstrap/Col";
 import Button from "react-bootstrap/Button";
+import OverlayTrigger from "react-bootstrap/OverlayTrigger";
+import Tooltip from "react-bootstrap/Tooltip";
 import FeederLight from "../images/feeder_white.png";
 import FeederDark from "../images/feeder_black.png";
 import {feederDeviceShape, feederTelemetryShape} from "../shapes/feeder";
@@ -11,8 +13,7 @@ import Icon from '@mdi/react'
 import {
     mdiAlertCircle,
     mdiInformation,
-    mdiFoodApple,
-    mdiClock,
+    mdiDotsHorizontal,
     mdiPencil,
     mdiPowerPlug,
     mdiBatteryCharging,
@@ -32,13 +33,22 @@ export const FeederCardComponent = function (props) {
     }
     if (props.telemetry) {
         telemetry = {
-            rssi: props.telemetry.rssi ? props.telemetry.rssi: 0,
+            rssi: props.telemetry.rssi ? props.telemetry.rssi : 0,
             charging: props.telemetry.charging ? "Charging" : "Charged",
             usb_power: props.telemetry.usb_power ? "Plugged In" : "On Battery"
         }
     }
-
+    const petAvatars = props.pets.map((pet) =>
+        <OverlayTrigger placement={"top"} overlay={<Tooltip>{pet.name}</Tooltip>}>
+            <img
+                src={pet.image}
+                alt={pet.name}
+                style={{width: 25, height: 25, borderRadius: '50%', marginTop: -3}}
+                className={"mr-1"}
+            />
+        </OverlayTrigger>)
     return (
+
         <Card style={{marginBottom: 20}}>
             <Card.Body>
                 <Container>
@@ -58,10 +68,14 @@ export const FeederCardComponent = function (props) {
                         </Col>
                         <Col md={12} lg={10}>
                             <Row style={{display: "flex", justifyContent: "center"}}>
-                                <Col sm={12} md={6} style={{opacity: props.isStale ? 0.5 : 1}}>
+                                <Col sm={12} md={7} lg={8} style={{opacity: props.isStale ? 0.5 : 1}}>
                                     <div>
                                         <Card.Title>
                                             {feederName}
+                                            <div style={{display: "inline-block"}} className={"ml-2"}>
+                                                {petAvatars}
+                                            </div>
+
                                         </Card.Title>
                                         <Card.Subtitle className="mb-2 text-muted">
                                             Last Seen: {props.lastPing}
@@ -111,23 +125,20 @@ export const FeederCardComponent = function (props) {
                                 </Col>
                                 <Col
                                     sm={12}
-                                    md={6}
+                                    md={5}
+                                    lg={4}
                                     style={{display: "flex", flexFlow: "column", justifyContent: "center"}}
                                     className={"my-3"}
                                 >
-                                    <Button style={{width: "100%"}} className={"my-1"} variant="secondary"
-                                            disabled={props.isStale || props.isJustDiscovered}
-                                            onClick={props.showSnackModal}>
-                                        <Icon path={mdiFoodApple} size={.75}/> Snack Time!
-                                    </Button>
-                                    <Button style={{width: "100%"}} className={"my-1"}
-                                            disabled={props.isStale || props.isJustDiscovered}
-                                            variant="success">
-                                        <Icon path={mdiClock} size={.75}/> Scheduling
-                                    </Button>
+
                                     <Button style={{width: "100%", opacity: 1}} className={"my-1"} variant="warning"
                                             onClick={props.showEditModal}>
                                         <Icon path={mdiPencil} size={.75}/> Edit Feeder
+                                    </Button>
+                                    <Button style={{width: "100%"}} className={"my-1"}
+                                            disabled={props.isStale || props.isJustDiscovered}
+                                            variant="secondary">
+                                        <Icon path={mdiDotsHorizontal} size={.75}/> More Info
                                     </Button>
                                 </Col>
                             </Row>

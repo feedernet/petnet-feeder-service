@@ -60,6 +60,17 @@ const sliderGradient = {
 
 
 export const CreatePetFormComponent = function (props) {
+    let initialValues = {
+        "name": "",
+        "animal": "cat",
+        "birthday": "",
+        "weight": "",
+        "unit": "lbs",
+        "activity_level": 5
+    }
+    if (props.hasOwnProperty("defaultValues")) {
+        initialValues = {...initialValues, ...props.defaultValues}
+    }
     return (
         <>
             <Row className={"mt-4"}>
@@ -119,14 +130,7 @@ export const CreatePetFormComponent = function (props) {
             </Row>
 
             <Formik
-                initialValues={{
-                    "name": "",
-                    "animal": "cat",
-                    "birthday": "",
-                    "weight": "",
-                    "unit": "lbs",
-                    "activity_level": 5
-                }}
+                initialValues={initialValues}
                 validationSchema={validationSchema}
                 onSubmit={props.handleFormSubmit}
                 validateOnChange={false}

@@ -198,12 +198,6 @@ async def test_mqtt_client_commands(mqtt_client: MQTTClient):
             {"recipe_id": 1, "tbsp_per_feeding": 1, "g_per_tbsp": 7, "budget_tbsp": 3},
             '{"recipe": "E0000001", "tbsp_per_feeding": 1, "g_per_tbsp": 7, "budget_tbsp": 3}',
         ),
-        # TODO: Finish this test once scheduling is done.
-        # mqtt_client.send_cmd_schedule: (
-        #     "schedule",
-        #     {},
-        #     "[]"
-        # )
     }
 
     for cmd, data in command_map.items():
@@ -217,3 +211,181 @@ async def test_mqtt_client_commands(mqtt_client: MQTTClient):
             "command": data[0],
             "payload": data[2],
         }
+
+
+@pytest.mark.asyncio
+async def test_mqtt_client_schedule_modern(
+    mqtt_client: MQTTClient, with_registered_device: None
+):
+    from feeder.database.models import Pet, FeedingSchedule
+    from tests.test_database_models import SAMPLE_DEVICE_HID, SAMPLE_GATEWAY_HID
+
+    modern_pet = await Pet.create(
+        name="modern",
+        animal_type="dog",
+        weight=1,
+        birthday=1,
+        activity_level=1,
+        device_hid=SAMPLE_DEVICE_HID,
+    )
+
+    # Finally, lets make some schedules
+    await FeedingSchedule.create_event(
+        pet_id=modern_pet, name="modern", time=3600, portion=0.0625
+    )
+
+    modern_schedule = await FeedingSchedule.get_for_pet(pet_id=modern_pet)
+    await mqtt_client.send_cmd_schedule(
+        SAMPLE_GATEWAY_HID, SAMPLE_DEVICE_HID, events=modern_schedule
+    )
+
+    modern_api_calls = [
+        ("schedule_clear", "{}"),
+        ("schedule_mod_start", '{"size": 1}'),
+        (
+            "schedule_add",
+            (
+                '[{"index": 0, "data": {"active": true, "automatic": true, '
+                '"feeding_id": "c3d89400068631f8_feed1_1:00AM", "name": "FEED0", '
+                '"portion": 0.0625, "reminder": true, "time": 3600}}]'
+            ),
+        ),
+        ("schedule_mod_end", "{}"),
+    ]
+
+    for command, response in modern_api_calls:
+        message = await mqtt_client.deliver_message()
+        packet = message.publish_packet
+        assert packet.variable_header.topic_name == f"krs/cmd/stg/{SAMPLE_GATEWAY_HID}"
+        payload = json.loads(packet.payload.data)
+        assert payload["parameters"] == {
+            "deviceHid": SAMPLE_DEVICE_HID,
+            "command": command,
+            "payload": response,
+        }
+
+
+@pytest.mark.asyncio
+async def test_mqtt_client_schedule_legacy(mqtt_client: MQTTClient):
+    from feeder.util.feeder import generate_feeder_hid
+    from feeder.database.models import (
+        KronosGateways,
+        KronosDevices,
+        Pet,
+        FeedingSchedule,
+    )
+    from tests.test_database_models import SAMPLE_DEVICE, SAMPLE_GATEWAY
+
+    # We need a legacy device to test the old scheduling API logic.
+    # The default device created by "with_registered_device" is set to 2.8.0
+    legacy_gateway = {
+        **SAMPLE_GATEWAY,
+        "softwareVersion": "2.3.2",
+        "uid": "smartfeeder-895ae773737d",
+    }
+    legacy_gateway_hid = generate_feeder_hid("smartfeeder-895ae773737d")
+    await KronosGateways.create(**legacy_gateway)
+
+    legacy_device = {
+        **SAMPLE_DEVICE,
+        "softwareVersion": "2.3.2",
+        "uid": "smartfeeder-895ae773737d-prod",
+        "gatewayHid": legacy_gateway_hid,
+    }
+    await KronosDevices.create(**legacy_device)
+    legacy_device_hid = generate_feeder_hid("smartfeeder-895ae773737d-prod")
+
+    legacy_pet = await Pet.create(
+        name="legacy",
+        animal_type="dog",
+        weight=1,
+        birthday=1,
+        activity_level=1,
+        device_hid=legacy_device_hid,
+    )
+
+    await FeedingSchedule.create_event(
+        pet_id=legacy_pet, name="legacy", time=3600, portion=0.0625
+    )
+
+    legacy_schedule = await FeedingSchedule.get_for_pet(pet_id=legacy_pet)
+    await mqtt_client.send_cmd_schedule(
+        legacy_gateway_hid, legacy_device_hid, events=legacy_schedule
+    )
+
+    message = await mqtt_client.deliver_message()
+    packet = message.publish_packet
+    assert packet.variable_header.topic_name == f"krs/cmd/stg/{legacy_gateway_hid}"
+    payload = json.loads(packet.payload.data)
+    assert payload["parameters"] == {
+        "deviceHid": legacy_device_hid,
+        "command": "schedule",
+        "payload": (
+            '[{"active": true, "automatic": true, '
+            '"feeding_id": "93c346ad8d668ef6_feed1_1:00AM", "name": "FEED0", '
+            '"portion": 0.0625, "reminder": true, "time": 3600}]'
+        ),
+    }
+
+
+@pytest.mark.asyncio
+async def test_mqtt_client_schedule_legacy_without_version(mqtt_client: MQTTClient):
+    from feeder.util.feeder import generate_feeder_hid
+    from feeder.database.models import (
+        KronosGateways,
+        KronosDevices,
+        Pet,
+        FeedingSchedule,
+    )
+    from tests.test_database_models import SAMPLE_DEVICE, SAMPLE_GATEWAY
+
+    # We need a legacy device to test the old scheduling API logic.
+    # The default device created by "with_registered_device" is set to 2.8.0
+    legacy_gateway = {
+        **SAMPLE_GATEWAY,
+        "softwareVersion": None,
+        "uid": "smartfeeder-895ae773737d",
+    }
+    legacy_gateway_hid = generate_feeder_hid("smartfeeder-895ae773737d")
+    await KronosGateways.create(**legacy_gateway)
+
+    legacy_device = {
+        **SAMPLE_DEVICE,
+        "softwareVersion": None,
+        "uid": "smartfeeder-895ae773737d-prod",
+        "gatewayHid": legacy_gateway_hid,
+    }
+    await KronosDevices.create(**legacy_device)
+    legacy_device_hid = generate_feeder_hid("smartfeeder-895ae773737d-prod")
+
+    legacy_pet = await Pet.create(
+        name="legacy",
+        animal_type="dog",
+        weight=1,
+        birthday=1,
+        activity_level=1,
+        device_hid=legacy_device_hid,
+    )
+
+    await FeedingSchedule.create_event(
+        pet_id=legacy_pet, name="legacy", time=3600, portion=0.0625
+    )
+
+    legacy_schedule = await FeedingSchedule.get_for_pet(pet_id=legacy_pet)
+    await mqtt_client.send_cmd_schedule(
+        legacy_gateway_hid, legacy_device_hid, events=legacy_schedule
+    )
+
+    message = await mqtt_client.deliver_message()
+    packet = message.publish_packet
+    assert packet.variable_header.topic_name == f"krs/cmd/stg/{legacy_gateway_hid}"
+    payload = json.loads(packet.payload.data)
+    assert payload["parameters"] == {
+        "deviceHid": legacy_device_hid,
+        "command": "schedule",
+        "payload": (
+            '[{"active": true, "automatic": true, '
+            '"feeding_id": "93c346ad8d668ef6_feed1_1:00AM", "name": "FEED0", '
+            '"portion": 0.0625, "reminder": true, "time": 3600}]'
+        ),
+    }
