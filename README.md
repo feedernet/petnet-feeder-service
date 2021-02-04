@@ -1,5 +1,9 @@
 # FeederNet
 
+<img alt="Discovered devices screenshot" src="images/brand_header.png"/>
+
+## About
+
 Reverse-engineering the PetNet feeders. This project only works with V2 Feeders so far.
 
 ## Setup / Installation
