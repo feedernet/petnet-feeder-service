@@ -5,6 +5,7 @@
 ## About
 
 ![python](https://img.shields.io/badge/python-3.8%20%7C%203.9-blue)
+[![FastAPI](https://img.shields.io/github/pipenv/locked/dependency-version/feedernet/petnet-feeder-service/fastapi?color=009485)](https://github.com/tiangolo/fastapi)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![codecov](https://codecov.io/gh/feedernet/petnet-feeder-service/branch/master/graph/badge.svg?token=UEK2SQ7C09)](https://codecov.io/gh/feedernet/petnet-feeder-service)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blueviolet)](https://github.com/feedernet/petnet-feeder-service/blob/master/LICENSE)
