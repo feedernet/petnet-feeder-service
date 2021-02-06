@@ -32,3 +32,10 @@ jobs:
         pipenv install -d --system --deploy --ignore-pipfile
     - name: Test with tox
       run: tox
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: ./coverage.xml
+        flags: unittests
+        env_vars: OS,PYTHON
