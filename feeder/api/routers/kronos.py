@@ -42,6 +42,9 @@ async def add_gateway(gateway: NewGateway):
         content = {"hid": gateway_hid, "message": "OK"}
     except IntegrityError:
         logger.debug("Gateway (%s) already registered!", gateway_hid)
+        await KronosGateways.update(
+            gateway_hid=gateway_hid, firmware_version=gateway.softwareVersion
+        )
         content = {"hid": gateway_hid, "message": "gateway is already registered"}
         return JSONResponse(content=content, headers=kronos_headers)
 
@@ -66,6 +69,9 @@ async def register_feeder(device: NewDevice):
         await KronosDevices.create(**device.dict())
     except IntegrityError:
         logger.debug("Device (%s) already registered!", device_hid)
+        await KronosDevices.update(
+            device_hid=device_hid, firmware_version=device.softwareVersion
+        )
 
     content = {
         "hid": device_hid,

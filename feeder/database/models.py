@@ -85,6 +85,21 @@ class KronosGateways:
             results = await db.fetch_all(query)
         return results[0]
 
+    @classmethod
+    async def update(cls, *, gateway_hid: str, firmware_version: str):
+        query = (
+            gateways.update()
+            .where(gateways.c.hid == gateway_hid)
+            .values(softwareVersion=firmware_version)
+        )
+        await db.execute(query)
+        device_query = (
+            devices.update()
+            .where(devices.c.gatewayHid == gateway_hid)
+            .values(softwareVersion=firmware_version)
+        )
+        await db.execute(device_query)
+
 
 devices = Table(
     "kronos_device",
@@ -167,6 +182,7 @@ class KronosDevices:
         front_button: bool = None,
         recipe_id: int = None,
         black: bool = None,
+        firmware_version: str = None,
     ):
         values = {}
         if name is not None:
@@ -179,6 +195,8 @@ class KronosDevices:
             values["currentRecipe"] = recipe_id
         if black is not None:
             values["black"] = black
+        if firmware_version is not None:
+            values["softwareVersion"] = firmware_version
         query = devices.update().where(devices.c.hid == device_hid).values(**values)
         results = await db.execute(query)
         return results

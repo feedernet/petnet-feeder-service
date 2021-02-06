@@ -92,6 +92,27 @@ async def test_get_or_insert_gateway():
 
 
 @pytest.mark.asyncio
+async def test_set_gateway_firmware(with_registered_device: None):
+    from feeder.database.models import KronosGateways, KronosDevices
+
+    device = await KronosDevices.get(gateway_hid=SAMPLE_GATEWAY_HID)
+    gateway = await KronosGateways.get(gateway_hid=SAMPLE_GATEWAY_HID)
+
+    assert gateway[0].softwareVersion != "2.9.0"
+    assert device[0].softwareVersion != "2.9.0"
+
+    await KronosGateways.update(
+        gateway_hid=SAMPLE_GATEWAY_HID, firmware_version="2.9.0"
+    )
+
+    device = await KronosDevices.get(gateway_hid=SAMPLE_GATEWAY_HID)
+    gateway = await KronosGateways.get(gateway_hid=SAMPLE_GATEWAY_HID)
+
+    assert gateway[0].softwareVersion == "2.9.0"
+    assert device[0].softwareVersion == "2.9.0"
+
+
+@pytest.mark.asyncio
 async def test_get_device_parameters(with_registered_device: None):
     from feeder.database.models import KronosDevices
 
@@ -197,6 +218,7 @@ async def test_update_device_single_call(with_registered_device: None):
         front_button=False,
         recipe_id=1,
         black=True,
+        firmware_version="2.9.0",
     )
 
     device = await KronosDevices.get(device_hid=SAMPLE_DEVICE_HID)
@@ -205,6 +227,7 @@ async def test_update_device_single_call(with_registered_device: None):
     assert device[0][10] is False
     assert device[0][11] == 1
     assert device[0][12] is True
+    assert device[0].softwareVersion == "2.9.0"
 
 
 @pytest.mark.asyncio
@@ -238,6 +261,10 @@ async def test_update_device_multiple_call(with_registered_device: None):
     assert rows_updated == 1
     rows_updated = await KronosDevices.update(device_hid=SAMPLE_DEVICE_HID, black=True)
     assert rows_updated == 1
+    rows_updated = await KronosDevices.update(
+        device_hid=SAMPLE_DEVICE_HID, firmware_version="2.9.0"
+    )
+    assert rows_updated == 1
 
     device = await KronosDevices.get(device_hid=SAMPLE_DEVICE_HID)
     assert device[0][1] == "testing"
@@ -245,6 +272,7 @@ async def test_update_device_multiple_call(with_registered_device: None):
     assert device[0][10] is False
     assert device[0][11] == 1
     assert device[0][12] is True
+    assert device[0].softwareVersion == "2.9.0"
 
 
 @pytest.mark.asyncio
