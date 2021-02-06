@@ -61,8 +61,12 @@ async def delete_pet(pet_id: int):
 
 async def get_schedule_for_pet(pet: RegisteredPet):
     schedule = await FeedingSchedule.get_for_pet(pet.id)
+    feeder_results = await KronosDevices.get(device_hid=pet.device_hid)
+    feeder_tz = feeder_results[0].timezone
     for idx, event in enumerate(schedule):
-        target_time = get_relative_timestamp(event["time"])
+        target_time = get_relative_timestamp(
+            seconds_since_midnight=event["time"], timezone=feeder_tz
+        )
         dispense_result = await FeedingResult.dispensed_at(
             device_id=pet.device_hid, timestamp=target_time
         )
