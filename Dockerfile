@@ -6,7 +6,7 @@ COPY static/public ./public
 RUN npm install
 RUN PUBLIC_URL=/{{build_path}} npm run build
 
-FROM python:3.8-alpine
+FROM python:3.8-alpine3.12
 RUN apk add --no-cache --virtual .build-deps \
         build-base \
         libffi-dev \
