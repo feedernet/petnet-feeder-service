@@ -62,7 +62,11 @@ async def delete_pet(pet_id: int):
 async def get_schedule_for_pet(pet: RegisteredPet):
     schedule = await FeedingSchedule.get_for_pet(pet.id)
     feeder_results = await KronosDevices.get(device_hid=pet.device_hid)
-    feeder_tz = feeder_results[0].timezone
+
+    feeder_tz = None
+    if feeder_results:
+        feeder_tz = feeder_results[0].timezone
+
     for idx, event in enumerate(schedule):
         target_time = get_relative_timestamp(
             seconds_since_midnight=event["time"], timezone=feeder_tz
@@ -101,13 +105,13 @@ async def new_feed_event(pet_id: int, updated_event: ScheduledFeed):
     pet = await get_pet(pet_id)
 
     if not pet.device_hid:
-        return HTTPException(
+        raise HTTPException(
             400, detail="Can't schedule event on pet without assigned feeder!"
         )
 
     results = await KronosDevices.get(device_hid=pet.device_hid)
     if not results:
-        return HTTPException(500, detail="Assigned device doesn't exist!")
+        raise HTTPException(500, detail="Assigned device doesn't exist!")
     device = results[0]
 
     await FeedingSchedule.create_event(
@@ -129,13 +133,13 @@ async def update_feed_event(pet_id: int, event_id: int, updated_event: Scheduled
     pet = await get_pet(pet_id)
 
     if not pet.device_hid:
-        return HTTPException(
+        raise HTTPException(
             400, detail="Can't update event on pet without assigned feeder!"
         )
 
     results = await KronosDevices.get(device_hid=pet.device_hid)
     if not results:
-        return HTTPException(500, detail="Assigned device doesn't exist!")
+        raise HTTPException(500, detail="Assigned device doesn't exist!")
     device = results[0]
 
     await FeedingSchedule.update_event(
@@ -157,13 +161,13 @@ async def delete_feed_event(pet_id: int, event_id: int):
     pet = await get_pet(pet_id)
 
     if not pet.device_hid:
-        return HTTPException(
+        raise HTTPException(
             400, detail="Can't update event on pet without assigned feeder!"
         )
 
     results = await KronosDevices.get(device_hid=pet.device_hid)
     if not results:
-        return HTTPException(500, detail="Assigned device doesn't exist!")
+        raise HTTPException(500, detail="Assigned device doesn't exist!")
     device = results[0]
 
     await FeedingSchedule.delete_event(event_id=event_id)

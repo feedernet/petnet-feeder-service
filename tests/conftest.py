@@ -128,6 +128,30 @@ async def with_registered_device(with_registered_gateway: None) -> None:
 
 @pytest.fixture
 @pytest.mark.asyncio
+async def with_sample_feed(with_registered_device: None) -> None:
+    from tests.test_database_models import SAMPLE_DEVICE_HID
+    from feeder.database.models import FeedingResult
+    from feeder.util import get_relative_timestamp
+
+    feed_time = int(get_relative_timestamp(3600, "") / 1000000)
+    await FeedingResult.report(
+        device_hid=SAMPLE_DEVICE_HID,
+        start_time=feed_time,
+        end_time=feed_time,
+        pour=1,
+        full=1,
+        grams_expected=1,
+        grams_actual=1,
+        hopper_start=1,
+        hopper_end=1,
+        recipe_id="E0000001",
+        fail=False,
+        source=6,
+    )
+
+
+@pytest.fixture
+@pytest.mark.asyncio
 async def mqtt_client() -> MQTTClient:
     from feeder.util.mqtt.authentication import local_username, local_password
     from feeder.util.mqtt.broker import FeederBroker

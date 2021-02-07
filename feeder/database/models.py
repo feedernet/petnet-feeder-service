@@ -405,8 +405,8 @@ class FeedingResult:
         query = (
             feeding_event.select()
             .where(feeding_event.c.device_hid == device_id)
-            .where(feeding_event.c.timestamp >= timestamp - offset)
-            .where(feeding_event.c.timestamp <= timestamp + offset)
+            .where(feeding_event.c.start_time >= timestamp - offset)
+            .where(feeding_event.c.start_time <= timestamp + offset)
         )
         results = await db.fetch_all(query)
         if results:
@@ -440,9 +440,6 @@ class Pet:
         if not results and pet_id:
             logger.error("No pets found with ID: %d", pet_id)
             raise HTTPException(404, detail=f"No pet found with ID {pet_id}")
-
-        if not results:
-            raise HTTPException(404, detail="No pets found!")
 
         return results
 

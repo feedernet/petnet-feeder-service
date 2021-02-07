@@ -445,10 +445,8 @@ async def test_create_duplicate_feeds(with_registered_device: None):
 async def test_create_pets(with_registered_device: None):
     from feeder.database.models import Pet
 
-    with pytest.raises(HTTPException) as exc:
-        await Pet.get()
-    assert exc.value.status_code == 404
-    assert exc.value.detail == "No pets found!"
+    no_pets = await Pet.get()
+    assert len(no_pets) == 0
 
     with pytest.raises(HTTPException) as exc:
         await Pet.get(pet_id=1)
