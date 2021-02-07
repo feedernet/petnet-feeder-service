@@ -16,7 +16,7 @@ RUN apk add --no-cache --virtual .build-deps \
         python3-dev \
         git
 RUN python -m pip install --upgrade pip
-RUN pip install poetry
+RUN pip install --upgrade-strategy only-if-needed poetry
 WORKDIR /tmp
 COPY poetry.lock ./
 COPY pyproject.toml ./
