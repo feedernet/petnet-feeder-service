@@ -12,11 +12,10 @@ RUN apk add --no-cache --virtual .build-deps \
         libffi-dev \
         openssl-dev \
         py3-pip \
-        py3-cryptography \
         python3-dev \
         git
 RUN python -m pip install --upgrade pip
-RUN pip install poetry cryptography==2.9.2
+RUN pip install poetry cryptography==3.3.2
 WORKDIR /tmp
 COPY poetry.lock ./
 COPY pyproject.toml ./
