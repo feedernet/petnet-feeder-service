@@ -12,7 +12,7 @@ RUN apk add --no-cache --virtual .build-deps \
         libffi-dev \
         openssl-dev \
         py3-pip \
-        py-cryptography \
+        py3-cryptography \
         python3-dev \
         git
 RUN python -m pip install --upgrade pip
