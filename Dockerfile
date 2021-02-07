@@ -12,10 +12,10 @@ RUN apk add --no-cache --virtual .build-deps \
         libffi-dev \
         openssl-dev \
         py3-pip \
+        py-cryptography \
         python3-dev \
         git
 RUN python -m pip install --upgrade pip
-RUN pip install cryptography
 RUN pip install poetry
 WORKDIR /tmp
 COPY poetry.lock ./
