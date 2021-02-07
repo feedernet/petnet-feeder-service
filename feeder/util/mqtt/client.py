@@ -229,7 +229,7 @@ class FeederClient(MQTTClient):
         await self.connect(
             "mqtt://%s:%s@localhost:1883/" % (local_username, local_password)
         )
-        await self.subscribe([("#", QOS_2)])
+        await self.subscribe([("krs/tel/gts/#", QOS_2), ("krs/api/gts/#", QOS_2)])
         try:
             while True:
                 message = await self.deliver_message()
