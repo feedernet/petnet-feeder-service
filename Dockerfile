@@ -14,18 +14,18 @@ RUN apk add --no-cache --virtual .build-deps \
         py3-pip \
         python3-dev \
         git
-RUN pip install pipenv
+RUN python -m pip install --upgrade pip
+RUN pip install poetry cryptography==3.3.2
 WORKDIR /tmp
-COPY Pipfile* ./
-RUN pipenv install --system --deploy --ignore-pipfile
+COPY poetry.lock ./
+COPY pyproject.toml ./
 COPY feeder/ ./feeder
 COPY --from=frontend-build /tmp/build ./static/build
 COPY alembic.ini ./
-COPY setup.py ./
 COPY README.md ./
-RUN pip install .
+RUN poetry install -v --no-dev
 RUN apk del .build-deps
-CMD alembic upgrade head && python -m feeder
+CMD poetry run alembic upgrade head && poetry run python -m feeder
 EXPOSE 1883/tcp
 EXPOSE 5000/tcp
 EXPOSE 8883/tcp
