@@ -30,14 +30,7 @@ export const FeedHistoryTableComponent = function (props) {
             </tr>
     )
 
-    let pageNumbers = []
-    for (let number = 1; number <= props.totalPages; number++) {
-        pageNumbers.push(
-            <Pagination.Item key={number} active={number === props.pageNumber} onClick={() => props.changePage(number)}>
-                {number}
-            </Pagination.Item>
-        );
-    }
+    let pageNumbers = <Pagination.Item>Page {props.pageNumber} / {props.totalPages}</Pagination.Item>
 
     const feederDropdownItems = props.feeders.map(
         (feeder) => <Dropdown.Item eventKey={feeder.hid}>{feeder.name}</Dropdown.Item>
