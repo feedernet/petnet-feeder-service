@@ -7,10 +7,10 @@ services:
     # line below instead of the generic 'image:' line or you'll get a segfault.
 
     # Raspberry Pi Zero / Zero W / Compute Module 1 / Pi 1 (A/B)
-    # image: tedder42/petnet-feeder-service:latest-pizero
+    # image: ghcr.io/feedernet/petnet-feeder-service:latest-pizero
 
     # Pi2/Pi3/Pi4, Intel/AMD PCs and everything else...
-    image: tedder42/petnet-feeder-service:latest
+    image: ghcr.io/feedernet/petnet-feeder-service:latest
 
     container_name: petnet-feeder-service
     environment:

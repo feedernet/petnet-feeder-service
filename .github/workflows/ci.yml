@@ -3,6 +3,9 @@ name: Docker Build
 on:
   push:
     branches: master
+    tags:
+      # For "vX.Y.Z" tags (e.g., refs/tags/v1.0.0)
+      - v*
     paths-ignore:
       - 'images/**'
       - 'sample/**'
@@ -15,9 +18,14 @@ on:
       - 'sample/**'
       - 'tests/**'
       - '**.md'
+  release:
+    types: [ published ]
+    
+  # Allows you to run workflow manually from Actions
+  workflow_dispatch:
 
 jobs:
-  path-context:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -25,6 +33,12 @@ jobs:
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
+
+      - id: prep
+        name: Set up tag name
+        if: "startsWith(github.ref, 'refs/tags/v')"
+        run: |
+          echo ::set-output name=tag::${GITHUB_REF#refs/tags/v}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
@@ -36,13 +50,14 @@ jobs:
           key: ${{ runner.os }}-buildx-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-
-            
-      - name: Login to DockerHub
+
+      - name: Login to GHCR
         if: github.event_name != 'pull_request'
         uses: docker/login-action@v1
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.TEDDER_CR_PAT }}
 
       - name: Build and push latest
         uses: docker/build-push-action@v2
@@ -51,7 +66,7 @@ jobs:
           file: ./Dockerfile
           platforms: linux/amd64,linux/arm64,linux/arm/v7
           push: ${{ github.event_name != 'pull_request' }}
-          tags: tedder42/petnet-feeder-service:latest
+          tags: ghcr.io/feedernet/petnet-feeder-service:${{ steps.prep.outputs.tag || 'latest' }}
           
       - name: Build and push ARMv7
         uses: docker/build-push-action@v2
@@ -60,7 +75,7 @@ jobs:
           file: ./Dockerfile
           platforms: linux/arm/v7
           push: ${{ github.event_name != 'pull_request' }}
-          tags: tedder42/petnet-feeder-service:latest-arm7, tedder42/petnet-feeder-service:latest-pib2
+          tags: ghcr.io/feedernet/petnet-feeder-service:${{ steps.prep.outputs.tag || 'latest' }}-arm7, ghcr.io/feedernet/petnet-feeder-service:${{ steps.prep.outputs.tag || 'latest' }}-pib2
           
       - name: Build and push ARMv6
         uses: docker/build-push-action@v2
@@ -69,4 +84,4 @@ jobs:
           file: ./Dockerfile
           platforms: linux/arm/v6
           push: ${{ github.event_name != 'pull_request' }}
-          tags: tedder42/petnet-feeder-service:latest-arm6, tedder42/petnet-feeder-service:latest-pizero
+          tags: ghcr.io/feedernet/petnet-feeder-service:${{ steps.prep.outputs.tag || 'latest' }}-arm6, ghcr.io/feedernet/petnet-feeder-service:${{ steps.prep.outputs.tag || 'latest' }}-pizero
