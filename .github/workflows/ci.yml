@@ -4,6 +4,7 @@ on:
   push:
     branches: master
     tags:
+      # For "vX.Y.Z" tags (e.g., refs/tags/v1.0.0)
       - v*
     paths-ignore:
       - 'images/**'
