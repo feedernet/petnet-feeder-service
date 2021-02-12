@@ -46,7 +46,7 @@ def generate_self_signed_certificate():
     builder = builder.public_key(public_key)
     logger.debug(
         "Adding SANs for %(hostname)s, *.%(hostname)s, localhost, and *.localhost",
-        {"hostname": socket.gethostname()}
+        {"hostname": socket.gethostname()},
     )
     builder = builder.add_extension(
         x509.SubjectAlternativeName(sans),
