@@ -1,4 +1,4 @@
-FROM node:fermium-buster-slim AS frontend-build
+FROM --platform=$BUILDPLATFORM node:fermium-buster-slim AS frontend-build
 WORKDIR /tmp
 COPY static/package*.json ./
 COPY static/src ./src
