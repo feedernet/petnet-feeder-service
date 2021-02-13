@@ -26,7 +26,8 @@ RUN apk add --no-cache --virtual .build-deps \
     && poetry config virtualenvs.create false \
     && poetry config experimental.new-installer false \
     && poetry install --no-dev --no-interaction --no-ansi \
-    && apk del .build-deps
+    && apk del .build-deps \
+    && rm -rf ~/.cache
 CMD poetry run alembic upgrade head && poetry run python -m feeder
 EXPOSE 1883/tcp
 EXPOSE 5000/tcp
