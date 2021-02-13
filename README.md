@@ -23,15 +23,14 @@ Head over to the [Getting Started Wiki](https://github.com/petnet-independence-p
 You need to make sure the Python modules are available.
 
 ```
-pip install pipenv
-pipenv install
-pip install --editable .
+pip install poetry
+poetry install
 ```
 
 To run the daemon locally:
 
 ```
-python -m feeder
+poetry run python -m feeder
 ```
 
 If you are planning on soley developing for the backend, you can build a static version of the frontend and access the backend directly:
