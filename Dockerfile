@@ -23,11 +23,10 @@ RUN apk add --no-cache --virtual .build-deps \
         git \
     && python -m pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir poetry cryptography==3.3.2 \
-    && poetry config virtualenvs.create false \
-    && poetry config experimental.new-installer false \
-    && poetry install --no-dev --no-interaction --no-ansi \
+    && poetry install --no-dev -v\
     && apk del .build-deps \
-    && rm -rf ~/.cache
+    && rm -rf ~/.cache/pip \
+    && rm -rf ~/.cache/pypoetry/{cache,artifacts}
 CMD poetry run alembic upgrade head && poetry run python -m feeder
 EXPOSE 1883/tcp
 EXPOSE 5000/tcp
