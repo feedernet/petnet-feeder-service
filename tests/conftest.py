@@ -157,16 +157,10 @@ async def with_stored_recipe(with_registered_device: None) -> None:
     from feeder.database.models import StoredRecipe, KronosDevices
 
     await StoredRecipe.create(
-        name="Sample",
-        g_per_tbsp=8,
-        tbsp_per_feeding=1,
-        budget_tbsp=3
+        name="Sample", g_per_tbsp=8, tbsp_per_feeding=1, budget_tbsp=3
     )
 
-    await KronosDevices.update(
-        device_hid=SAMPLE_DEVICE_HID,
-        recipe_id=1
-    )
+    await KronosDevices.update(device_hid=SAMPLE_DEVICE_HID, recipe_id=1)
 
 
 @pytest.fixture

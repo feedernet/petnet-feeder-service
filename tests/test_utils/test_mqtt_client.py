@@ -390,6 +390,7 @@ async def test_mqtt_client_schedule_legacy_without_version(mqtt_client: MQTTClie
         ),
     }
 
+
 @pytest.mark.asyncio
 async def test_mqtt_client_handle_api_unicode_error(mqtt_client: MQTTClient, mocker):
     from tests.test_database_models import SAMPLE_GATEWAY_HID
@@ -403,14 +404,16 @@ async def test_mqtt_client_handle_api_unicode_error(mqtt_client: MQTTClient, moc
 
     mocker.patch(
         "feeder.util.mqtt.client.json.loads",
-        side_effect=UnicodeDecodeError("", b"", 0, 1, "")
+        side_effect=UnicodeDecodeError("", b"", 0, 1, ""),
     )
     returns = await mqtt_client.handle_message(packet)
     assert returns is None
 
 
 @pytest.mark.asyncio
-async def test_mqtt_client_handle_telemetry_unicode_error(mqtt_client: MQTTClient, mocker):
+async def test_mqtt_client_handle_telemetry_unicode_error(
+    mqtt_client: MQTTClient, mocker
+):
     from tests.test_database_models import SAMPLE_GATEWAY_HID
 
     await mqtt_client.publish(
@@ -422,7 +425,7 @@ async def test_mqtt_client_handle_telemetry_unicode_error(mqtt_client: MQTTClien
 
     mocker.patch(
         "feeder.util.mqtt.client.json.loads",
-        side_effect=UnicodeDecodeError("", b"", 0, 1, "")
+        side_effect=UnicodeDecodeError("", b"", 0, 1, ""),
     )
     returns = await mqtt_client.handle_message(packet)
     assert returns is None
