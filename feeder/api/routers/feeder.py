@@ -1,7 +1,6 @@
 import logging
 import datetime
 from typing import List
-from sqlite3 import IntegrityError
 
 import pytz
 from fastapi import HTTPException
