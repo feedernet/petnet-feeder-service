@@ -152,6 +152,25 @@ async def with_sample_feed(with_registered_device: None) -> None:
 
 @pytest.fixture
 @pytest.mark.asyncio
+async def with_stored_recipe(with_registered_device: None) -> None:
+    from tests.test_database_models import SAMPLE_DEVICE_HID
+    from feeder.database.models import StoredRecipe, KronosDevices
+
+    await StoredRecipe.create(
+        name="Sample",
+        g_per_tbsp=8,
+        tbsp_per_feeding=1,
+        budget_tbsp=3
+    )
+
+    await KronosDevices.update(
+        device_hid=SAMPLE_DEVICE_HID,
+        recipe_id=1
+    )
+
+
+@pytest.fixture
+@pytest.mark.asyncio
 async def mqtt_client() -> MQTTClient:
     from feeder.util.mqtt.authentication import local_username, local_password
     from feeder.util.mqtt.broker import FeederBroker
