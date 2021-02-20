@@ -1,7 +1,6 @@
 import logging
 import datetime
 from typing import List
-from sqlite3 import IntegrityError
 
 import pytz
 from fastapi import HTTPException
@@ -111,11 +110,7 @@ async def update_single_device(device_id: str, updated: DeviceUpdate):
 
 @router.delete("/{device_id}")
 async def delete_single_device(device_id: str):
-    try:
-        await KronosDevices.delete(device_id)
-    except IntegrityError:
-        logger.exception("Unable to delete device: %s", device_id)
-        raise HTTPException(500, "Error deleting device!")
+    await KronosDevices.delete(device_id)
 
 
 @router.get("/{device_id}/telemetry", response_model=DeviceTelemetry)

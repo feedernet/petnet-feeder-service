@@ -389,3 +389,58 @@ async def test_mqtt_client_schedule_legacy_without_version(mqtt_client: MQTTClie
             '"portion": 0.0625, "reminder": true, "time": 3600}]'
         ),
     }
+
+
+@pytest.mark.asyncio
+async def test_mqtt_client_handle_api_unicode_error(mqtt_client: MQTTClient, mocker):
+    from tests.test_database_models import SAMPLE_GATEWAY_HID
+
+    await mqtt_client.publish(
+        f"krs.api.gts.{SAMPLE_GATEWAY_HID}", message=b'{"requestId": 1}'
+    )
+
+    message = await mqtt_client.deliver_message()
+    packet = message.publish_packet
+
+    mocker.patch(
+        "feeder.util.mqtt.client.json.loads",
+        side_effect=UnicodeDecodeError("", b"", 0, 1, ""),
+    )
+    returns = await mqtt_client.handle_message(packet)
+    assert returns is None
+
+
+@pytest.mark.asyncio
+async def test_mqtt_client_handle_telemetry_unicode_error(
+    mqtt_client: MQTTClient, mocker
+):
+    from tests.test_database_models import SAMPLE_GATEWAY_HID
+
+    await mqtt_client.publish(
+        f"krs.tel.gts.{SAMPLE_GATEWAY_HID}", message=b'{"requestId": 1}'
+    )
+
+    message = await mqtt_client.deliver_message()
+    packet = message.publish_packet
+
+    mocker.patch(
+        "feeder.util.mqtt.client.json.loads",
+        side_effect=UnicodeDecodeError("", b"", 0, 1, ""),
+    )
+    returns = await mqtt_client.handle_message(packet)
+    assert returns is None
+
+
+@pytest.mark.asyncio
+async def test_mqtt_client_handle_unknown_topic(mqtt_client: MQTTClient):
+    from tests.test_database_models import SAMPLE_GATEWAY_HID
+
+    await mqtt_client.publish(
+        f"krs.api.foobar.{SAMPLE_GATEWAY_HID}", message=b'{"requestId": 1}'
+    )
+
+    message = await mqtt_client.deliver_message()
+    packet = message.publish_packet
+
+    returns = await mqtt_client.handle_message(packet)
+    assert returns is None
