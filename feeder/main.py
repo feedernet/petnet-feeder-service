@@ -52,7 +52,13 @@ async def render_frontend(full_path: str, request: Request):
 def create_application() -> FastAPI:
     async_loop = asyncio.get_event_loop()
     async_loop.set_exception_handler(handle_exception)
-    client = FeederClient()
+    client = FeederClient(
+        scheme=settings.mqtt_scheme,
+        host=settings.mqtt_host,
+        port=settings.mqtt_port,
+        username=settings.mqtt_username or None,
+        password=settings.mqtt_password or None,
+    )
     broker = FeederBroker()
 
     mqtt_enabled_routers = [feeder, pet]

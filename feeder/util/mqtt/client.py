@@ -84,6 +84,12 @@ class FeederClient(MQTTClient):
     api_regex = re.compile(r"^krs\.api\.gts\.(?P<gateway_id>.*)$")
     telemetry_regex = re.compile(r"^krs\.tel\.gts\.(?P<gateway_id>.*)$")
 
+    def __init__(self, host="localhost", port=1883, scheme="mqtt", username=local_username, password=local_password):
+        username = username or local_username
+        password = password or local_password
+        self._mqtt_url = f"{scheme}://{username}:{password}@{host}:{port}"
+        super().__init__()
+
     async def handle_message(self, packet):
         api_result = self.api_regex.match(packet.variable_header.topic_name)
         telemetry_result = self.telemetry_regex.match(packet.variable_header.topic_name)
@@ -226,9 +232,7 @@ class FeederClient(MQTTClient):
             await self.send_cmd(gateway_id, device_id, "schedule_mod_end", {})
 
     async def start(self):
-        await self.connect(
-            "mqtt://%s:%s@localhost:1883/" % (local_username, local_password)
-        )
+        await self.connect(self._mqtt_url)
         await self.subscribe([("#", QOS_2)])
         try:
             while True:

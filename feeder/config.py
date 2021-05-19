@@ -38,10 +38,14 @@ class Settings(BaseSettings):
     app_id: str = "38973487e8241ea4483e88ef8ca7934c8663dc25"
     debug: bool = False
     database_path: str = "./data.db"
+    mqtt_scheme: str = "mqtt"
+    mqtt_host: str = "localhost"
     mqtt_port: int = 1883
+    mqtt_username: str = ""
+    mqtt_password: str = ""
     mqtts_port: int = 8883
     mqtts_public_key: str = "./cert.pem"
     mqtts_private_key: str = "./pkey.pem"
     http_port: int = 5000
     app_root: str = ""
-    domain: str = ""  # Added as SAN to self-signed cert
+    domain: str = ""
