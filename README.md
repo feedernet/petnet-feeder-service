@@ -33,7 +33,7 @@ To run the daemon locally:
 poetry run python -m feeder
 ```
 
-If you are planning on soley developing for the backend, you can build a static version of the frontend and access the backend directly:
+If you are planning on solely developing for the backend, you can build a static version of the frontend and access the backend directly:
 
 ```
 cd static
@@ -44,6 +44,23 @@ Otherwise, in a different shell, run the Webpack development server:
 
 ```
 npm start
+```
+
+### Linting and Code Formatting
+We use Black formatting for Python and Prettier for JS, JSON, etc.
+
+Tox will automatically run both of these tools when it runs it's normal test suite. 
+If either step fails, you will need to rerun the respective formatter.
+
+#### Black
+```shell
+black --target-version py38 feeder/ tests/
+```
+
+#### Prettier
+```shell
+cd static
+npx prettier --check ./src
 ```
 
 ## Database and Schema Migrations
@@ -66,7 +83,7 @@ DATABASE_PATH=./data.db alembic upgrade head
 
 # How can I help?
 
-If you have tech and coding experience, you can help! Drop Ted an email (ted@timmons.me); introduce yourself and he'll send you a Slack invite.
+If you have tech and coding experience, you can help! Drop Ted an email (ted@timmons.me); introduce yourself, and he'll send you a Slack invite.
 
 **The Slack channel is _NOT_ for support requests.**
 

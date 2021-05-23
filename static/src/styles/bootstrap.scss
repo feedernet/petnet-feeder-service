@@ -1,15 +1,15 @@
 $theme-colors: (
-        "primary": #212D40,
-        "secondary": #28AFB0,
-        "warning": #FFA630,
-        "success": #66B63A,
-        "danger": #D7263D,
-        "info": #513C2C,
+  "primary": #212d40,
+  "secondary": #28afb0,
+  "warning": #ffa630,
+  "success": #66b63a,
+  "danger": #d7263d,
+  "info": #513c2c,
 );
 
 $navbar-padding-y: 10px;
 
-@import '~bootstrap/scss/bootstrap.scss';
+@import "~bootstrap/scss/bootstrap.scss";
 
 @media only screen and (max-width: 768px) {
   .dropdown-toggle {

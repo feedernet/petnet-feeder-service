@@ -1,7 +1,7 @@
-import {combineReducers} from "redux";
+import { combineReducers } from "redux";
 import getFeederDevicesReducer from "./getFeederDevices";
 import triggerFeedingReducer from "./triggerFeeding";
-import getFeederTelemetryReducer from "./getFeederTelemetry"
+import getFeederTelemetryReducer from "./getFeederTelemetry";
 import getFeedHistoryReducer from "./getFeedHistory";
 import modifyFeederReducer from "./modifyFeeder";
 import restartFeederReducer from "./restartFeeder";
@@ -22,25 +22,25 @@ import deletePetReducer from "./deletePet";
 import scheduleModalReducer from "./scheduleModal";
 
 export default combineReducers({
-    getFeederDevicesState: getFeederDevicesReducer,
-    getFeederTelemetryState: getFeederTelemetryReducer,
-    triggerFeedingState: triggerFeedingReducer,
-    getFeedHistoryState: getFeedHistoryReducer,
-    modifyFeederState: modifyFeederReducer,
-    restartFeederState: restartFeederReducer,
-    deleteFeederState: deleteFeederReducer,
-    getPetsState: getPetsReducer,
-    createPetState: createPetReducer,
-    modifyPetState: modifyPetReducer,
-    setHopperLevelState: setHopperLevelReducer,
-    getHopperLevelState: getHopperLevelReducer,
-    setRecipeState: setRecipeReducer,
-    newFeederWizardState: newFeederWizardReducer,
-    getRecipeState: getRecipeReducer,
-    snackModalState: snackModalReducer,
-    editFeederModalState: editFeederModalReducer,
-    getPetScheduleState: getPetScheduleReducer,
-    editPetModalState: editPetModalReducer,
-    deletePetState: deletePetReducer,
-    scheduleModalState: scheduleModalReducer
-})
+  getFeederDevicesState: getFeederDevicesReducer,
+  getFeederTelemetryState: getFeederTelemetryReducer,
+  triggerFeedingState: triggerFeedingReducer,
+  getFeedHistoryState: getFeedHistoryReducer,
+  modifyFeederState: modifyFeederReducer,
+  restartFeederState: restartFeederReducer,
+  deleteFeederState: deleteFeederReducer,
+  getPetsState: getPetsReducer,
+  createPetState: createPetReducer,
+  modifyPetState: modifyPetReducer,
+  setHopperLevelState: setHopperLevelReducer,
+  getHopperLevelState: getHopperLevelReducer,
+  setRecipeState: setRecipeReducer,
+  newFeederWizardState: newFeederWizardReducer,
+  getRecipeState: getRecipeReducer,
+  snackModalState: snackModalReducer,
+  editFeederModalState: editFeederModalReducer,
+  getPetScheduleState: getPetScheduleReducer,
+  editPetModalState: editPetModalReducer,
+  deletePetState: deletePetReducer,
+  scheduleModalState: scheduleModalReducer,
+});

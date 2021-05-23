@@ -1,18 +1,17 @@
 body {
   margin: 0;
   padding-top: env(safe-area-inset-top);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-  'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-  sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-  monospace;
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
 }
-
 
 .ios-app-nav {
   padding-top: 10px !important;
@@ -38,7 +37,7 @@ code {
 }
 
 .pet-avatar-container:hover {
-  box-shadow: 0 0 0 4px #28AFB0 !important;
+  box-shadow: 0 0 0 4px #28afb0 !important;
 }
 
 @media (min-width: 767px) {
@@ -46,7 +45,6 @@ code {
     max-width: 700px !important;
   }
 }
-
 
 //react-timekeeper overrides
 :root {
