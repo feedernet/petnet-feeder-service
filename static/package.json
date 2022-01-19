@@ -56,7 +56,7 @@
     "@testing-library/react": "^12.1.2",
     "@testing-library/user-event": "^7.2.1",
     "npm-check": "^5.9.2",
-    "prettier": "2.2.1",
+    "prettier": "2.5.1",
     "sass": "^1.49.0"
   }
 }
