@@ -7,7 +7,7 @@
     "@mdi/react": "^1.4.0",
     "bootstrap": "^4.5.3",
     "date-fns": "^2.16.1",
-    "formik": "^2.2.5",
+    "formik": "^2.2.9",
     "node-sass": "^4.14.1",
     "prop-types": "^15.7.2",
     "rc-slider": "^9.5.4",
