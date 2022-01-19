@@ -27,7 +27,7 @@ classifiers = [
 python = "^3.8"
 alembic = "^1.5.4"
 aiosqlite = "^0.16.1"
-databases = "^0.4.1"
+databases = "^0.4.3"
 fastapi = "^0.63.0"
 hbmqtt = { git = "https://github.com/feedernet/hbmqtt.git" }
 pytz = "^2020.5"
