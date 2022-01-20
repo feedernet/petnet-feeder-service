@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM node:14-alpine AS frontend-build
+FROM --platform=$BUILDPLATFORM node:17-alpine AS frontend-build
 WORKDIR /tmp
 COPY static/package*.json ./
 COPY static/src ./src
