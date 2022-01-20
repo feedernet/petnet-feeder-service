@@ -28,7 +28,7 @@ python = "^3.8"
 alembic = "^1.7.5"
 aiosqlite = "^0.16.1"
 databases = "^0.4.3"
-fastapi = "^0.63.0"
+fastapi = "^0.65.2"
 hbmqtt = { git = "https://github.com/feedernet/hbmqtt.git" }
 pytz = "^2020.5"
 semver = "^2.13.0"
