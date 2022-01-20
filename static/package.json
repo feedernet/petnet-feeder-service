@@ -8,7 +8,7 @@
     "bootstrap": "^4.5.3",
     "date-fns": "^2.16.1",
     "formik": "^2.2.9",
-    "prop-types": "^15.7.2",
+    "prop-types": "^15.8.1",
     "rc-slider": "^9.5.4",
     "react": "^16.14.0",
     "react-avatar-editor": "^11.0.12",
