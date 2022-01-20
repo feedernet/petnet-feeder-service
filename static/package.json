@@ -15,7 +15,7 @@
     "react-bootstrap": "^2.1.1",
     "react-dom": "^16.14.0",
     "react-dropzone": "^11.5.1",
-    "react-redux": "^7.2.1",
+    "react-redux": "^7.2.6",
     "react-router": "^5.2.0",
     "react-router-dom": "^5.2.0",
     "react-scripts": "^4.0.2",
