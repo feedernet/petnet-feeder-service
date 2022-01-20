@@ -46,7 +46,7 @@ tox = "^3.24.5"
 pytest-cov = "^2.11.1"
 pytest-mock = "^3.5.1"
 requests = "^2.25.1"
-flake8 = "^3.8.4"
+flake8 = "^4.0.1"
 pylint = "^2.6.0"
 
 [build-system]
