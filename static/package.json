@@ -11,7 +11,7 @@
     "prop-types": "^15.8.1",
     "rc-slider": "^9.5.4",
     "react": "^16.14.0",
-    "react-avatar-editor": "^11.0.12",
+    "react-avatar-editor": "^12.0.0",
     "react-bootstrap": "^2.1.1",
     "react-dom": "^16.14.0",
     "react-dropzone": "^11.5.1",
