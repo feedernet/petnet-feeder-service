@@ -25,7 +25,7 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.8"
-alembic = "^1.5.4"
+alembic = "^1.7.5"
 aiosqlite = "^0.16.1"
 databases = "^0.4.3"
 fastapi = "^0.63.0"
