@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 sans = [
     x509.DNSName(socket.getfqdn()),
     x509.DNSName(socket.gethostname()),
-    x509.DNSName("*.%s" % socket.gethostname()),
+    x509.DNSName(f"{socket.gethostname()}"),
     x509.DNSName("localhost"),
     x509.DNSName("*.localhost"),
 ]
@@ -71,7 +71,7 @@ def generate_self_signed_certificate():
 
 
 def domain_in_subjects(certificate_path: str, domain: str) -> bool:
-    with open(certificate_path, "r") as pem_file:
+    with open(certificate_path, "r", encoding="utf-8") as pem_file:
         pem_data = pem_file.read().encode("utf-8")
         cert = x509.load_pem_x509_certificate(pem_data, default_backend())
         try:

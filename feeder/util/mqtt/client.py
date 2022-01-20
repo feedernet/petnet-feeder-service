@@ -226,9 +226,7 @@ class FeederClient(MQTTClient):
             await self.send_cmd(gateway_id, device_id, "schedule_mod_end", {})
 
     async def start(self):
-        await self.connect(
-            "mqtt://%s:%s@localhost:1883/" % (local_username, local_password)
-        )
+        await self.connect(f"mqtt://{local_username}:{local_password}@localhost:1883/")
         await self.subscribe([("#", QOS_2)])
         try:
             while True:
