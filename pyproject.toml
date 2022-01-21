@@ -37,7 +37,7 @@ uvicorn = "^0.13.3"
 aiofiles = "^0.8.0"
 Jinja2 = "^3.0.3"
 cryptography = "3.3.2"
-websockets = "8.1"
+websockets = "9.1"
 
 [tool.poetry.dev-dependencies]
 black = {version = "21.12b0", allow-prereleases = true}
