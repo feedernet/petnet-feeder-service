@@ -51,7 +51,7 @@
   },
   "proxy": "http://localhost:5000",
   "devDependencies": {
-    "@testing-library/jest-dom": "^4.2.4",
+    "@testing-library/jest-dom": "^5.16.1",
     "@testing-library/react": "^12.1.2",
     "@testing-library/user-event": "^7.2.1",
     "prettier": "2.5.1",
