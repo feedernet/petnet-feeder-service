@@ -1,5 +1,5 @@
 from os.path import abspath
-from hbmqtt.broker import Broker
+from amqtt.broker import Broker
 from feeder import settings
 
 

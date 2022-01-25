@@ -14,9 +14,9 @@ if settings.debug:
     for named_logger in LOGGING_CONFIG["loggers"]:
         if named_logger:
             LOGGING_CONFIG["loggers"][named_logger]["level"] = "DEBUG"
-    LOGGING_CONFIG["loggers"]["hbmqtt.client.plugins"] = {"level": "INFO"}
-    LOGGING_CONFIG["loggers"]["hbmqtt.broker.plugins"] = {"level": "INFO"}
-    LOGGING_CONFIG["loggers"]["hbmqtt.mqtt.protocol.handler"] = {"level": "INFO"}
+    LOGGING_CONFIG["loggers"]["amqtt.client.plugins"] = {"level": "INFO"}
+    LOGGING_CONFIG["loggers"]["amqtt.broker.plugins"] = {"level": "INFO"}
+    LOGGING_CONFIG["loggers"]["amqtt.mqtt.protocol.handler"] = {"level": "INFO"}
 dictConfig(LOGGING_CONFIG)
 
 app = create_application()

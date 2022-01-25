@@ -1,7 +1,7 @@
 import re
 import logging
 
-from hbmqtt.plugins.topic_checking import BaseTopicPlugin
+from amqtt.plugins.topic_checking import BaseTopicPlugin
 from feeder.util.mqtt.authentication import local_username
 
 logger = logging.getLogger(__name__)
