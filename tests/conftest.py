@@ -9,7 +9,7 @@ import pytest
 import alembic.config
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
-from hbmqtt.client import MQTTClient, QOS_2
+from amqtt.client import MQTTClient, QOS_2
 
 from tests.certificates import PRIVATE_KEY, PUBLIC_KEY
 

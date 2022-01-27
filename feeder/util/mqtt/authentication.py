@@ -2,7 +2,7 @@ import re
 import logging
 from secrets import token_hex
 
-from hbmqtt.plugins.authentication import BaseAuthPlugin
+from amqtt.plugins.authentication import BaseAuthPlugin
 from feeder.database.models import KronosGateways
 
 logger = logging.getLogger(__name__)

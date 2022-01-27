@@ -3,7 +3,7 @@ from unittest import mock
 
 import pytest
 
-from hbmqtt.client import MQTTClient
+from amqtt.client import MQTTClient
 from fastapi.exceptions import HTTPException
 
 

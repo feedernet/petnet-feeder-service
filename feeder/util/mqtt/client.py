@@ -6,8 +6,8 @@ import string
 from typing import List
 
 import semver
-from hbmqtt.client import MQTTClient
-from hbmqtt.mqtt.constants import QOS_2
+from amqtt.client import MQTTClient
+from amqtt.mqtt.constants import QOS_2
 
 from feeder.database.models import (
     KronosDevices,
