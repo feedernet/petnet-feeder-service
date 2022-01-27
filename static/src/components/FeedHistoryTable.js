@@ -108,7 +108,7 @@ export const FeedHistoryTableComponent = function (props) {
       ) : (
         <Card style={{ marginBottom: 20 }} bg={"light"} text={"dark"}>
           <Card.Body>
-            <p className={"text-center font-weight-bold mb-1"}>
+            <p className={"text-center fw-bold mb-1"}>
               <Icon path={mdiCalendarRemove} size={1} /> No History Available
             </p>
             <p className={"text-center text-muted m-0"}>

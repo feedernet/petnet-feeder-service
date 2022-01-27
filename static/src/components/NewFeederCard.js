@@ -33,7 +33,7 @@ export const NewFeederCardComponent = function (props) {
               />
             </Col>
             <Col md={12} lg={10}>
-              <h2 className={"text-center text-light font-weight-bold"}>
+              <h2 className={"text-center text-light fw-bold"}>
                 We found a new feeder! 🎉
               </h2>
               <h6 className={"text-center text-light my-3"}>

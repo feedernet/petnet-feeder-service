@@ -52,7 +52,7 @@ class FeederCardListContainer extends React.Component {
             role="status"
             style={{ margin: "0 auto", display: "block" }}
           >
-            <span className="sr-only">Loading...</span>
+            <span className="visually-hidden">Loading...</span>
           </Spinner>
         </>
       );
@@ -75,10 +75,10 @@ class FeederCardListContainer extends React.Component {
                   size={"sm"}
                   className={"mt-1 mx-2"}
                 >
-                  <span className={"sr-only"}>Searching...</span>
+                  <span className={"visually-hidden"}>Searching...</span>
                 </Spinner>
                 <p
-                  className={"font-weight-bold mb-0"}
+                  className={"fw-bold mb-0"}
                   style={{ display: "inline-block" }}
                 >
                   Waiting for New Devices

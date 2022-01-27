@@ -64,7 +64,7 @@ class PetCardListContainer extends React.Component {
             role="status"
             style={{ margin: "0 auto", display: "block" }}
           >
-            <span className="sr-only">Loading...</span>
+            <span className="visually-hidden">Loading...</span>
           </Spinner>
         </>
       );
@@ -81,7 +81,7 @@ class PetCardListContainer extends React.Component {
         {this.state.pets.length === 0 && !this.state.loading ? (
           <Card style={{ marginBottom: 20 }} bg={"light"} text={"dark"}>
             <Card.Body>
-              <p className={"text-center font-weight-bold mb-1"}>
+              <p className={"text-center fw-bold mb-1"}>
                 <Icon path={mdiDogSideOff} size={1} /> No Pets Found
               </p>
               <p className={"text-center text-muted m-0"}>

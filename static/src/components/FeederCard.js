@@ -45,7 +45,7 @@ export const FeederCardComponent = function (props) {
         src={pet.image}
         alt={pet.name}
         style={{ width: 25, height: 25, borderRadius: "50%", marginTop: -3 }}
-        className={"mr-1"}
+        className={"me-1"}
       />
     </OverlayTrigger>
   ));
@@ -80,7 +80,7 @@ export const FeederCardComponent = function (props) {
                       {feederName}
                       <div
                         style={{ display: "inline-block" }}
-                        className={"ml-2"}
+                        className={"ms-2"}
                       >
                         {petAvatars}
                       </div>
@@ -110,7 +110,7 @@ export const FeederCardComponent = function (props) {
 
                   {props.isJustDiscovered ? (
                     <div style={{ marginTop: 20 }}>
-                      <p className="text-warning font-weight-bold">
+                      <p className="text-warning fw-bold">
                         <Icon path={mdiInformation} size={0.75} /> New feeders
                         might take a few seconds to come online.
                       </p>
@@ -122,7 +122,7 @@ export const FeederCardComponent = function (props) {
                   ) : null}
                   {props.isStale ? (
                     <div style={{ marginTop: 20 }}>
-                      <p className="text-danger font-weight-bold">
+                      <p className="text-danger fw-bold">
                         <Icon path={mdiAlertCircle} size={0.75} /> This feeder
                         is no longer connected.
                       </p>
