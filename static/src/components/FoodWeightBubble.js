@@ -27,7 +27,7 @@ export const FoodWeightBubble = function (props) {
           variant="light"
           style={{ marginTop: 22 }}
         >
-          <span className="sr-only">Dispensing...</span>
+          <span className="visually-hidden">Dispensing...</span>
         </Spinner>
       ) : null}
       {props.weight !== null ? (

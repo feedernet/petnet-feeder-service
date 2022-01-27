@@ -98,7 +98,7 @@ export const CreatePetFormComponent = function (props) {
                   <input {...getInputProps()} />
                 </div>
               </Col>
-              <Col xs={12} sm={6} className={"text-left"}>
+              <Col xs={12} sm={6} className={"text-start"}>
                 <Button
                   style={{ width: "100%" }}
                   className={"mt-3"}
@@ -174,7 +174,7 @@ export const CreatePetFormComponent = function (props) {
           return (
             <form>
               <Row className={"mt-4"}>
-                <Col xm={12} className={"text-left"}>
+                <Col xm={12} className={"text-start"}>
                   <Form.Group controlId="newPetName">
                     <Form.Label>Name</Form.Label>
                     <Form.Control
@@ -219,7 +219,7 @@ export const CreatePetFormComponent = function (props) {
                   </ButtonGroup>
                 </Col>
               </Row>
-              <Row className={"text-left mt-4"}>
+              <Row className={"text-start mt-4"}>
                 <Col xs={12} sm={6}>
                   <Form.Group controlId="newPetBirthday">
                     <Form.Label>Birthday</Form.Label>
@@ -281,7 +281,7 @@ export const CreatePetFormComponent = function (props) {
                   </Form.Group>
                 </Col>
               </Row>
-              <Row className={"text-left"}>
+              <Row className={"text-start"}>
                 <Col>
                   <Form.Group controlId="newPetWeight">
                     <Form.Label className={"mb-0"}>Activity Level</Form.Label>
