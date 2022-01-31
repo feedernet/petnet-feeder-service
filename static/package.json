@@ -14,7 +14,7 @@
     "react-avatar-editor": "^12.0.0",
     "react-bootstrap": "^2.1.1",
     "react-dom": "^17.0.2",
-    "react-dropzone": "^11.5.1",
+    "react-dropzone": "^11.5.3",
     "react-redux": "^7.2.6",
     "react-router": "^5.2.0",
     "react-router-dom": "^5.2.0",
