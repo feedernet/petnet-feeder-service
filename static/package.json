@@ -17,7 +17,7 @@
     "react-dropzone": "^11.5.3",
     "react-redux": "^7.2.6",
     "react-router": "^5.2.0",
-    "react-router-dom": "^5.2.0",
+    "react-router-dom": "^6.2.1",
     "react-scripts": "5.0.0",
     "react-step-progress-bar": "^1.0.3",
     "react-step-wizard": "^5.3.11",
