@@ -33,14 +33,10 @@ async def render_frontend(full_path: str, request: Request):
         raise HTTPException(status_code=404)
 
     if frontend.exists():
-        build_path = "build"
-        if settings.app_root:
-            build_path = f"{settings.app_root[1:]}/build"
         return frontend_template.TemplateResponse(
             "index.html",
             {
                 "request": request,
-                "build_path": build_path,
                 "root_path": settings.app_root,
             },
         )

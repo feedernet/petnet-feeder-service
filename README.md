@@ -37,7 +37,7 @@ If you are planning on solely developing for the backend, you can build a static
 
 ```
 cd static
-PUBLIC_URL=/{{build_path}} npm run build
+PUBLIC_URL=/build npm run build
 ```
 
 Otherwise, in a different shell, run the Webpack development server:
