@@ -4,7 +4,7 @@ COPY static/package*.json ./
 COPY static/src ./src
 COPY static/public ./public
 RUN npm install
-RUN PUBLIC_URL=/{{build_path}} npm run build
+RUN PUBLIC_URL=/build npm run build
 
 FROM python:3.9.5-alpine3.12
 WORKDIR /tmp
