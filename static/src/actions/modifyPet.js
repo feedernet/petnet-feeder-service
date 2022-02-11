@@ -25,6 +25,7 @@ export const modifyPetAction = (
   const meta = {
     method: "PUT",
     endpoint: `${PET_API_BASE}/${pet_id}`,
+    headers: { "Content-Type": "application/json" },
     body,
   };
   return createAction({
@@ -36,6 +37,7 @@ export const modifyPetAction = (
     ],
     method: meta.method,
     credentials: "include",
+    headers: meta.headers,
     body,
   });
 };

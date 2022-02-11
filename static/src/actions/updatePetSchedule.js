@@ -20,6 +20,7 @@ export const updatePetScheduleAction = (
   const meta = {
     method: "PUT",
     endpoint: `${PET_API_BASE}/${petId}/schedule/${eventId}`,
+    headers: { "Content-Type": "application/json" },
     body,
     petId,
   };
@@ -32,6 +33,7 @@ export const updatePetScheduleAction = (
     ],
     method: meta.method,
     credentials: "include",
+    headers: meta.headers,
     body,
   });
 };

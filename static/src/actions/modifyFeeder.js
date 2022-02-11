@@ -21,6 +21,7 @@ export const modifyFeederAction = (
   const meta = {
     method: "PUT",
     endpoint: `${FEEDER_API_BASE}/${deviceId}`,
+    headers: { "Content-Type": "application/json" },
     body,
   };
   return createAction({
@@ -32,6 +33,7 @@ export const modifyFeederAction = (
     ],
     method: meta.method,
     credentials: "include",
+    headers: meta.headers,
     body,
   });
 };
