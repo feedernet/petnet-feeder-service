@@ -9,6 +9,7 @@ export const setHopperLevelAction = (deviceId, level) => {
   const meta = {
     method: "POST",
     endpoint: `${FEEDER_API_BASE}/${deviceId}/hopper`,
+    headers: { "Content-Type": "application/json" },
     body,
   };
   return createAction({
@@ -20,6 +21,7 @@ export const setHopperLevelAction = (deviceId, level) => {
     ],
     method: meta.method,
     credentials: "include",
+    headers: meta.headers,
     body,
   });
 };
