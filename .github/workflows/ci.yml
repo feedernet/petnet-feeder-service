@@ -68,7 +68,7 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ghcr.io/feedernet/petnet-feeder-service:${{ steps.prep.outputs.tag || 'latest' }}
           cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
 
       - name: Move cache
         run: |
@@ -84,7 +84,7 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ghcr.io/feedernet/petnet-feeder-service:${{ steps.prep.outputs.tag || 'latest' }}-arm7, ghcr.io/feedernet/petnet-feeder-service:${{ steps.prep.outputs.tag || 'latest' }}-pib2
           cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
 
       - name: Move cache
         run: |
@@ -100,7 +100,7 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ghcr.io/feedernet/petnet-feeder-service:${{ steps.prep.outputs.tag || 'latest' }}-arm6, ghcr.io/feedernet/petnet-feeder-service:${{ steps.prep.outputs.tag || 'latest' }}-pizero
           cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
 
       - name: Move cache
         run: |
