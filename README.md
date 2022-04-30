@@ -37,6 +37,7 @@ If you are planning on solely developing for the backend, you can build a static
 
 ```
 cd static
+npm install
 PUBLIC_URL=/build npm run build
 ```
 
