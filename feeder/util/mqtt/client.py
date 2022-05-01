@@ -200,7 +200,7 @@ class FeederClient(MQTTClient):
         # TODO: Actually figure out when they implemented the newer scheduling API...
         # We know >=2.7 uses the new API and that 2.3.2 uses the legacy API.
         # Assuming 2.5.X because that is smack dab in between 3 and 7.
-        if semver.compare("2.5.0", software_version) == 1:
+        if semver.VersionInfo.parse("2.5.0").compare(software_version) == 1:
             # If we are running on 2.4.0 or lower, use the legacy scheduling API
             await self.send_cmd(gateway_id, device_id, "schedule", schedule_array)
         else:
