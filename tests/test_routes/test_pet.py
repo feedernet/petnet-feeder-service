@@ -5,7 +5,7 @@ SAMPLE_PET = {
     "image": "base64data",
     "animal_type": "cat",
     "weight": 3628.74,
-    "birthday": 1483164000000000,
+    "birthday": 1483164000000,
     "activity_level": 5,
 }
 

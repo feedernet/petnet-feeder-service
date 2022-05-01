@@ -3,7 +3,7 @@ export function formatUnixTimestamp(
   showDate = true,
   showTime = true
 ) {
-  const date = new Date(timeFromEpoch / 1000);
+  const date = new Date(timeFromEpoch);
   let formatDate = "";
   let formatTime = "";
 
@@ -19,9 +19,8 @@ export function formatUnixTimestamp(
 }
 
 export function isStale(timeFromEpoch, staleSeconds = 120) {
-  const ping = timeFromEpoch / 1000;
   const now = new Date().getTime();
-  return now - ping > staleSeconds * 1000;
+  return now - timeFromEpoch > staleSeconds * 1000;
 }
 
 export function getRootPath() {

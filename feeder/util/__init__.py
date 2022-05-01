@@ -3,14 +3,14 @@ from datetime import datetime, time
 
 import pytz
 
-MICROSEC_IN_SEC = 1000000
+MILLIS_PER_SEC = 1000
 
 logger = logging.getLogger()
 
 
 def get_current_timestamp() -> int:
     now = datetime.timestamp(datetime.now())
-    return int(now * MICROSEC_IN_SEC)
+    return int(now * MILLIS_PER_SEC)
 
 
 def get_relative_timestamp(seconds_since_midnight: int, timezone: str) -> int:
@@ -22,4 +22,4 @@ def get_relative_timestamp(seconds_since_midnight: int, timezone: str) -> int:
 
     midnight = datetime.combine(datetime.now(zone), time.min)
     timestamp = datetime.timestamp(midnight) + seconds_since_midnight
-    return int(timestamp * MICROSEC_IN_SEC)
+    return int(timestamp * MILLIS_PER_SEC)
