@@ -133,7 +133,7 @@ async def with_sample_feed(with_registered_device: None) -> None:
     from feeder.database.models import FeedingResult
     from feeder.util import get_relative_timestamp
 
-    feed_time = int(get_relative_timestamp(3600, "") / 1000000)
+    feed_time = int(get_relative_timestamp(3600, "") / 1000)
     await FeedingResult.report(
         device_hid=SAMPLE_DEVICE_HID,
         start_time=feed_time,

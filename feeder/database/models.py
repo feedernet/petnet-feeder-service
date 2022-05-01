@@ -22,7 +22,7 @@ from sqlalchemy import (
 from sqlalchemy.sql.expression import literal
 
 from feeder.util.feeder import generate_api_key, generate_feeder_hid
-from feeder.util import get_current_timestamp
+from feeder.util import MILLIS_PER_SEC, get_current_timestamp
 from feeder.database.session import db, metadata
 
 logger = logging.getLogger(__name__)
@@ -370,8 +370,8 @@ class FeedingResult:
         query = feeding_event.insert().values(
             device_hid=device_hid,
             timestamp=get_current_timestamp(),
-            start_time=start_time * 1000000,
-            end_time=end_time * 1000000,
+            start_time=start_time * MILLIS_PER_SEC,
+            end_time=end_time * MILLIS_PER_SEC,
             pour=pour,
             full=full,
             grams_expected=grams_expected,
@@ -400,8 +400,8 @@ class FeedingResult:
     @staticmethod
     async def dispensed_at(device_id: str, timestamp: int, window_minutes: int = 5):
         offset = (
-            window_minutes * 60 * 1000000
-        )  # minute -> second (60) -> microsec (1000000)
+            window_minutes * 60 * 1000
+        )  # minute -> second (60) -> milliseconds (1000)
         query = (
             feeding_event.select()
             .where(feeding_event.c.device_hid == device_id)

@@ -192,7 +192,7 @@ async def test_ping_device(with_registered_device: None):
         device_hid=SAMPLE_DEVICE_HID, gateway_hid=SAMPLE_GATEWAY_HID
     )
     device_with_new_ping = await KronosDevices.get(device_hid=SAMPLE_DEVICE_HID)
-    assert device_with_new_ping[0][8] > device_with_ping[0][8]
+    assert device_with_new_ping[0][8] >= device_with_ping[0][8]
 
 
 @pytest.mark.asyncio
@@ -384,8 +384,8 @@ async def test_create_feed_result(with_registered_device: None):
 
     rows_modified = await FeedingResult.report(
         device_hid=SAMPLE_DEVICE_HID,
-        start_time=1,
-        end_time=2,
+        start_time=1651370724,
+        end_time=1651370727,
         pour=3,
         full=4,
         grams_expected=5,
@@ -402,6 +402,12 @@ async def test_create_feed_result(with_registered_device: None):
     assert len(await FeedingResult.get(device_hid=SAMPLE_DEVICE_HID)) == 1
     assert await FeedingResult.count() == 1
     assert await FeedingResult.count(device_hid=SAMPLE_DEVICE_HID) == 1
+    assert (
+        await FeedingResult.dispensed_at(
+            device_id=SAMPLE_DEVICE_HID, timestamp=1651370700000
+        )
+        is not None
+    )
 
 
 @pytest.mark.asyncio
@@ -709,7 +715,7 @@ async def test_set_hopper_level(with_registered_device: None):
     for index in range(100):
         row_mod = await FeedingResult.report(
             device_hid=SAMPLE_DEVICE_HID,
-            start_time=int(get_current_timestamp() / 1000000) + index,
+            start_time=int(get_current_timestamp() / 1000) + index,
             end_time=2,
             pour=3,
             full=4,

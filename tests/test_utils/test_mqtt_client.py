@@ -112,8 +112,8 @@ async def test_commit_telem_feed_result(with_registered_device: None):
 
     results = await FeedingResult.get(device_hid=SAMPLE_DEVICE_HID)
     assert results[0].device_hid == SAMPLE_DEVICE_HID
-    assert results[0].start_time == 1000000
-    assert results[0].end_time == 2000000
+    assert results[0].start_time == 1000
+    assert results[0].end_time == 2000
     assert results[0].pour == 3
     assert results[0].full == 4
     assert results[0].grams_expected == 5
