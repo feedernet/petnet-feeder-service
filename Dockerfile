@@ -6,7 +6,7 @@ COPY static/public ./public
 RUN npm install
 RUN PUBLIC_URL=/build npm run build
 
-FROM python:3.9.5-alpine3.12
+FROM python:3.9.12-alpine3.15
 WORKDIR /tmp
 COPY poetry.lock ./
 COPY pyproject.toml ./
@@ -14,6 +14,7 @@ COPY feeder/ ./feeder
 COPY --from=frontend-build /tmp/build ./static/build
 COPY alembic.ini ./
 COPY README.md ./
+# This has a hack with pip to get around the fact that poetry doesn't handle extra index URLs correctly yet
 RUN apk add --no-cache --virtual .build-deps \
         build-base \
         libffi-dev \
@@ -21,9 +22,11 @@ RUN apk add --no-cache --virtual .build-deps \
         py3-pip \
         python3-dev \
         git \
+        jq \
     && python -m pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir poetry cryptography==3.3.2 \
-    && poetry install --no-dev -v\
+    && pip install --no-cache-dir poetry yq --extra-index-url https://www.piwheels.org/simple \
+    && cat poetry.lock | tomlq -r '.package[] | select(.category == "main") | select(.source == null) | "\(.name)==\(.version)"' | xargs poetry run pip install --no-cache-dir --extra-index-url https://www.piwheels.org/simple \
+    && poetry install --no-dev -v \
     && apk del .build-deps \
     && rm -rf ~/.cache/pip \
     && rm -rf ~/.cache/pypoetry/{cache,artifacts}
