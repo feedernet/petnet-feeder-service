@@ -57,7 +57,7 @@ export const ScheduleModalComponent = function (props) {
           <Row>
             <Col xs={12} sm={9}>
               <h3>{event.name}</h3>
-              <p className={"mb-0 mr-3"} style={{ display: "inline-block" }}>
+              <p className={"mb-0 me-3"} style={{ display: "inline-block" }}>
                 <Icon path={mdiCup} size={0.75} /> {displaySizes[event.portion]}{" "}
                 {event.portion > 1 ? "cups" : "cup"}
               </p>
@@ -138,7 +138,7 @@ export const ScheduleModalComponent = function (props) {
               <Modal.Body>
                 <Row>
                   <Col xs={12} md={7}>
-                    <Form.Group controlId="mealName">
+                    <Form.Group controlId="mealName" className={"mb-3"}>
                       <Form.Label>Name</Form.Label>
                       <Form.Control
                         type={"text"}
@@ -155,7 +155,7 @@ export const ScheduleModalComponent = function (props) {
                         </Form.Control.Feedback>
                       ) : null}
                     </Form.Group>
-                    <Form.Group>
+                    <Form.Group className={"mb-3"}>
                       <Form.Label>Cups of Food</Form.Label>
                       <h1 style={{ textAlign: "center" }}>
                         {displaySizes[values.portion]}{" "}
@@ -178,7 +178,7 @@ export const ScheduleModalComponent = function (props) {
                         </Form.Control.Feedback>
                       ) : null}
                     </Form.Group>
-                    <Form.Group>
+                    <Form.Group className={"mb-3"}>
                       <Form.Label>Enabled</Form.Label>
                       <ButtonGroup
                         aria-label="Basic example"
@@ -202,7 +202,7 @@ export const ScheduleModalComponent = function (props) {
                     </Form.Group>
                   </Col>
                   <Col xs={12} md={5}>
-                    <Form.Group>
+                    <Form.Group className={"mb-3"}>
                       <Form.Label>Time</Form.Label>
                       <div style={{ margin: "0 auto", display: "table" }}>
                         <TimeKeeper

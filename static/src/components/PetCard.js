@@ -173,7 +173,7 @@ export const PetCardComponent = function (props) {
                   <h3 className={"mt-3"}>{props.pet.name}</h3>
                   <Row className={"text-muted mt-1 px-2"}>
                     <Col
-                      className={"py-2 pl-2 pr-1"}
+                      className={"py-2 ps-2 pe-1"}
                       xs={3}
                       style={{ whiteSpace: "nowrap" }}
                     >
@@ -184,7 +184,7 @@ export const PetCardComponent = function (props) {
                       {props.pet.animal_type === "cat" ? "Cat" : "Dog"}
                     </Col>
                     <Col
-                      className={"py-2 pl-2 pr-2 d-none d-sm-block"}
+                      className={"py-2 ps-2 pe-2 d-none d-sm-block"}
                       xs={3}
                       style={{ whiteSpace: "nowrap", overflow: "hidden" }}
                     >
@@ -192,7 +192,7 @@ export const PetCardComponent = function (props) {
                       {`${petAge} years`}
                     </Col>
                     <Col
-                      className={"py-2 pl-2 pr-2 d-sm-none"}
+                      className={"py-2 ps-2 pe-2 d-sm-none"}
                       xs={3}
                       style={{ whiteSpace: "nowrap", overflow: "hidden" }}
                     >
@@ -200,14 +200,14 @@ export const PetCardComponent = function (props) {
                       {`${petAge}yrs`}
                     </Col>
                     <Col
-                      className={"py-2 pl-2 pr-2"}
+                      className={"py-2 ps-2 pe-2"}
                       xs={3}
                       style={{ whiteSpace: "nowrap", overflow: "hidden" }}
                     >
                       <Icon path={mdiWeight} size={0.75} /> {petWeightPounds}lbs
                     </Col>
                     <Col
-                      className={"py-2 pl-2 pr-2"}
+                      className={"py-2 ps-2 pe-2"}
                       xs={3}
                       style={{ whiteSpace: "nowrap", overflow: "hidden" }}
                     >

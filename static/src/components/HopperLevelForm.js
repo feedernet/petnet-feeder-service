@@ -41,7 +41,7 @@ export const HopperLevelFormComponent = function (props) {
           <form>
             <Row className={"mt-4"}>
               <Col>
-                <Form.Group controlId="hopperLevel">
+                <Form.Group controlId="hopperLevel" className={"mb-3"}>
                   <Slider
                     min={0}
                     max={100}

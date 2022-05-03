@@ -30,7 +30,7 @@ export const EditFeederModalComponent = function (props) {
         </Modal.Header>
         <Modal.Body>
           <label htmlFor={"feeder-name"}>Name</label>
-          <InputGroup className="mb-3">
+          <InputGroup className={"mb-3"}>
             <FormControl
               id={"feeder-name"}
               placeholder={"Feeder Name"}
@@ -38,11 +38,9 @@ export const EditFeederModalComponent = function (props) {
               value={props.name}
               onChange={props.handleNameChange}
             />
-            <InputGroup.Append>
-              <Button variant="outline-secondary" onClick={props.handleSubmit}>
-                <Icon path={mdiCheck} size={0.75} /> Save
-              </Button>
-            </InputGroup.Append>
+            <Button variant="outline-secondary" onClick={props.handleSubmit}>
+              <Icon path={mdiCheck} size={0.75} /> Save
+            </Button>
           </InputGroup>
           <Row>
             <Col xs={12} sm={6} className={"mb-3"}>
@@ -117,7 +115,7 @@ export const EditFeederModalComponent = function (props) {
               </div>
             </Col>
             <Col xs={12} className={"mb-3"}>
-              <Form.Group controlId="feeder-timezone">
+              <Form.Group controlId="feeder-timezone" className={"mb-3"}>
                 <Form.Label>Timezone</Form.Label>
                 <Form.Control
                   as="select"
@@ -130,7 +128,7 @@ export const EditFeederModalComponent = function (props) {
               </Form.Group>
             </Col>
             <Col xs={12} className={"mb-3"}>
-              <Form.Group controlId="feeder-hopper-level">
+              <Form.Group controlId="feeder-hopper-level" className={"mb-3"}>
                 <Form.Label className={"m-0"}>Hopper Level</Form.Label>
                 <div className={"mx-3"}>
                   <HopperLevelFormComponent
@@ -145,9 +143,9 @@ export const EditFeederModalComponent = function (props) {
               </Form.Group>
             </Col>
             <Col xs={12}>
-              <Form.Group controlId="feeder-front-button-amount">
+              <Form.Group controlId="feeder-front-button-amount" className={"mb-3"}>
                 <Form.Label className={"m-0"}>Manual Feed Amount</Form.Label>
-                <Form.Text className="text-muted">
+                <Form.Text className={"text-muted d-block"}>
                   This is the cups of food that is dispensed when you press the
                   front button.
                 </Form.Text>

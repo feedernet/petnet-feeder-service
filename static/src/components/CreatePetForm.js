@@ -175,7 +175,7 @@ export const CreatePetFormComponent = function (props) {
             <form>
               <Row className={"mt-4"}>
                 <Col xm={12} className={"text-start"}>
-                  <Form.Group controlId="newPetName">
+                  <Form.Group controlId="newPetName" className={"mb-3"}>
                     <Form.Label>Name</Form.Label>
                     <Form.Control
                       type={"text"}
@@ -221,7 +221,7 @@ export const CreatePetFormComponent = function (props) {
               </Row>
               <Row className={"text-start mt-4"}>
                 <Col xs={12} sm={6}>
-                  <Form.Group controlId="newPetBirthday">
+                  <Form.Group controlId="newPetBirthday" className={"mb-3"}>
                     <Form.Label>Birthday</Form.Label>
                     <Form.Control
                       type="text"
@@ -240,7 +240,7 @@ export const CreatePetFormComponent = function (props) {
                   </Form.Group>
                 </Col>
                 <Col xs={12} sm={6}>
-                  <Form.Group controlId="newPetWeight">
+                  <Form.Group controlId="newPetWeight" className={"mb-3"}>
                     <Form.Label>Weight</Form.Label>
                     <InputGroup>
                       <Form.Control
@@ -283,9 +283,9 @@ export const CreatePetFormComponent = function (props) {
               </Row>
               <Row className={"text-start"}>
                 <Col>
-                  <Form.Group controlId="newPetWeight">
+                  <Form.Group controlId="newPetWeight" className={"mb-3"}>
                     <Form.Label className={"mb-0"}>Activity Level</Form.Label>
-                    <Form.Text className="text-muted mb-3">
+                    <Form.Text className="text-muted mb-3 d-block">
                       <Icon path={mdiInformationOutline} size={0.6} /> This will
                       be used to help calculate daily caloric intake.
                     </Form.Text>
