@@ -44,7 +44,7 @@ export const secSinceMidnightFormatter = (secSinceMidnight) => {
 };
 
 export const PetCardComponent = function (props) {
-  const ageDifMs = Date.now() - props.pet.birthday / 1000;
+  const ageDifMs = Date.now() - props.pet.birthday;
   const ageDate = new Date(ageDifMs);
   const petAge = Math.abs(ageDate.getUTCFullYear() - 1970);
   const petWeightPounds = Math.round(props.pet.weight / 454);

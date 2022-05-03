@@ -42,7 +42,7 @@ export class CreatePetFormContainer extends React.Component {
       activity_level: values["activity_level"],
     };
     const birthday = new Date(values["birthday"]);
-    parsedValues["birthday"] = birthday.getTime() * 1000;
+    parsedValues["birthday"] = birthday.getTime();
 
     if (this.editor && this.state.petImage !== AddPhotoIcon) {
       const canvas = this.editor.getImageScaledToCanvas();
