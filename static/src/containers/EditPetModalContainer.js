@@ -68,7 +68,7 @@ class EditPetModalContainer extends React.Component {
       // can be based upon that.
       weight: initialValues.weight / 453.5925, // grams -> lbs
       activity_level: initialValues.activity_level,
-      birthday: new Date(initialValues.birthday / 1000).toLocaleDateString(
+      birthday: new Date(initialValues.birthday).toLocaleDateString(
         "en-US"
       ),
       image: initialValues.image,
