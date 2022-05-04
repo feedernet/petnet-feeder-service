@@ -17,7 +17,9 @@ COPY README.md ./
 # This has a hack with pip to get around the fact that poetry doesn't handle extra index URLs correctly yet
 RUN apk add --no-cache --virtual .build-deps \
         build-base \
+        cargo \
         libffi-dev \
+        musl-dev \
         openssl-dev \
         py3-pip \
         python3-dev \
