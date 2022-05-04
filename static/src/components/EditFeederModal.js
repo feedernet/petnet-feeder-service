@@ -143,7 +143,10 @@ export const EditFeederModalComponent = function (props) {
               </Form.Group>
             </Col>
             <Col xs={12}>
-              <Form.Group controlId="feeder-front-button-amount" className={"mb-3"}>
+              <Form.Group
+                controlId="feeder-front-button-amount"
+                className={"mb-3"}
+              >
                 <Form.Label className={"m-0"}>Manual Feed Amount</Form.Label>
                 <Form.Text className={"text-muted d-block"}>
                   This is the cups of food that is dispensed when you press the
