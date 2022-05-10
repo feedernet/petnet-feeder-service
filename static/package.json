@@ -18,7 +18,7 @@
     "react-redux": "^7.2.6",
     "react-router": "^5.2.0",
     "react-router-dom": "^5.2.0",
-    "react-scripts": "5.0.0",
+    "react-scripts": "5.0.1",
     "react-step-progress-bar": "^1.0.3",
     "react-step-wizard": "^5.3.11",
     "react-timekeeper": "^2.2.1",
