@@ -80,7 +80,7 @@ def create_application() -> FastAPI:
 
     @app.on_event("shutdown")
     async def shutdown_event():  # pylint: disable=unused-variable
-        await asyncio.gather([await broker.shutdown()], return_exceptions=True)
+        await asyncio.gather(broker.shutdown(), return_exceptions=True)
         await db.disconnect()
 
     app.add_api_route(
