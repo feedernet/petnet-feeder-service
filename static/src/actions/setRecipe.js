@@ -19,6 +19,7 @@ export const setRecipeAction = (
   const meta = {
     method: "PUT",
     endpoint: `${FEEDER_API_BASE}/${deviceId}/recipe`,
+    headers: { "Content-Type": "application/json" },
     body,
   };
   return createAction({
@@ -30,6 +31,7 @@ export const setRecipeAction = (
     ],
     method: meta.method,
     credentials: "include",
+    headers: meta.headers,
     body,
   });
 };
