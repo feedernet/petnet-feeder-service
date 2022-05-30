@@ -254,7 +254,6 @@ export const CreatePetFormComponent = function (props) {
                       />
 
                       <DropdownButton
-                        as={InputGroup.Append}
                         variant="outline-secondary"
                         title={values.unit}
                         id="weight-unit"
