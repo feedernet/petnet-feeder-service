@@ -1,5 +1,6 @@
 import pytest
 import logging
+from amqtt.broker import Action
 
 
 class MockSession:
@@ -145,10 +146,19 @@ async def test_mqtt_topic_plugin_device_correct_topic():
     mock_context = MockContext()
     mock_session = MockSession(username=f"/pegasus:{SAMPLE_GATEWAY_HID}")
     assert await PetnetTopicPlugin(mock_context).topic_filtering(
-        session=mock_session, topic=f"krs/api/stg/{SAMPLE_GATEWAY_HID}"
+        session=mock_session,
+        action=Action.subscribe,
+        topic=f"krs/api/stg/{SAMPLE_GATEWAY_HID}",
     )
     assert await PetnetTopicPlugin(mock_context).topic_filtering(
-        session=mock_session, topic=f"krs/cmd/stg/{SAMPLE_GATEWAY_HID}"
+        session=mock_session,
+        action=Action.subscribe,
+        topic=f"krs/cmd/stg/{SAMPLE_GATEWAY_HID}",
+    )
+    assert await PetnetTopicPlugin(mock_context).topic_filtering(
+        session=mock_session,
+        action=Action.publish,
+        topic=f"krs.tel.gts.{SAMPLE_GATEWAY_HID}",
     )
 
 
@@ -160,7 +170,10 @@ async def test_mqtt_topic_plugin_device_wrong_topic_pattern_match():
     mock_context = MockContext()
     mock_session = MockSession(username=f"/pegasus:{SAMPLE_GATEWAY_HID}")
     assert not await PetnetTopicPlugin(mock_context).topic_filtering(
-        session=mock_session, topic="krs/cmd/stg/wrong-hid"
+        session=mock_session, action=Action.subscribe, topic="krs/cmd/stg/wrong-hid"
+    )
+    assert not await PetnetTopicPlugin(mock_context).topic_filtering(
+        session=mock_session, action=Action.publish, topic="krs.tel.gts.wrong-hid"
     )
 
 
@@ -172,5 +185,22 @@ async def test_mqtt_topic_plugin_device_wrong_topic_pattern_miss():
     mock_context = MockContext()
     mock_session = MockSession(username=f"/pegasus:{SAMPLE_GATEWAY_HID}")
     assert not await PetnetTopicPlugin(mock_context).topic_filtering(
-        session=mock_session, topic="wrong-hid"
+        session=mock_session, action=Action.subscribe, topic="wrong-hid"
+    )
+    assert not await PetnetTopicPlugin(mock_context).topic_filtering(
+        session=mock_session, action=Action.publish, topic="wrong-hid"
+    )
+
+
+@pytest.mark.asyncio
+async def test_mqtt_topic_plugin_device_unknown_action_miss():
+    from feeder.util.mqtt.topic import PetnetTopicPlugin
+    from tests.test_database_models import SAMPLE_GATEWAY_HID
+
+    mock_context = MockContext()
+    mock_session = MockSession(username=f"/pegasus:{SAMPLE_GATEWAY_HID}")
+    assert not await PetnetTopicPlugin(mock_context).topic_filtering(
+        session=mock_session,
+        action="explode",
+        topic=f"krs.tel.gts.{SAMPLE_GATEWAY_HID}",
     )
