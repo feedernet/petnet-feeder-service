@@ -38,8 +38,14 @@ export class CreateRecipeContainer extends React.Component {
 
   async handleDispenseAndPoll() {
     let timeoutTime = new Date(Date.now() + 1000 * 60);
-    let lastTimeBefore = this.props.getFeedHistoryState.history[0].timestamp;
+    let lastTimeBefore = null;
     let lastTimeAfter = null;
+
+    let feedHistory = this.props.getFeedHistoryState.history;
+    if (feedHistory !== null && feedHistory.length > 0) {
+      lastTimeBefore = feedHistory[0].timestamp;
+    }
+
     if (!this.state.manualEntry) {
       this.props.dispatchTriggerFeeding(this.props.deviceHid);
       while (
