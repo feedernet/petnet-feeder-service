@@ -157,9 +157,7 @@ export class CreateRecipeContainer extends React.Component {
                     })
                   }
                 />
-                <InputGroup.Append>
-                  <InputGroup.Text id="food-weight">g/tbsp</InputGroup.Text>
-                </InputGroup.Append>
+                <InputGroup.Text id="food-weight">g/tbsp</InputGroup.Text>
               </InputGroup>
             </>
           )}
