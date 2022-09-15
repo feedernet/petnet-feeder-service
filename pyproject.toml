@@ -41,7 +41,7 @@ cryptography = "38.0.1"
 [tool.poetry.dev-dependencies]
 black = {version = "22.8.0", allow-prereleases = true}
 pytest = "^7.0.1"
-pytest-asyncio = "^0.18.1"
+pytest-asyncio = "^0.19.0"
 tox = "^3.26.0"
 pytest-cov = "^3.0.0"
 pytest-mock = "^3.8.2"
