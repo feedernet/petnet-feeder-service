@@ -773,14 +773,6 @@ typing-extensions = {version = ">=3.10.0", markers = "python_version < \"3.10\""
 full = ["itsdangerous", "jinja2", "python-multipart", "pyyaml", "requests"]
 
 [[package]]
-name = "toml"
-version = "0.10.2"
-description = "Python Library for Tom's Obvious, Minimal Language"
-category = "dev"
-optional = false
-python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
-
-[[package]]
 name = "tomli"
 version = "2.0.1"
 description = "A lil' TOML parser"
@@ -798,7 +790,7 @@ python-versions = ">=3.6,<4.0"
 
 [[package]]
 name = "tox"
-version = "3.25.0"
+version = "3.26.0"
 description = "tox is a generic virtualenv management and test command line tool"
 category = "dev"
 optional = false
@@ -811,7 +803,7 @@ packaging = ">=14"
 pluggy = ">=0.12.0"
 py = ">=1.4.17"
 six = ">=1.14.0"
-toml = ">=0.9.4"
+tomli = {version = ">=2.0.1", markers = "python_version >= \"3.7\" and python_version < \"3.11\""}
 virtualenv = ">=16.0.0,<20.0.0 || >20.0.0,<20.0.1 || >20.0.1,<20.0.2 || >20.0.2,<20.0.3 || >20.0.3,<20.0.4 || >20.0.4,<20.0.5 || >20.0.5,<20.0.6 || >20.0.6,<20.0.7 || >20.0.7"
 
 [package.extras]
@@ -918,7 +910,7 @@ testing = ["func-timeout", "jaraco.itertools", "pytest (>=6)", "pytest-black (>=
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "d966e8e38ad6541c479b1963c7d082458def69a199768a3ad2774f5e2c9cd1bf"
+content-hash = "5a6bd16fb7894787ed33443781ea14d464d3c033abecc0761aef29cb6ba778d8"
 
 [metadata.files]
 aiofiles = [
@@ -1459,10 +1451,6 @@ starlette = [
     {file = "starlette-0.19.1-py3-none-any.whl", hash = "sha256:5a60c5c2d051f3a8eb546136aa0c9399773a689595e099e0877704d5888279bf"},
     {file = "starlette-0.19.1.tar.gz", hash = "sha256:c6d21096774ecb9639acad41b86b7706e52ba3bf1dc13ea4ed9ad593d47e24c7"},
 ]
-toml = [
-    {file = "toml-0.10.2-py2.py3-none-any.whl", hash = "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b"},
-    {file = "toml-0.10.2.tar.gz", hash = "sha256:b3bda1d108d5dd99f4a20d24d9c348e91c4db7ab1b749200bded2f839ccbe68f"},
-]
 tomli = [
     {file = "tomli-2.0.1-py3-none-any.whl", hash = "sha256:939de3e7a6161af0c887ef91b7d41a53e7c5a1ca976325f429cb46ea9bc30ecc"},
     {file = "tomli-2.0.1.tar.gz", hash = "sha256:de526c12914f0c550d15924c62d72abc48d6fe7364aa87328337a31007fe8a4f"},
@@ -1472,8 +1460,8 @@ tomlkit = [
     {file = "tomlkit-0.11.4.tar.gz", hash = "sha256:3235a9010fae54323e727c3ac06fb720752fe6635b3426e379daec60fbd44a83"},
 ]
 tox = [
-    {file = "tox-3.25.0-py2.py3-none-any.whl", hash = "sha256:0805727eb4d6b049de304977dfc9ce315a1938e6619c3ab9f38682bb04662a5a"},
-    {file = "tox-3.25.0.tar.gz", hash = "sha256:37888f3092aa4e9f835fc8cc6dadbaaa0782651c41ef359e3a5743fcb0308160"},
+    {file = "tox-3.26.0-py2.py3-none-any.whl", hash = "sha256:bf037662d7c740d15c9924ba23bb3e587df20598697bb985ac2b49bdc2d847f6"},
+    {file = "tox-3.26.0.tar.gz", hash = "sha256:44f3c347c68c2c68799d7d44f1808f9d396fc8a1a500cbc624253375c7ae107e"},
 ]
 transitions = [
     {file = "transitions-0.8.11-py2.py3-none-any.whl", hash = "sha256:9525dd9b708b0a54bb4562a06a483d237e75c94547ba9831c81c6872d0ea1522"},

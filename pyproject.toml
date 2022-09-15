@@ -42,7 +42,7 @@ cryptography = "37.0.2"
 black = {version = "22.8.0", allow-prereleases = true}
 pytest = "^7.0.1"
 pytest-asyncio = "^0.18.1"
-tox = "^3.24.5"
+tox = "^3.26.0"
 pytest-cov = "^3.0.0"
 pytest-mock = "^3.8.2"
 requests = "^2.28.1"
