@@ -54,7 +54,7 @@
   "devDependencies": {
     "@testing-library/jest-dom": "^5.16.2",
     "@testing-library/react": "^12.1.5",
-    "@testing-library/user-event": "^13.5.0",
+    "@testing-library/user-event": "^14.4.3",
     "prettier": "2.7.1",
     "sass": "^1.49.9"
   }
