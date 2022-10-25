@@ -6,7 +6,7 @@ COPY static/public ./public
 RUN npm install
 RUN PUBLIC_URL=/build npm run build
 
-FROM python:3.10.7-alpine3.15
+FROM python:3.11.0-alpine3.15
 WORKDIR /tmp
 COPY poetry.lock ./
 COPY pyproject.toml ./
