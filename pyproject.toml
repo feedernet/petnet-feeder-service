@@ -30,7 +30,7 @@ aiosqlite = "^0.17.0"
 databases = "^0.4.3"
 fastapi = "^0.109.1"
 amqtt = { git = "https://github.com/feedernet/amqtt.git", rev = "f9e72c9e5b503ba385b9dd16d3e35b49662549df" }
-pytz = "^2022.2"
+pytz = "^2024.1"
 semver = "^2.13.0"
 sqlalchemy = "^1.3.24"
 uvicorn = "^0.18.3"
