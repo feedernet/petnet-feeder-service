@@ -28,7 +28,7 @@ python = "^3.8"
 alembic = "^1.8.1"
 aiosqlite = "^0.17.0"
 databases = "^0.4.3"
-fastapi = "^0.109.1"
+fastapi = "^0.110.3"
 amqtt = { git = "https://github.com/feedernet/amqtt.git", rev = "f9e72c9e5b503ba385b9dd16d3e35b49662549df" }
 pytz = "^2022.2"
 semver = "^2.13.0"
