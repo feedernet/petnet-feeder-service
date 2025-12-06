@@ -6,7 +6,7 @@
     "@mdi/js": "^7.0.96",
     "@mdi/react": "^1.5.0",
     "bootstrap": "^5.3.3",
-    "date-fns": "^2.28.0",
+    "date-fns": "^4.1.0",
     "formik": "^2.2.9",
     "prop-types": "^15.8.1",
     "rc-slider": "^10.0.1",
