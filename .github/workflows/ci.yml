@@ -60,7 +60,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push latest
-        uses: docker/build-push-action@v3.1.1
+        uses: docker/build-push-action@v6.18.0
         with:
           context: .
           file: ./Dockerfile
@@ -76,7 +76,7 @@ jobs:
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
       - name: Build and push ARMv7
-        uses: docker/build-push-action@v3.1.1
+        uses: docker/build-push-action@v6.18.0
         with:
           context: .
           file: ./Dockerfile
@@ -92,7 +92,7 @@ jobs:
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
 
       - name: Build and push ARMv6
-        uses: docker/build-push-action@v3.1.1
+        uses: docker/build-push-action@v6.18.0
         with:
           context: .
           file: ./Dockerfile
