@@ -9,7 +9,7 @@
     "date-fns": "^4.1.0",
     "formik": "^2.2.9",
     "prop-types": "^15.8.1",
-    "rc-slider": "^10.0.1",
+    "rc-slider": "^11.1.9",
     "react": "^17.0.2",
     "react-avatar-editor": "^14.0.0",
     "react-bootstrap": "^2.10.10",
