@@ -26,7 +26,7 @@ classifiers = [
 [tool.poetry.dependencies]
 python = "^3.9"
 alembic = "^1.8.1"
-aiosqlite = "^0.17.0"
+aiosqlite = "^0.21.0"
 databases = "^0.4.3"
 fastapi = "^0.122.0"
 amqtt = { git = "https://github.com/feedernet/amqtt.git", rev = "f9e72c9e5b503ba385b9dd16d3e35b49662549df" }
