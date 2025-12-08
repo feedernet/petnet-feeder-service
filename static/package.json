@@ -22,7 +22,7 @@
     "react-step-progress-bar": "^1.0.3",
     "react-step-wizard": "^5.3.11",
     "react-timekeeper": "^2.2.1",
-    "redux": "^4.1.2",
+    "redux": "^4.2.1",
     "redux-api-middleware": "^3.2.1",
     "redux-logger": "^3.0.6",
     "redux-thunk": "^2.4.1",
