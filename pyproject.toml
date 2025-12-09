@@ -45,7 +45,7 @@ black = {version = "22.8.0", allow-prereleases = true}
 pytest = "^8.4.2"
 pytest-asyncio = "^0.18.1"
 tox = "^4.30.3"
-pytest-cov = "^3.0.0"
+pytest-cov = "^7.0.0"
 pytest-mock = "^3.15.1"
 requests = "^2.32.4"
 flake8 = "^7.3.0"
