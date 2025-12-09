@@ -25,7 +25,7 @@
     "redux": "^4.2.1",
     "redux-api-middleware": "^3.2.1",
     "redux-logger": "^3.0.6",
-    "redux-thunk": "^2.4.1",
+    "redux-thunk": "^2.4.2",
     "uuid": "^9",
     "yup": "^1.7.1"
   },
