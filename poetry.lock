@@ -2,14 +2,14 @@
 
 [[package]]
 name = "aiofiles"
-version = "22.1.0"
+version = "25.1.0"
 description = "File support for asyncio."
 optional = false
-python-versions = ">=3.7,<4.0"
+python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "aiofiles-22.1.0-py3-none-any.whl", hash = "sha256:1142fa8e80dbae46bb6339573ad4c8c0841358f79c6eb50a493dceca14621bad"},
-    {file = "aiofiles-22.1.0.tar.gz", hash = "sha256:9107f1ca0b2a5553987a94a3c9959fe5b491fdf731389aa5b7b1bd0733e32de6"},
+    {file = "aiofiles-25.1.0-py3-none-any.whl", hash = "sha256:abe311e527c862958650f9438e859c1fa7568a141b22abcd015e120e86a85695"},
+    {file = "aiofiles-25.1.0.tar.gz", hash = "sha256:a8d728f0a29de45dc521f18f07297428d56992a742f0cd2701ba86e44d23d5b2"},
 ]
 
 [[package]]
@@ -1755,4 +1755,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.9"
-content-hash = "e9e73a54e3c3ab4fc808c984b5543fd333c3f506718ca59517143c31be0b8d67"
+content-hash = "9db9b21c96527746e3cf4c4e2a0e53f57ad5b79397f83e71cabfaef0a02b1a46"
