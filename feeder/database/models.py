@@ -23,7 +23,7 @@ from sqlalchemy.sql.expression import literal
 
 from feeder.util.feeder import generate_api_key, generate_feeder_hid
 from feeder.util import MILLIS_PER_SEC, get_current_timestamp
-from feeder.database.session import db, metadata
+from feeder.database.session import async_session, metadata
 
 logger = logging.getLogger(__name__)
 
@@ -55,11 +55,13 @@ gateways = Table(
 class KronosGateways:
     @classmethod
     async def get(cls, gateway_hid=""):
-        query = gateways.select()
+        query = select(gateways)
         if gateway_hid:
             query = query.where(gateways.c.hid == gateway_hid)
 
-        results = await db.fetch_all(query)
+        async with async_session() as session:
+            result = await session.execute(query)
+            results = result.fetchall()
         if gateway_hid and not results:
             raise HTTPException(
                 status_code=400, detail=f"Unregistered Gateway ({gateway_hid})"
@@ -73,16 +75,21 @@ class KronosGateways:
             gateway["apiKey"] = generate_api_key()
 
         query = gateways.insert().values(**gateway)
-        results = await db.execute(query)
-        return results
+        async with async_session() as session:
+            await session.execute(query)
+            await session.commit()
 
     @classmethod
     async def get_or_insert(cls, *, gateway_hid):
-        query = gateways.select().where(gateways.c.hid == gateway_hid)
-        results = await db.fetch_all(query)
+        query = select(gateways).where(gateways.c.hid == gateway_hid)
+        async with async_session() as session:
+            result = await session.execute(query)
+            results = result.fetchall()
         if not results:
             await KronosGateways.create(hid=gateway_hid)
-            results = await db.fetch_all(query)
+            async with async_session() as session:
+                result = await session.execute(query)
+                results = result.fetchall()
         return results[0]
 
     @classmethod
@@ -92,13 +99,17 @@ class KronosGateways:
             .where(gateways.c.hid == gateway_hid)
             .values(softwareVersion=firmware_version)
         )
-        await db.execute(query)
+        async with async_session() as session:
+            await session.execute(query)
+            await session.commit()
         device_query = (
             devices.update()
             .where(devices.c.gatewayHid == gateway_hid)
             .values(softwareVersion=firmware_version)
         )
-        await db.execute(device_query)
+        async with async_session() as session:
+            await session.execute(device_query)
+            await session.commit()
 
 
 devices = Table(
@@ -123,13 +134,15 @@ devices = Table(
 class KronosDevices:
     @classmethod
     async def get(cls, gateway_hid="", device_hid=""):
-        query = devices.select()
+        query = select(devices)
         if gateway_hid:
             query = query.where(devices.c.gatewayHid == gateway_hid)
         if device_hid:
             query = query.where(devices.c.hid == device_hid)
 
-        results = await db.fetch_all(query)
+        async with async_session() as session:
+            result = await session.execute(query)
+            results = result.fetchall()
         if gateway_hid and not results:
             raise HTTPException(
                 status_code=400,
@@ -146,17 +159,22 @@ class KronosDevices:
         device = handle_potential_registration(device)
 
         query = devices.insert().values(**device)
-        results = await db.execute(query)
-        return results
+        async with async_session() as session:
+            await session.execute(query)
+            await session.commit()
 
     @classmethod
     async def get_or_insert(cls, *, gateway_hid, device_hid):
-        query = devices.select().where(devices.c.gatewayHid == gateway_hid)
-        results = await db.fetch_all(query)
+        query = select(devices).where(devices.c.gatewayHid == gateway_hid)
+        async with async_session() as session:
+            result = await session.execute(query)
+            results = result.fetchall()
         if not results:
             gateway = await KronosGateways.get_or_insert(gateway_hid=gateway_hid)
             await KronosDevices.create(hid=device_hid, gatewayHid=gateway.hid)
-            results = await db.fetch_all(query)
+            async with async_session() as session:
+                result = await session.execute(query)
+                results = result.fetchall()
         return results[0]
 
     @classmethod
@@ -169,8 +187,9 @@ class KronosDevices:
             .where(devices.c.hid == device_hid)
             .values(lastPingedAt=get_current_timestamp())
         )
-        results = await db.execute(query)
-        return results
+        async with async_session() as session:
+            await session.execute(query)
+            await session.commit()
 
     @classmethod
     async def update(
@@ -198,8 +217,9 @@ class KronosDevices:
         if firmware_version is not None:
             values["softwareVersion"] = firmware_version
         query = devices.update().where(devices.c.hid == device_hid).values(**values)
-        results = await db.execute(query)
-        return results
+        async with async_session() as session:
+            await session.execute(query)
+            await session.commit()
 
     @classmethod
     async def delete(cls, device_id):
@@ -209,8 +229,10 @@ class KronosDevices:
 
         device_query = devices.delete().where(devices.c.hid == device_id)
         gateway_query = gateways.delete().where(gateways.c.hid == device[0].gatewayHid)
-        await db.execute(device_query)
-        await db.execute(gateway_query)
+        async with async_session() as session:
+            await session.execute(device_query)
+            await session.execute(gateway_query)
+            await session.commit()
 
 
 sensor_data = Table(
@@ -229,8 +251,10 @@ sensor_data = Table(
 class DeviceTelemetryData:
     @classmethod
     async def get(cls, device_hid):
-        query = sensor_data.select().where(sensor_data.c.device_hid == device_hid)
-        results = await db.fetch_all(query)
+        query = select(sensor_data).where(sensor_data.c.device_hid == device_hid)
+        async with async_session() as session:
+            result = await session.execute(query)
+            results = result.fetchall()
         if not results:
             raise HTTPException(
                 status_code=400, detail="Unknown device or device has not yet reported!"
@@ -257,10 +281,12 @@ class DeviceTelemetryData:
             "ir": ir,
             "rssi": rssi,
         }
-        query_last_report = sensor_data.select().where(
+        query_last_report = select(sensor_data).where(
             sensor_data.c.device_hid == device_hid
         )
-        last_report = await db.fetch_all(query_last_report)
+        async with async_session() as session:
+            result = await session.execute(query_last_report)
+            last_report = result.fetchall()
 
         if last_report:
             query = (
@@ -275,13 +301,16 @@ class DeviceTelemetryData:
             )
             query = sensor_data.insert().values(device_hid=device.hid, **sensors)
 
-        results = await db.execute(query)
-        return results
+        async with async_session() as session:
+            await session.execute(query)
+            await session.commit()
 
     @classmethod
     async def clear_for_device(cls, device_id):
         query = sensor_data.delete().where(sensor_data.c.device_hid == device_id)
-        return await db.execute(query)
+        async with async_session() as session:
+            await session.execute(query)
+            await session.commit()
 
 
 feeding_event = Table(
@@ -325,14 +354,16 @@ class FeedingResult:
     async def get(cls, device_hid="", offset=0, limit=10):
         join = feeding_event.join(devices, feeding_event.c.device_hid == devices.c.hid)
         query = (
-            select([feeding_event, devices.c.name.label("device_name")])
+            select(feeding_event, devices.c.name.label("device_name"))
             .select_from(join)
             .order_by(desc(feeding_event.c.start_time))
         )
         if device_hid:
             query = query.where(feeding_event.c.device_hid == device_hid)
-        query.offset(offset).limit(limit)
-        return await db.fetch_all(query)
+        query = query.offset(offset).limit(limit)
+        async with async_session() as session:
+            result = await session.execute(query)
+            return result.fetchall()
 
     @classmethod
     async def count(cls, device_hid=""):
@@ -340,10 +371,12 @@ class FeedingResult:
         We are going to be paginating these and we need a quick way to
         derive a page count.
         """
-        query = select([func.count()]).select_from(feeding_event)
+        query = select(func.count()).select_from(feeding_event)
         if device_hid:
             query = query.where(feeding_event.c.device_hid == device_hid)
-        return await db.fetch_val(query)
+        async with async_session() as session:
+            result = await session.execute(query)
+            return result.scalar()
 
     @classmethod
     async def report(
@@ -388,14 +421,18 @@ class FeedingResult:
             error=error,
         )
         try:
-            return await db.execute(query)
+            async with async_session() as session:
+                await session.execute(query)
+                await session.commit()
         except IntegrityError:
             logger.exception("Unable to save feed result!")
 
     @classmethod
     async def clear_for_device(cls, device_id):
         query = feeding_event.delete().where(feeding_event.c.device_hid == device_id)
-        return await db.execute(query)
+        async with async_session() as session:
+            await session.execute(query)
+            await session.commit()
 
     @staticmethod
     async def dispensed_at(device_id: str, timestamp: int, window_minutes: int = 5):
@@ -403,12 +440,14 @@ class FeedingResult:
             window_minutes * 60 * 1000
         )  # minute -> second (60) -> milliseconds (1000)
         query = (
-            feeding_event.select()
+            select(feeding_event)
             .where(feeding_event.c.device_hid == device_id)
             .where(feeding_event.c.start_time >= timestamp - offset)
             .where(feeding_event.c.start_time <= timestamp + offset)
         )
-        results = await db.fetch_all(query)
+        async with async_session() as session:
+            result = await session.execute(query)
+            results = result.fetchall()
         if results:
             return results[0]
 
@@ -430,13 +469,15 @@ pets = Table(
 class Pet:
     @classmethod
     async def get(cls, pet_id: int = None, device_hid: str = None):
-        query = pets.select()
+        query = select(pets)
         if pet_id is not None:
             query = query.where(pets.c.id == pet_id)
         if device_hid is not None:
             query = query.where(pets.c.device_hid == device_hid)
 
-        results = await db.fetch_all(query)
+        async with async_session() as session:
+            result = await session.execute(query)
+            results = result.fetchall()
         if not results and pet_id:
             logger.error("No pets found with ID: %d", pet_id)
             raise HTTPException(404, detail=f"No pet found with ID {pet_id}")
@@ -472,13 +513,17 @@ class Pet:
             values["device_hid"] = device_hid
 
         query = pets.insert().values(**values)
-        return await db.execute(query)
+        async with async_session() as session:
+            await session.execute(query)
+            await session.commit()
 
     @classmethod
     async def delete(cls, pet_id: int):
         await FeedingSchedule.clear_for_pet(pet_id=pet_id)
         query = pets.delete().where(pets.c.id == pet_id)
-        return await db.execute(query)
+        async with async_session() as session:
+            await session.execute(query)
+            await session.commit()
 
     @classmethod
     async def update(
@@ -511,7 +556,9 @@ class Pet:
             values["device_hid"] = device_hid
 
         query = pets.update().where(pets.c.id == pet_id).values(**values)
-        return await db.execute(query)
+        async with async_session() as session:
+            await session.execute(query)
+            await session.commit()
 
 
 recipes = Table(
@@ -528,11 +575,13 @@ recipes = Table(
 class StoredRecipe:
     @classmethod
     async def get(cls, recipe_id: int = None):
-        query = recipes.select()
+        query = select(recipes)
         if recipe_id is not None:
             query = query.where(recipes.c.id == recipe_id)
 
-        return await db.fetch_all(query)
+        async with async_session() as session:
+            result = await session.execute(query)
+            return result.fetchall()
 
     @classmethod
     async def create(
@@ -549,7 +598,9 @@ class StoredRecipe:
             tbsp_per_feeding=tbsp_per_feeding,
             budget_tbsp=budget_tbsp or tbsp_per_feeding,
         )
-        return await db.execute(query)
+        async with async_session() as session:
+            await session.execute(query)
+            await session.commit()
 
     @classmethod
     async def update(
@@ -570,7 +621,9 @@ class StoredRecipe:
         if budget_tbsp:
             values["budget_tbsp"] = budget_tbsp
         query = recipes.update().where(recipes.c.id == recipe_id).values(**values)
-        return await db.execute(query)
+        async with async_session() as session:
+            await session.execute(query)
+            await session.commit()
 
 
 # We will store a level reference every time someone manually updates the amount
@@ -598,11 +651,13 @@ class HopperLevelRef:
         device_results = await KronosDevices.get(device_hid=device_id)
         device = device_results[0]
         latest_ref_query = (
-            hopper_level_references.select()
+            select(hopper_level_references)
             .order_by(desc(hopper_level_references.c.timestamp))
             .where(hopper_level_references.c.device_hid == device_id)
         )
-        latest_ref = await db.fetch_one(latest_ref_query)
+        async with async_session() as session:
+            result = await session.execute(latest_ref_query)
+            latest_ref = result.first()
         if not latest_ref:
             raise HTTPException(404, detail=f"Hopper level not set for {device_id}")
 
@@ -611,7 +666,7 @@ class HopperLevelRef:
         )
 
         dispensed_grams_query = (
-            select([func.sum(feeding_event.c.grams_expected)])
+            select(func.sum(feeding_event.c.grams_expected))
             .select_from(feeding_event)
             .where(feeding_event.c.start_time >= latest_ref.timestamp)
             .where(feeding_event.c.device_hid == device_id)
@@ -621,7 +676,9 @@ class HopperLevelRef:
         # are the current recipe. While this isn't an unfair assumption, since food level
         # would change and should be updated by the user if the food changes, we are relying on
         # the user to do the right thing... Which, yah, good luck with that.
-        dispensed_grams = await db.fetch_val(dispensed_grams_query)
+        async with async_session() as session:
+            result = await session.execute(dispensed_grams_query)
+            dispensed_grams = result.scalar()
         if not dispensed_grams:
             dispensed_grams = 0
         logger.debug(
@@ -629,8 +686,10 @@ class HopperLevelRef:
             dispensed_grams,
             latest_ref.timestamp,
         )
-        recipe_query = recipes.select().where(recipes.c.id == device.currentRecipe)
-        recipe = await db.fetch_one(recipe_query)
+        recipe_query = select(recipes).where(recipes.c.id == device.currentRecipe)
+        async with async_session() as session:
+            result = await session.execute(recipe_query)
+            recipe = result.first()
         if not recipe:
             raise HTTPException(
                 400, detail="No recipe set for device, cannot calculate hopper level!"
@@ -660,13 +719,15 @@ class HopperLevelRef:
             timestamp=get_current_timestamp(),
             level=level,
         )
-        return await db.execute(query)
+        async with async_session() as session:
+            await session.execute(query)
+            await session.commit()
 
 
 schedules = Table(
     "feeding_schedules",
     metadata,
-    Column("event_id", Integer(), primary_key=True, autoincrement=True),
+    Column("event_id", Integer(), primary_key=True),
     Column("pet_id", Text(), ForeignKey("pets.id"), nullable=False),
     # This is the number of seconds since 12:00AM
     Column("time", Integer(), primary_key=True),
@@ -680,23 +741,29 @@ class FeedingSchedule:
     @classmethod
     async def get_for_pet(cls, pet_id: int):
         query = (
-            schedules.select()
+            select(schedules)
             .where(schedules.c.pet_id == pet_id)
             .order_by(asc(schedules.c.time))
         )
-        return await db.fetch_all(query)
+        async with async_session() as session:
+            result = await session.execute(query)
+            return result.fetchall()
 
     @classmethod
     async def clear_for_pet(cls, pet_id: int):
         query = schedules.delete().where(schedules.c.pet_id == pet_id)
-        return await db.execute(query)
+        async with async_session() as session:
+            await session.execute(query)
+            await session.commit()
 
     @classmethod
     async def create_event(cls, pet_id: int, name: str, time: int, portion: float):
         query = schedules.insert().values(
             pet_id=pet_id, time=time, enabled=True, name=name, portion=portion
         )
-        return await db.execute(query)
+        async with async_session() as session:
+            await session.execute(query)
+            await session.commit()
 
     @classmethod
     async def update_event(
@@ -720,9 +787,13 @@ class FeedingSchedule:
         query = (
             schedules.update().where(schedules.c.event_id == event_id).values(**values)
         )
-        return await db.execute(query)
+        async with async_session() as session:
+            await session.execute(query)
+            await session.commit()
 
     @classmethod
     async def delete_event(cls, event_id: int):
         query = schedules.delete().where(schedules.c.event_id == event_id)
-        return await db.execute(query)
+        async with async_session() as session:
+            await session.execute(query)
+            await session.commit()

@@ -10,7 +10,7 @@ from fastapi.templating import Jinja2Templates
 from feeder import settings
 from feeder.api.routers import kronos, feeder, pet
 from feeder.util.mqtt import FeederClient, FeederBroker
-from feeder.database.session import db
+from feeder.database.session import engine, Base
 
 logger = logging.getLogger("feeder")
 
@@ -74,14 +74,15 @@ def create_application() -> FastAPI:
 
     @app.on_event("startup")
     async def startup_event():  # pylint: disable=unused-variable
-        await db.connect()
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
         async_loop.create_task(broker.start())
         async_loop.create_task(client.start())
 
     @app.on_event("shutdown")
     async def shutdown_event():  # pylint: disable=unused-variable
         await asyncio.gather(broker.shutdown(), return_exceptions=True)
-        await db.disconnect()
+        await engine.dispose()
 
     app.add_api_route(
         path=f"{settings.app_root}/{{full_path:path}}",
