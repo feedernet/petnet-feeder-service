@@ -77,7 +77,7 @@ async def update_single_device(device_id: str, updated: DeviceUpdate):
     if updated.timezone is not None:
         try:
             timezone = pytz.timezone(updated.timezone)
-            offset = int(datetime.datetime.now(timezone).utcoffset().total_seconds())
+            offset = int(datetime.datetime.now(timezone).utcoffset().total_seconds())  # type: ignore[union-attr]
             await router.client.send_cmd_utc_offset(
                 gateway_id=device.gatewayHid, device_id=device_id, utc_offset=offset
             )

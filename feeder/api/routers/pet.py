@@ -21,7 +21,7 @@ async def list_pets():
 @router.post("", response_model=RegisteredPet)
 @router.post("/", response_model=RegisteredPet)
 async def create_pet(new_pet: RegisteredPet):
-    pet_id = await Pet.create(
+    pet_id = await Pet.create(  # type: ignore[arg-type]
         name=new_pet.name,
         animal_type=new_pet.animal_type,
         weight=new_pet.weight,
@@ -60,8 +60,8 @@ async def delete_pet(pet_id: int):
 
 
 async def get_schedule_for_pet(pet: RegisteredPet):
-    schedule = await FeedingSchedule.get_for_pet(pet.id)
-    feeder_results = await KronosDevices.get(device_hid=pet.device_hid)
+    schedule = await FeedingSchedule.get_for_pet(pet.id)  # type: ignore[arg-type]
+    feeder_results = await KronosDevices.get(device_hid=pet.device_hid)  # type: ignore[arg-type]
     feeder_tz = feeder_results[0].timezone
 
     for idx, event in enumerate(schedule):
@@ -69,7 +69,7 @@ async def get_schedule_for_pet(pet: RegisteredPet):
             seconds_since_midnight=event["time"], timezone=feeder_tz
         )
         dispense_result = await FeedingResult.dispensed_at(
-            device_id=pet.device_hid, timestamp=target_time
+            device_id=pet.device_hid, timestamp=target_time  # type: ignore[arg-type]
         )
         schedule[idx] = {**event, "result": dispense_result}
 

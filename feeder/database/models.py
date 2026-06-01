@@ -4,6 +4,7 @@
 
 import logging
 from sqlite3 import IntegrityError
+from typing import Any, Dict, Optional
 
 from fastapi import HTTPException
 from sqlalchemy import (
@@ -93,7 +94,7 @@ class KronosGateways:
         return results[0]
 
     @classmethod
-    async def update(cls, *, gateway_hid: str, firmware_version: str):
+    async def update(cls, *, gateway_hid: str, firmware_version: Optional[str]):
         query = (
             gateways.update()
             .where(gateways.c.hid == gateway_hid)
@@ -203,7 +204,7 @@ class KronosDevices:
         black: bool = None,
         firmware_version: str = None,
     ):
-        values = {}
+        values: Dict[str, Any] = {}
         if name is not None:
             values["name"] = name
         if timezone is not None:
@@ -299,7 +300,7 @@ class DeviceTelemetryData:
             device = await KronosDevices.get_or_insert(
                 device_hid=device_hid, gateway_hid=gateway_hid
             )
-            query = sensor_data.insert().values(device_hid=device.hid, **sensors)
+            query = sensor_data.insert().values(device_hid=device.hid, **sensors)  # type: ignore[assignment]
 
         async with async_session() as session:
             await session.execute(query)
@@ -383,16 +384,16 @@ class FeedingResult:
         cls,
         *,
         device_hid: str,
-        start_time: int,
-        end_time: int,
-        pour: int,
-        full: int,
-        grams_expected: int,
-        grams_actual: int,
-        hopper_start: int,
-        hopper_end: int,
-        recipe_id: str,
-        fail: bool,
+        start_time: Optional[int],
+        end_time: Optional[int],
+        pour: Optional[int],
+        full: Optional[int],
+        grams_expected: Optional[int],
+        grams_actual: Optional[int],
+        hopper_start: Optional[int],
+        hopper_end: Optional[int],
+        recipe_id: Optional[str],
+        fail: Optional[bool],
         source=None,
         trip=None,
         lrg=None,
@@ -403,8 +404,8 @@ class FeedingResult:
         query = feeding_event.insert().values(
             device_hid=device_hid,
             timestamp=get_current_timestamp(),
-            start_time=start_time * MILLIS_PER_SEC,
-            end_time=end_time * MILLIS_PER_SEC,
+            start_time=start_time * MILLIS_PER_SEC if start_time is not None else None,
+            end_time=end_time * MILLIS_PER_SEC if end_time is not None else None,
             pour=pour,
             full=full,
             grams_expected=grams_expected,
@@ -488,12 +489,12 @@ class Pet:
     async def create(
         cls,
         *,
-        name: str,
-        animal_type: str,
-        weight: float,
-        birthday: int,
+        name: Optional[str],
+        animal_type: Optional[str],
+        weight: Optional[float],
+        birthday: Optional[int],
         image: str = None,
-        activity_level: int,
+        activity_level: Optional[int],
         device_hid: str = None,
     ):
         values = {
@@ -537,7 +538,7 @@ class Pet:
         activity_level: int = None,
         device_hid: str = None,
     ):
-        values = {}
+        values: Dict[str, Any] = {}
         if name:
             values["name"] = name
         if animal_type:
@@ -587,10 +588,10 @@ class StoredRecipe:
     async def create(
         cls,
         *,
-        name: str = "",
-        g_per_tbsp: int,
-        tbsp_per_feeding: int,
-        budget_tbsp: int = 0,
+        name: Optional[str] = "",
+        g_per_tbsp: Optional[int],
+        tbsp_per_feeding: Optional[int],
+        budget_tbsp: Optional[int] = 0,
     ):
         query = recipes.insert().values(
             name=name or None,
@@ -611,7 +612,7 @@ class StoredRecipe:
         tbsp_per_feeding: int = None,
         budget_tbsp: int = None,
     ):
-        values = {}
+        values: Dict[str, Any] = {}
         if name:
             values["name"] = name
         if g_per_tbsp:
@@ -757,7 +758,7 @@ class FeedingSchedule:
             await session.commit()
 
     @classmethod
-    async def create_event(cls, pet_id: int, name: str, time: int, portion: float):
+    async def create_event(cls, pet_id: int, name: Optional[str], time: Optional[int], portion: Optional[float]):
         query = schedules.insert().values(
             pet_id=pet_id, time=time, enabled=True, name=name, portion=portion
         )
@@ -774,7 +775,7 @@ class FeedingSchedule:
         enabled: bool = None,
         portion: float = None,
     ):
-        values = {}
+        values: Dict[str, Any] = {}
         if name is not None:
             values["name"] = name
         if time is not None:

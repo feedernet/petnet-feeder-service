@@ -54,11 +54,19 @@ requests = "^2.32.4"
 flake8 = "^7.3.0"
 pylint = "^2.15.2"
 pytest-xdist = "^2.5.0"
+mypy = "^1.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+warn_return_any = false
+disallow_untyped_defs = false
+implicit_optional = true
 
 [tool.poetry.plugins."amqtt.broker.plugins"]
 auth_petnet = "feeder.util.mqtt.authentication:PetnetAuthPlugin"
