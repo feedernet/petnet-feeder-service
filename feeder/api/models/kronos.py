@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from feeder import settings
 from feeder.api.models import BasePaginatedList
@@ -30,13 +30,12 @@ class NewGateway(BaseModel):
 
 
 class Gateway(NewGateway):
+    model_config = ConfigDict(from_attributes=True)
+
     hid: str
     pri: str
     applicationHid: str = settings.app_id
     discoveredAt: int = 0
-
-    class Config:
-        orm_mode = True
 
 
 class PaginatedGatewayList(BasePaginatedList):
@@ -71,6 +70,8 @@ class NewDevice(BaseModel):
 
 
 class Device(NewDevice):
+    model_config = ConfigDict(from_attributes=True)
+
     hid: str
     discoveredAt: int = 0
     lastPingedAt: Optional[int] = 0
@@ -79,9 +80,6 @@ class Device(NewDevice):
     connected: bool = False
     currentRecipe: Optional[int]
     black: Optional[bool] = False
-
-    class Config:
-        orm_mode = True
 
 
 class DeviceUpdate(BaseModel):

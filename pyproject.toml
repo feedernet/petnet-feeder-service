@@ -27,7 +27,6 @@ classifiers = [
 python = "^3.11"
 alembic = "^1.8.1"
 aiosqlite = "^0.21.0"
-databases = "^0.4.3"
 fastapi = "^0.122.0"
 amqtt = { git = "https://github.com/feedernet/amqtt.git", rev = "f9e72c9e5b503ba385b9dd16d3e35b49662549df" }
 pytz = "^2022.2"
@@ -39,6 +38,8 @@ Jinja2 = "^3.1.6"
 cryptography = ">=44.0.1"
 urllib3 = ">=2.6.0"
 starlette = ">=0.47.2"
+pydantic = "^2.0"
+pydantic-settings = "^2.0"
 python-json-logger = "^2.0"
 
 [tool.poetry.dev-dependencies]
