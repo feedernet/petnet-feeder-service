@@ -39,6 +39,7 @@ Jinja2 = "^3.1.6"
 cryptography = ">=44.0.1"
 urllib3 = ">=2.6.0"
 starlette = ">=0.47.2"
+python-json-logger = "^2.0"
 
 [tool.poetry.dev-dependencies]
 black = {version = "22.8.0", allow-prereleases = true}
