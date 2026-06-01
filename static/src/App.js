@@ -19,68 +19,66 @@ import ScheduleModal from "./containers/ScheduleModalContainer";
 
 const rootPath = getRootPath();
 
-class App extends React.Component {
-  render() {
-    return (
-      <div>
-        <Navbar
-          expand="lg"
-          variant="dark"
-          bg="primary"
-          fixed="top"
-          className={
-            window.navigator.standalone === true ? "ios-app-nav" : null
-          }
-        >
-          <Container>
-            <Navbar.Brand href="#">
-              <img src={ProjectLogo} alt={"FeederNet Logo"} width={175} />
-            </Navbar.Brand>
-            <Navbar.Toggle aria-controls="basic-navbar-nav" />
-            <Navbar.Collapse id="basic-navbar-nav">
-              <Nav className="me-auto">
-                <Link
-                  to={rootPath}
-                  component={Nav.Link}
-                  active={window.location.pathname === `${rootPath}/`}
-                >
-                  <Icon path={mdiPaw} size={0.75} /> Home
-                </Link>
-                <Link to={`${rootPath}/settings`} component={Nav.Link}>
-                  <Icon path={mdiCog} size={0.75} /> Settings
-                </Link>
-              </Nav>
-            </Navbar.Collapse>
-          </Container>
-        </Navbar>
-        <Container
-          style={{ marginTop: window.navigator.standalone === true ? 70 : 100 }}
-        >
-          <Routes>
-            <Route
-              path={rootPath}
-              element={
-                <>
-                  <PetCardList />
-                  <FeederCardList />
-                  <FeedHistory />
-                  <NewFeederWizard />
-                  <SnackModal />
-                  <EditFeederModal />
-                  <EditPetModal />
-                  <ScheduleModal />
-                </>
-              }
-            />
-            <Route
-              path="*"
-              element={<ErrorComponent message="Page Not Found!" />}
-            />
-          </Routes>
+function App() {
+  return (
+    <div>
+      <Navbar
+        expand="lg"
+        variant="dark"
+        bg="primary"
+        fixed="top"
+        className={
+          window.navigator.standalone === true ? "ios-app-nav" : null
+        }
+      >
+        <Container>
+          <Navbar.Brand href="#">
+            <img src={ProjectLogo} alt={"FeederNet Logo"} width={175} />
+          </Navbar.Brand>
+          <Navbar.Toggle aria-controls="basic-navbar-nav" />
+          <Navbar.Collapse id="basic-navbar-nav">
+            <Nav className="me-auto">
+              <Link
+                to={rootPath}
+                component={Nav.Link}
+                active={window.location.pathname === `${rootPath}/`}
+              >
+                <Icon path={mdiPaw} size={0.75} /> Home
+              </Link>
+              <Link to={`${rootPath}/settings`} component={Nav.Link}>
+                <Icon path={mdiCog} size={0.75} /> Settings
+              </Link>
+            </Nav>
+          </Navbar.Collapse>
         </Container>
-      </div>
-    );
-  }
+      </Navbar>
+      <Container
+        style={{ marginTop: window.navigator.standalone === true ? 70 : 100 }}
+      >
+        <Routes>
+          <Route
+            path={rootPath}
+            element={
+              <>
+                <PetCardList />
+                <FeederCardList />
+                <FeedHistory />
+                <NewFeederWizard />
+                <SnackModal />
+                <EditFeederModal />
+                <EditPetModal />
+                <ScheduleModal />
+              </>
+            }
+          />
+          <Route
+            path="*"
+            element={<ErrorComponent message="Page Not Found!" />}
+          />
+        </Routes>
+      </Container>
+    </div>
+  );
 }
 
 export default App;
