@@ -1,12 +1,12 @@
-FROM --platform=$BUILDPLATFORM node:25-alpine AS frontend-build
+FROM --platform=$BUILDPLATFORM node:24-alpine AS frontend-build
 WORKDIR /tmp
 COPY static/package*.json ./
 COPY static/src ./src
 COPY static/public ./public
-RUN npm install
+RUN npm ci
 RUN PUBLIC_URL=/build npm run build
 
-FROM python:3.11.0-alpine3.15
+FROM python:3.14-alpine
 WORKDIR /tmp
 COPY poetry.lock ./
 COPY pyproject.toml ./
@@ -32,6 +32,8 @@ RUN apk add --no-cache --virtual .build-deps \
     && apk del .build-deps \
     && rm -rf ~/.cache/pip \
     && rm -rf ~/.cache/pypoetry/{cache,artifacts}
+RUN adduser -D appuser && chown -R appuser /tmp
+USER appuser
 CMD poetry run alembic upgrade head && poetry run python -m feeder
 EXPOSE 1883/tcp
 EXPOSE 5000/tcp
