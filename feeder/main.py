@@ -46,14 +46,6 @@ async def render_frontend(full_path: str, request: Request):
 
 
 def create_application() -> FastAPI:
-    client = FeederClient()
-    broker = FeederBroker()
-
-    mqtt_enabled_routers = [feeder, pet]
-    for mqtt_router in mqtt_enabled_routers:
-        mqtt_router.router.client = client
-        mqtt_router.router.broker = broker
-
     app = FastAPI(
         title=settings.app_name,
         description=settings.app_description,
@@ -75,12 +67,17 @@ def create_application() -> FastAPI:
         asyncio.get_running_loop().set_exception_handler(handle_exception)
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
-        asyncio.create_task(broker.start())
-        asyncio.create_task(client.start())
+        app.state.client = FeederClient()
+        app.state.broker = FeederBroker()
+        for mqtt_router in [feeder, pet]:
+            mqtt_router.router.client = app.state.client
+            mqtt_router.router.broker = app.state.broker
+        asyncio.create_task(app.state.broker.start())
+        asyncio.create_task(app.state.client.start())
 
     @app.on_event("shutdown")
     async def shutdown_event():  # pylint: disable=unused-variable
-        await asyncio.gather(broker.shutdown(), return_exceptions=True)
+        await asyncio.gather(app.state.broker.shutdown(), return_exceptions=True)
         await engine.dispose()
 
     app.add_api_route(
