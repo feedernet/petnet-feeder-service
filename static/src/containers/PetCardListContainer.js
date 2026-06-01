@@ -1,6 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { withRouter } from "react-router-dom";
+import { withRouter } from "../util/withRouter";
 import { connect } from "react-redux";
 import { getPetsAction } from "../actions/getPets";
 import PetCard from "./PetCardContainer";

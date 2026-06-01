@@ -2,7 +2,7 @@ import React, { isValidElement } from "react";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import PropTypes from "prop-types";
-import { withRouter } from "react-router-dom";
+import { withRouter } from "../../util/withRouter";
 import { connect } from "react-redux";
 import { setHopperLevelAction } from "../../actions/setHopperLevel";
 import { HopperLevelFormComponent } from "../../components/HopperLevelForm";

@@ -1,6 +1,6 @@
 import React from "react";
 import { connect } from "react-redux";
-import { withRouter } from "react-router-dom";
+import { withRouter } from "../util/withRouter";
 import PropTypes from "prop-types";
 import { HopperLevelIndicatorComponent } from "../components/HopperLevelIndicator";
 import { getHopperLevelAction } from "../actions/getHopperLevel";

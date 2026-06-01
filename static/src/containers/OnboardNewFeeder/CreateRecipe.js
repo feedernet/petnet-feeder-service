@@ -5,7 +5,7 @@ import Alert from "react-bootstrap/Alert";
 import InputGroup from "react-bootstrap/InputGroup";
 import FormControl from "react-bootstrap/FormControl";
 import PropTypes from "prop-types";
-import { withRouter } from "react-router-dom";
+import { withRouter } from "../../util/withRouter";
 import { connect } from "react-redux";
 import { FoodWeightBubble } from "../../components/FoodWeightBubble";
 import { getFeedHistoryAction } from "../../actions/getFeedHistory";

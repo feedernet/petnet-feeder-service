@@ -6,7 +6,7 @@ import SetHopperLevel from "./OnboardNewFeeder/SetHopperLevel";
 import { NewFeederFinished } from "./OnboardNewFeeder/Finished";
 import CreateRecipe from "./OnboardNewFeeder/CreateRecipe";
 import PropTypes from "prop-types";
-import { withRouter } from "react-router-dom";
+import { withRouter } from "../util/withRouter";
 import { connect } from "react-redux";
 import { dismissFeederWizard } from "../actions/newFeederWizard";
 import { getFeederDevices } from "../actions/getFeederDevices";

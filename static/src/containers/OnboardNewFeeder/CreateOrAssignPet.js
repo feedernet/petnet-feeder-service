@@ -5,7 +5,7 @@ import { PetAvatar } from "../../components/PetAvatar";
 import AddNewIcon from "../../images/add_new.png";
 import { CreatePetFormContainer } from "../CreatePetFormContainer";
 import PropTypes from "prop-types";
-import { withRouter } from "react-router-dom";
+import { withRouter } from "../../util/withRouter";
 import { connect } from "react-redux";
 import { getPetsAction } from "../../actions/getPets";
 import { createPetAction } from "../../actions/createPet";

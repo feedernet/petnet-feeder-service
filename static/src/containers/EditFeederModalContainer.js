@@ -1,5 +1,5 @@
 import React from "react";
-import { withRouter } from "react-router";
+import { withRouter } from "../util/withRouter";
 import { connect } from "react-redux";
 import PropTypes from "prop-types";
 import { dismissEditFeederModal } from "../actions/editFeederModal";

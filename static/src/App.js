@@ -1,5 +1,5 @@
 import React from "react";
-import { Switch, Route, withRouter, Link } from "react-router-dom";
+import { Routes, Route, Link } from "react-router-dom";
 import Container from "react-bootstrap/Container";
 import Navbar from "react-bootstrap/Navbar";
 import Nav from "react-bootstrap/Nav";
@@ -20,36 +20,6 @@ import ScheduleModal from "./containers/ScheduleModalContainer";
 const rootPath = getRootPath();
 
 class App extends React.Component {
-  state = {
-    routes: [
-      {
-        path: rootPath,
-        label: "Feeder List",
-        exact: true,
-        render: (props) => {
-          return (
-            <>
-              <PetCardList {...props} />
-              <FeederCardList {...props} />
-              <FeedHistory {...props} />
-              <NewFeederWizard />
-              <SnackModal />
-              <EditFeederModal />
-              <EditPetModal />
-              <ScheduleModal />
-            </>
-          );
-        },
-      },
-      {
-        label: "Page Not Found",
-        render: () => {
-          return <ErrorComponent message="Page Not Found!" />;
-        },
-      },
-    ],
-  };
-
   render() {
     return (
       <div>
@@ -86,15 +56,31 @@ class App extends React.Component {
         <Container
           style={{ marginTop: window.navigator.standalone === true ? 70 : 100 }}
         >
-          <Switch>
-            {this.state.routes.map((ea) => {
-              return <Route key={ea.path} {...ea} />;
-            })}
-          </Switch>
+          <Routes>
+            <Route
+              path={rootPath}
+              element={
+                <>
+                  <PetCardList />
+                  <FeederCardList />
+                  <FeedHistory />
+                  <NewFeederWizard />
+                  <SnackModal />
+                  <EditFeederModal />
+                  <EditPetModal />
+                  <ScheduleModal />
+                </>
+              }
+            />
+            <Route
+              path="*"
+              element={<ErrorComponent message="Page Not Found!" />}
+            />
+          </Routes>
         </Container>
       </div>
     );
   }
 }
 
-export default withRouter(App);
+export default App;
