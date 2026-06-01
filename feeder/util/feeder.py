@@ -60,8 +60,9 @@ def generate_feeder_hid(uid: str) -> str:
 
 
 def check_connection(
-    device: "Device", broker: "FeederBroker"  # noqa: F821
-) -> "Device":  # noqa: F821
+    device: "Device",  # type: ignore[name-defined]  # noqa: F821
+    broker: "FeederBroker",  # type: ignore[name-defined]  # noqa: F821
+) -> "Device":  # type: ignore[name-defined]  # noqa: F821
     # This is kinda gross... we are tapping into their internal sessions
     # storage.
     # TODO: If we end up forking HBMQTT, we should add an interface for this.

@@ -46,8 +46,6 @@ async def render_frontend(full_path: str, request: Request):
 
 
 def create_application() -> FastAPI:
-    async_loop = asyncio.get_event_loop()
-    async_loop.set_exception_handler(handle_exception)
     client = FeederClient()
     broker = FeederBroker()
 
@@ -74,10 +72,11 @@ def create_application() -> FastAPI:
 
     @app.on_event("startup")
     async def startup_event():  # pylint: disable=unused-variable
+        asyncio.get_running_loop().set_exception_handler(handle_exception)
         async with engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
-        async_loop.create_task(broker.start())
-        async_loop.create_task(client.start())
+        asyncio.create_task(broker.start())
+        asyncio.create_task(client.start())
 
     @app.on_event("shutdown")
     async def shutdown_event():  # pylint: disable=unused-variable

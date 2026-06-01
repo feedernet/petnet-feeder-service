@@ -11,12 +11,12 @@ from feeder.util.mkcert import generate_self_signed_certificate, domain_in_subje
 
 logger = logging.getLogger("feeder")
 if settings.debug:
-    for named_logger in LOGGING_CONFIG["loggers"]:
+    for named_logger in LOGGING_CONFIG["loggers"]:  # type: ignore[attr-defined]
         if named_logger:
-            LOGGING_CONFIG["loggers"][named_logger]["level"] = "DEBUG"
-    LOGGING_CONFIG["loggers"]["amqtt.client.plugins"] = {"level": "INFO"}
-    LOGGING_CONFIG["loggers"]["amqtt.broker.plugins"] = {"level": "INFO"}
-    LOGGING_CONFIG["loggers"]["amqtt.mqtt.protocol.handler"] = {"level": "INFO"}
+            LOGGING_CONFIG["loggers"][named_logger]["level"] = "DEBUG"  # type: ignore[index]
+    LOGGING_CONFIG["loggers"]["amqtt.client.plugins"] = {"level": "INFO"}  # type: ignore[index]
+    LOGGING_CONFIG["loggers"]["amqtt.broker.plugins"] = {"level": "INFO"}  # type: ignore[index]
+    LOGGING_CONFIG["loggers"]["amqtt.mqtt.protocol.handler"] = {"level": "INFO"}  # type: ignore[index]
 dictConfig(LOGGING_CONFIG)
 
 app = create_application()
