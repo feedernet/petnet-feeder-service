@@ -1,17 +1,19 @@
 FROM --platform=$BUILDPLATFORM node:24-alpine AS frontend-build
 WORKDIR /tmp
 COPY static/package*.json ./
+COPY static/vite.config.js ./
+COPY static/index.html ./
 COPY static/src ./src
 COPY static/public ./public
 RUN npm ci
-RUN PUBLIC_URL=/build npm run build
+RUN npm run build
 
 FROM python:3.14-alpine
 WORKDIR /tmp
 COPY poetry.lock ./
 COPY pyproject.toml ./
 COPY feeder/ ./feeder
-COPY --from=frontend-build /tmp/build ./static/build
+COPY --from=frontend-build /tmp/dist ./static/build
 COPY alembic.ini ./
 COPY README.md ./
 # This has a hack with pip to get around the fact that poetry doesn't handle extra index URLs correctly yet
