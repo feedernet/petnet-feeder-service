@@ -61,20 +61,16 @@ function EditFeederModal() {
   const updateAndSubmit = (event, field, value, closeModal = true) => {
     event.persist();
     event.preventDefault();
-    setFeeder((prev) => {
-      const updated = { ...prev, [field]: value };
-      // Submit after state update; we can't call async directly in setState
-      // so we use the updated value directly
-      modifyFeeder({
-        deviceId: updated.hid,
-        name: updated.name,
-        timezone: updated.timezone,
-        frontButton: updated.frontButton,
-        black: updated.black,
-      }).then(() => {
-        if (closeModal) handleClose();
-      });
-      return updated;
+    const updated = { ...feeder, [field]: value };
+    setFeeder(updated);
+    modifyFeeder({
+      deviceId: updated.hid,
+      name: updated.name,
+      timezone: updated.timezone,
+      frontButton: updated.frontButton,
+      black: updated.black,
+    }).then(() => {
+      if (closeModal) handleClose();
     });
   };
 
