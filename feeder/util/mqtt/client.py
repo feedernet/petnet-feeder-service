@@ -91,7 +91,7 @@ class FeederClient(MQTTClient):
             gateway_id = api_result.groupdict()["gateway_id"]
             try:
                 payload = json.loads(packet.payload.data)
-            except UnicodeDecodeError:
+            except (UnicodeDecodeError, json.JSONDecodeError):
                 logger.exception("Failed to decode message: %s", packet.payload.data)
                 return
             request_id = payload["requestId"]
@@ -100,7 +100,7 @@ class FeederClient(MQTTClient):
             gateway_id = telemetry_result.groupdict()["gateway_id"]
             try:
                 payload = json.loads(packet.payload.data)
-            except UnicodeDecodeError:
+            except (UnicodeDecodeError, json.JSONDecodeError):
                 logger.exception("Failed to decode message: %s", packet.payload.data)
                 return
             await commit_telemetry_data(gateway_id, payload)
