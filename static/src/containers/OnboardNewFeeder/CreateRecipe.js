@@ -1,282 +1,256 @@
-import React from "react";
+import React, { useState } from "react";
 import Modal from "react-bootstrap/Modal";
 import Button from "react-bootstrap/Button";
 import Alert from "react-bootstrap/Alert";
 import InputGroup from "react-bootstrap/InputGroup";
 import FormControl from "react-bootstrap/FormControl";
 import PropTypes from "prop-types";
-import { withRouter } from "../../util/withRouter";
-import { connect } from "react-redux";
+import { useQueryClient } from "@tanstack/react-query";
 import { FoodWeightBubble } from "../../components/FoodWeightBubble";
-import { getFeedHistoryAction } from "../../actions/getFeedHistory";
-import { triggerFeedingAction } from "../../actions/triggerFeeding";
-import { setRecipeAction } from "../../actions/setRecipe";
+import {
+  useTriggerFeeding,
+  useSetRecipe,
+} from "../../hooks/useFeeders";
+import { getFeedHistory } from "../../api/feeders";
 
 function timer(ms) {
   return new Promise((res) => setTimeout(res, ms));
 }
 
-export class CreateRecipeContainer extends React.Component {
-  state = {
-    measuredWeights: [null, null, null],
-    isCurrentlyMeasuring: [false, false, false],
-    errorWeighing: false,
-    manualEntry: false,
-    lastFeedTime: null,
-    measuredDensity: 0,
-    committedDensity: null,
-  };
+function CreateRecipe({ deviceHid, nextStep }) {
+  const [measuredWeights, setMeasuredWeights] = useState([null, null, null]);
+  const [isCurrentlyMeasuring, setIsCurrentlyMeasuring] = useState([
+    false,
+    false,
+    false,
+  ]);
+  const [errorWeighing, setErrorWeighing] = useState(false);
+  const [manualEntry, setManualEntry] = useState(false);
+  const [measuredDensity, setMeasuredDensity] = useState(0);
 
-  constructor(props) {
-    super(props);
-    this.handleDispenseAndWeighLoop = this.handleDispenseAndWeighLoop.bind(
-      this
-    );
-    this.handleDispenseAndPoll = this.handleDispenseAndPoll.bind(this);
-    this.handleCreateRecipe = this.handleCreateRecipe.bind(this);
-  }
+  const qc = useQueryClient();
+  const { mutate: triggerFeeding } = useTriggerFeeding();
+  const { mutateAsync: setRecipe } = useSetRecipe();
 
-  async handleDispenseAndPoll() {
-    let timeoutTime = new Date(Date.now() + 1000 * 60);
+  const handleDispenseAndPoll = async () => {
+    const timeoutTime = new Date(Date.now() + 1000 * 60);
+
+    // Get the current feed history to find the latest timestamp before dispensing
     let lastTimeBefore = null;
-    let lastTimeAfter = null;
-
-    let feedHistory = this.props.getFeedHistoryState.history;
-    if (feedHistory !== null && feedHistory.length > 0) {
-      lastTimeBefore = feedHistory[0].timestamp;
+    try {
+      const historyBefore = await getFeedHistory({ deviceId: deviceHid, pageSize: 5, page: 1 });
+      if (historyBefore?.data?.length > 0) {
+        lastTimeBefore = historyBefore.data[0].timestamp;
+      }
+    } catch (_e) {
+      // ignore
     }
 
-    if (!this.state.manualEntry) {
-      this.props.dispatchTriggerFeeding(this.props.deviceHid);
+    if (!manualEntry) {
+      triggerFeeding({ deviceId: deviceHid, portion: 0.0625 });
+
+      let lastTimeAfter = null;
+      let portionWeight = null;
+
       while (
         (lastTimeAfter === null || lastTimeAfter <= lastTimeBefore) &&
         new Date() < timeoutTime &&
-        !this.state.manualEntry
+        !manualEntry
       ) {
-        await this.props.dispatchGetFeedHistory(this.props.deviceHid);
-        lastTimeAfter = this.props.getFeedHistoryState.history[0].timestamp;
         await timer(2000);
+        try {
+          const history = await getFeedHistory({
+            deviceId: deviceHid,
+            pageSize: 5,
+            page: 1,
+          });
+          // Invalidate the cache so UI stays fresh
+          qc.invalidateQueries({ queryKey: ["feedHistory"] });
+          if (history?.data?.length > 0) {
+            lastTimeAfter = history.data[0].timestamp;
+            portionWeight = history.data[0].grams_actual;
+          }
+        } catch (_e) {
+          // keep trying
+        }
       }
 
       if (new Date() >= timeoutTime) {
-        this.setState({
-          errorWeighing: true,
-          manualEntry: true,
-        });
+        setErrorWeighing(true);
+        setManualEntry(true);
         return null;
       }
-
-      const portionWeight = this.props.getFeedHistoryState.history[0]
-        .grams_actual;
 
       if (portionWeight >= 1) {
         return portionWeight;
       }
 
-      // Try again if no food was dispensed.
-      // This can be an issue when the feeder is first filled and
-      // the portion cups haven't cycled around and filled yet.
-      return this.handleDispenseAndPoll();
+      // Try again if no food was dispensed
+      return handleDispenseAndPoll();
     }
-  }
+  };
 
-  async handleDispenseAndWeighLoop() {
-    let weighStep;
-    for (weighStep = 0; weighStep < 3; weighStep++) {
-      let weights = this.state.measuredWeights;
-      let progress = this.state.isCurrentlyMeasuring;
+  const handleDispenseAndWeighLoop = async () => {
+    const weights = [...measuredWeights];
+    const progress = [...isCurrentlyMeasuring];
+
+    for (let weighStep = 0; weighStep < 3; weighStep++) {
       progress[weighStep] = true;
-      this.setState({ isCurrentlyMeasuring: progress });
-      weights[weighStep] = await this.handleDispenseAndPoll();
-      progress[weighStep] = true;
-      let sum = this.state.measuredWeights.reduce(function (a, b) {
-        return a + b;
-      }, 0);
-      this.setState({
-        measuredWeights: weights,
-        isCurrentlyMeasuring: progress,
-        measuredDensity: Math.round(sum / (weighStep + 1)),
-      });
+      setIsCurrentlyMeasuring([...progress]);
+
+      weights[weighStep] = await handleDispenseAndPoll();
+
+      const sum = weights.reduce((a, b) => (b !== null ? a + b : a), 0);
+      setMeasuredWeights([...weights]);
+      setMeasuredDensity(Math.round(sum / (weighStep + 1)));
     }
-  }
+  };
 
-  handleCreateRecipe() {
-    if (this.state.measuredDensity !== null && this.state.measuredDensity > 0) {
-      this.props
-        .dispatchSetRecipe(this.props.deviceHid, this.state.measuredDensity)
-        .then(() => {
-          if (!this.props.setRecipeState._requestFailed) {
-            this.props.nextStep();
-          }
+  const handleCreateRecipe = async () => {
+    if (measuredDensity !== null && measuredDensity > 0) {
+      try {
+        await setRecipe({
+          deviceId: deviceHid,
+          g_per_tbsp: measuredDensity,
+          tbsp_per_feeding: 1,
+          name: "Initial Recipe",
+          budget_tbsp: 1,
         });
+        nextStep();
+      } catch (_e) {
+        // error handled via mutation state
+      }
     }
-  }
+  };
 
-  render() {
-    return (
-      <>
-        <Modal.Body style={{ textAlign: "center" }} className={"pt-4"}>
-          {this.state.errorWeighing ? (
-            <Alert variant={"danger"}>
-              The automatic measuring process didn't work! Please manually enter
-              food weight.
-            </Alert>
-          ) : null}
-          <h2>What does their food weigh?</h2>
-          <p className={"text-muted mt-1"}>
-            To make sure we are dispensing the right amount of food, we need to
-            know how dense it is.
-          </p>
+  return (
+    <>
+      <Modal.Body style={{ textAlign: "center" }} className={"pt-4"}>
+        {errorWeighing ? (
+          <Alert variant={"danger"}>
+            The automatic measuring process didn't work! Please manually enter
+            food weight.
+          </Alert>
+        ) : null}
+        <h2>What does their food weigh?</h2>
+        <p className={"text-muted mt-1"}>
+          To make sure we are dispensing the right amount of food, we need to
+          know how dense it is.
+        </p>
 
-          {!this.state.manualEntry ? (
-            <>
-              <p className={"text-muted mt-1"}>
-                We are going to automatically dispense three 1 tbsp portions to
-                get the weight of their food.
-              </p>
-              <p className={"text-warning mt-1 font-weight-bold"}>
-                Please keep your pet(s) away during this process.
-              </p>
-            </>
-          ) : (
-            <>
-              <p className={"mt-1"}>
-                Please weigh out a single tablespoon of food and enter the
-                weight below.
-              </p>
-              <InputGroup className="mb-3">
-                <FormControl
-                  placeholder="0"
-                  type="number"
-                  aria-label="Weight of food"
-                  aria-describedby="food-weight"
-                  value={this.state.measuredDensity}
-                  onChange={(event) =>
-                    this.setState({
-                      measuredDensity: Math.round(event.target.value),
-                    })
-                  }
-                />
-                <InputGroup.Text id="food-weight">g/tbsp</InputGroup.Text>
-              </InputGroup>
-            </>
-          )}
-
-          {!this.state.manualEntry ? (
-            <>
-              <FoodWeightBubble
-                loading={this.state.isCurrentlyMeasuring[0]}
-                weight={this.state.measuredWeights[0]}
-              />
-              <FoodWeightBubble
-                loading={this.state.isCurrentlyMeasuring[1]}
-                weight={this.state.measuredWeights[1]}
-              />
-              <FoodWeightBubble
-                loading={this.state.isCurrentlyMeasuring[2]}
-                weight={this.state.measuredWeights[2]}
-              />
-            </>
-          ) : null}
-
-          {!this.state.manualEntry ? (
-            <p className={"mt-3"}>
-              Average density: {this.state.measuredDensity} g/tbsp
+        {!manualEntry ? (
+          <>
+            <p className={"text-muted mt-1"}>
+              We are going to automatically dispense three 1 tbsp portions to
+              get the weight of their food.
             </p>
-          ) : null}
-        </Modal.Body>
-        <Modal.Footer>
-          {!this.state.manualEntry ? (
-            <Button
-              variant={"secondary"}
-              onClick={() => this.setState({ manualEntry: true })}
-            >
-              Manual Entry
-            </Button>
-          ) : null}
+            <p className={"text-warning mt-1 font-weight-bold"}>
+              Please keep your pet(s) away during this process.
+            </p>
+          </>
+        ) : (
+          <>
+            <p className={"mt-1"}>
+              Please weigh out a single tablespoon of food and enter the weight
+              below.
+            </p>
+            <InputGroup className="mb-3">
+              <FormControl
+                placeholder="0"
+                type="number"
+                aria-label="Weight of food"
+                aria-describedby="food-weight"
+                value={measuredDensity}
+                onChange={(event) =>
+                  setMeasuredDensity(Math.round(event.target.value))
+                }
+              />
+              <InputGroup.Text id="food-weight">g/tbsp</InputGroup.Text>
+            </InputGroup>
+          </>
+        )}
 
-          {!this.state.manualEntry && this.state.measuredWeights[2] === null ? (
+        {!manualEntry ? (
+          <>
+            <FoodWeightBubble
+              loading={isCurrentlyMeasuring[0]}
+              weight={measuredWeights[0]}
+            />
+            <FoodWeightBubble
+              loading={isCurrentlyMeasuring[1]}
+              weight={measuredWeights[1]}
+            />
+            <FoodWeightBubble
+              loading={isCurrentlyMeasuring[2]}
+              weight={measuredWeights[2]}
+            />
+          </>
+        ) : null}
+
+        {!manualEntry ? (
+          <p className={"mt-3"}>
+            Average density: {measuredDensity} g/tbsp
+          </p>
+        ) : null}
+      </Modal.Body>
+      <Modal.Footer>
+        {!manualEntry ? (
+          <Button
+            variant={"secondary"}
+            onClick={() => setManualEntry(true)}
+          >
+            Manual Entry
+          </Button>
+        ) : null}
+
+        {!manualEntry && measuredWeights[2] === null ? (
+          <Button
+            variant={"success"}
+            onClick={() => handleDispenseAndWeighLoop()}
+            disabled={isCurrentlyMeasuring[0]}
+          >
+            Start Weighing Food
+          </Button>
+        ) : null}
+
+        {!manualEntry && measuredWeights[2] !== null ? (
+          <Button
+            variant={"success"}
+            onClick={() => handleCreateRecipe()}
+          >
+            Submit
+          </Button>
+        ) : null}
+
+        {manualEntry ? (
+          <>
+            <Button
+              variant={"light"}
+              onClick={() => {
+                setMeasuredWeights([null, null, null]);
+                setIsCurrentlyMeasuring([false, false, false]);
+                setErrorWeighing(false);
+                setManualEntry(false);
+              }}
+            >
+              Go Back
+            </Button>
             <Button
               variant={"success"}
-              onClick={() => this.handleDispenseAndWeighLoop()}
-              disabled={this.state.isCurrentlyMeasuring[0]}
-            >
-              Start Weighing Food
-            </Button>
-          ) : null}
-
-          {!this.state.manualEntry && this.state.measuredWeights[2] !== null ? (
-            <Button
-              variant={"success"}
-              onClick={() =>
-                this.handleCreateRecipe(this.state.measuredDensity)
-              }
+              onClick={() => handleCreateRecipe()}
             >
               Submit
             </Button>
-          ) : null}
-
-          {this.state.manualEntry ? (
-            <>
-              <Button
-                variant={"light"}
-                onClick={() =>
-                  this.setState({
-                    measuredWeights: [null, null, null],
-                    isCurrentlyMeasuring: [false, false, false],
-                    errorWeighing: false,
-                    manualEntry: false,
-                  })
-                }
-              >
-                Go Back
-              </Button>
-              <Button
-                variant={"success"}
-                onClick={() => this.handleCreateRecipe()}
-              >
-                Submit
-              </Button>
-            </>
-          ) : null}
-        </Modal.Footer>
-      </>
-    );
-  }
+          </>
+        ) : null}
+      </Modal.Footer>
+    </>
+  );
 }
 
-CreateRecipeContainer.propTypes = {
+CreateRecipe.propTypes = {
   deviceHid: PropTypes.string,
   nextStep: PropTypes.func,
-  getFeedHistoryState: PropTypes.object,
-  setRecipeState: PropTypes.object,
-  dispatchGetFeedHistory: PropTypes.func,
-  dispatchTriggerFeeding: PropTypes.func,
-  dispatchSetRecipe: PropTypes.func,
 };
-
-const CreateRecipe = withRouter(
-  connect(
-    (state) => {
-      const { getFeedHistoryState, setRecipeState } = state;
-      return { getFeedHistoryState, setRecipeState };
-    },
-    (dispatch) => {
-      return {
-        dispatchGetFeedHistory(deviceId) {
-          return dispatch(getFeedHistoryAction(deviceId, 5, 1));
-        },
-        dispatchTriggerFeeding(deviceId) {
-          return dispatch(triggerFeedingAction(deviceId, 0.0625));
-        },
-        dispatchSetRecipe(deviceId, g_per_tbsp = null) {
-          return dispatch(
-            setRecipeAction(deviceId, g_per_tbsp, 1, "Initial Recipe", 1)
-          );
-        },
-      };
-    }
-  )(CreateRecipeContainer)
-);
 
 export default CreateRecipe;

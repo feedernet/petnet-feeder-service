@@ -1,78 +1,39 @@
-import React from "react";
-import { withRouter } from "../util/withRouter";
-import { connect } from "react-redux";
-import PropTypes from "prop-types";
+import React, { useState, useEffect } from "react";
 import { SnackModalComponent } from "../components/SnackModal";
-import { dismissSnackModal } from "../actions/snackModal";
-import { triggerFeedingAction } from "../actions/triggerFeeding";
+import { useTriggerFeeding } from "../hooks/useFeeders";
+import { useModals } from "../context/ModalContext";
 
-class SnackModalContainer extends React.Component {
-  state = { portion: 0.0625 };
+function SnackModal() {
+  const { snack, setSnack } = useModals();
+  const [portion, setPortion] = useState(snack.defaultPortion);
+  const { mutate: triggerFeeding } = useTriggerFeeding();
 
-  constructor(props) {
-    super(props);
-    this.dispense = this.dispense.bind(this);
-  }
-
-  componentDidUpdate(prevProps, prevState, snapshot) {
-    const newPortion = this.props.snackModalState.defaultPortion;
-    if (
-      prevProps.snackModalState.deviceHid !==
-      this.props.snackModalState.deviceHid
-    ) {
-      this.setState({ portion: newPortion });
+  // Sync portion when modal opens for a new device
+  useEffect(() => {
+    if (snack.show) {
+      setPortion(snack.defaultPortion);
     }
-  }
+  }, [snack.deviceHid, snack.show, snack.defaultPortion]);
 
-  dispense() {
-    this.props
-      .dispatchTriggerFeeding(
-        this.props.snackModalState.deviceHid,
-        this.state.portion
-      )
-      .then(() => {
-        this.props.dispatchDismissSnackModal();
-      });
-  }
+  const handleClose = () =>
+    setSnack({ show: false, deviceHid: null, defaultPortion: 0.0625 });
 
-  render() {
-    return (
-      <SnackModalComponent
-        show={this.props.snackModalState.show}
-        handleClose={this.props.dispatchDismissSnackModal}
-        handleDispense={this.dispense}
-        currentPortion={this.state.portion}
-        setPortion={(portion) => {
-          this.setState({ portion: portion });
-        }}
-      />
+  const dispense = () => {
+    triggerFeeding(
+      { deviceId: snack.deviceHid, portion },
+      { onSuccess: handleClose }
     );
-  }
+  };
+
+  return (
+    <SnackModalComponent
+      show={snack.show}
+      handleClose={handleClose}
+      handleDispense={dispense}
+      currentPortion={portion}
+      setPortion={setPortion}
+    />
+  );
 }
-
-SnackModalContainer.propTypes = {
-  snackModalState: PropTypes.object,
-  dispatchDismissSnackModal: PropTypes.func,
-  dispatchTriggerFeeding: PropTypes.func,
-};
-
-const SnackModal = withRouter(
-  connect(
-    (state) => {
-      const { snackModalState } = state;
-      return { snackModalState };
-    },
-    (dispatch) => {
-      return {
-        dispatchDismissSnackModal() {
-          return dispatch(dismissSnackModal());
-        },
-        dispatchTriggerFeeding(deviceId, portion) {
-          return dispatch(triggerFeedingAction(deviceId, portion));
-        },
-      };
-    }
-  )(SnackModalContainer)
-);
 
 export default SnackModal;
