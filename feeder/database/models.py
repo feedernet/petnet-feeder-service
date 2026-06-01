@@ -3,10 +3,10 @@
 # https://github.com/sqlalchemy/sqlalchemy/issues/4656
 
 import logging
-from sqlite3 import IntegrityError
 from typing import Any, Dict, Optional
 
 from fastapi import HTTPException
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy import (
     Boolean,
     Column,
@@ -77,8 +77,9 @@ class KronosGateways:
 
         query = gateways.insert().values(**gateway)
         async with async_session() as session:
-            await session.execute(query)
+            result = await session.execute(query)
             await session.commit()
+        return result.rowcount
 
     @classmethod
     async def get_or_insert(cls, *, gateway_hid):
@@ -161,8 +162,9 @@ class KronosDevices:
 
         query = devices.insert().values(**device)
         async with async_session() as session:
-            await session.execute(query)
+            result = await session.execute(query)
             await session.commit()
+        return result.rowcount
 
     @classmethod
     async def get_or_insert(cls, *, gateway_hid, device_hid):
@@ -219,8 +221,9 @@ class KronosDevices:
             values["softwareVersion"] = firmware_version
         query = devices.update().where(devices.c.hid == device_hid).values(**values)
         async with async_session() as session:
-            await session.execute(query)
+            result = await session.execute(query)
             await session.commit()
+        return result.rowcount
 
     @classmethod
     async def delete(cls, device_id):
@@ -303,8 +306,9 @@ class DeviceTelemetryData:
             query = sensor_data.insert().values(device_hid=device.hid, **sensors)  # type: ignore[assignment]
 
         async with async_session() as session:
-            await session.execute(query)
+            result = await session.execute(query)
             await session.commit()
+        return result.rowcount
 
     @classmethod
     async def clear_for_device(cls, device_id):
@@ -423,8 +427,9 @@ class FeedingResult:
         )
         try:
             async with async_session() as session:
-                await session.execute(query)
+                result = await session.execute(query)
                 await session.commit()
+            return result.lastrowid
         except IntegrityError:
             logger.exception("Unable to save feed result!")
 
@@ -515,8 +520,9 @@ class Pet:
 
         query = pets.insert().values(**values)
         async with async_session() as session:
-            await session.execute(query)
+            result = await session.execute(query)
             await session.commit()
+        return result.inserted_primary_key[0]
 
     @classmethod
     async def delete(cls, pet_id: int):
@@ -558,8 +564,9 @@ class Pet:
 
         query = pets.update().where(pets.c.id == pet_id).values(**values)
         async with async_session() as session:
-            await session.execute(query)
+            result = await session.execute(query)
             await session.commit()
+        return result.rowcount
 
 
 recipes = Table(
@@ -600,8 +607,9 @@ class StoredRecipe:
             budget_tbsp=budget_tbsp or tbsp_per_feeding,
         )
         async with async_session() as session:
-            await session.execute(query)
+            result = await session.execute(query)
             await session.commit()
+        return result.rowcount
 
     @classmethod
     async def update(
@@ -623,8 +631,9 @@ class StoredRecipe:
             values["budget_tbsp"] = budget_tbsp
         query = recipes.update().where(recipes.c.id == recipe_id).values(**values)
         async with async_session() as session:
-            await session.execute(query)
+            result = await session.execute(query)
             await session.commit()
+        return result.rowcount
 
 
 # We will store a level reference every time someone manually updates the amount
@@ -728,7 +737,7 @@ class HopperLevelRef:
 schedules = Table(
     "feeding_schedules",
     metadata,
-    Column("event_id", Integer(), primary_key=True),
+    Column("event_id", Integer(), primary_key=True, autoincrement=True),
     Column("pet_id", Text(), ForeignKey("pets.id"), nullable=False),
     # This is the number of seconds since 12:00AM
     Column("time", Integer(), primary_key=True),
@@ -763,8 +772,9 @@ class FeedingSchedule:
             pet_id=pet_id, time=time, enabled=True, name=name, portion=portion
         )
         async with async_session() as session:
-            await session.execute(query)
+            result = await session.execute(query)
             await session.commit()
+        return result.inserted_primary_key[0]
 
     @classmethod
     async def update_event(
@@ -791,6 +801,7 @@ class FeedingSchedule:
         async with async_session() as session:
             await session.execute(query)
             await session.commit()
+        return event_id
 
     @classmethod
     async def delete_event(cls, event_id: int):
@@ -798,3 +809,4 @@ class FeedingSchedule:
         async with async_session() as session:
             await session.execute(query)
             await session.commit()
+        return event_id
