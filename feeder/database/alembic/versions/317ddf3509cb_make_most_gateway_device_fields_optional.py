@@ -1,3 +1,5 @@
+from sqlalchemy import text
+
 """Make most gateway/device fields optional
 
 Revision ID: 317ddf3509cb
@@ -35,7 +37,7 @@ def upgrade():
 
 def downgrade():
     connection = op.get_bind()
-    connection.execute("pragma foreign_keys=OFF")
+    connection.execute(text("pragma foreign_keys=OFF"))
     for field_name in [
         "uid",
         "type",
@@ -46,12 +48,16 @@ def downgrade():
         "name",
     ]:
         connection.execute(
-            f"UPDATE kronos_gateway SET {field_name} = 'unknown' WHERE {field_name} IS NULL"
+            text(
+                f"UPDATE kronos_gateway SET {field_name} = 'unknown' WHERE {field_name} IS NULL"
+            )
         )
 
     for field_name in ["uid", "type", "softwareVersion", "softwareName", "name"]:
         connection.execute(
-            f"UPDATE kronos_device SET {field_name} = 'unknown' WHERE {field_name} IS NULL"
+            text(
+                f"UPDATE kronos_device SET {field_name} = 'unknown' WHERE {field_name} IS NULL"
+            )
         )
 
     with op.batch_alter_table("kronos_gateway") as batch_op:
@@ -73,4 +79,4 @@ def downgrade():
         batch_op.alter_column("softwareName", existing_type=sa.TEXT(), nullable=False)
         batch_op.alter_column("name", existing_type=sa.TEXT(), nullable=False)
 
-    connection.execute("pragma foreign_keys=ON")
+    connection.execute(text("pragma foreign_keys=ON"))

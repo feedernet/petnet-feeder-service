@@ -1,16 +1,17 @@
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings
 
 LOGGING_CONFIG = {
     "version": 1,
     "disable_existing_loggers": True,
     "formatters": {
-        "default": {
-            "format": "%(asctime)s   %(levelname)-8s %(name)s: %(message)s",
+        "json": {
+            "()": "pythonjsonlogger.jsonlogger.JsonFormatter",
+            "format": "%(asctime)s %(name)s %(levelname)s %(message)s",
         }
     },
     "handlers": {
         "default": {
-            "formatter": "default",
+            "formatter": "json",
             "class": "logging.StreamHandler",
             "stream": "ext://sys.stderr",
         }

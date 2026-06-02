@@ -11,39 +11,37 @@ from feeder.util.mkcert import generate_self_signed_certificate, domain_in_subje
 
 logger = logging.getLogger("feeder")
 if settings.debug:
-    for named_logger in LOGGING_CONFIG["loggers"]:
+    for named_logger in LOGGING_CONFIG["loggers"]:  # type: ignore[attr-defined]
         if named_logger:
-            LOGGING_CONFIG["loggers"][named_logger]["level"] = "DEBUG"
-    LOGGING_CONFIG["loggers"]["amqtt.client.plugins"] = {"level": "INFO"}
-    LOGGING_CONFIG["loggers"]["amqtt.broker.plugins"] = {"level": "INFO"}
-    LOGGING_CONFIG["loggers"]["amqtt.mqtt.protocol.handler"] = {"level": "INFO"}
+            LOGGING_CONFIG["loggers"][named_logger]["level"] = "DEBUG"  # type: ignore[index]
+    LOGGING_CONFIG["loggers"]["amqtt.client.plugins"] = {"level": "INFO"}  # type: ignore[index]
+    LOGGING_CONFIG["loggers"]["amqtt.broker.plugins"] = {"level": "INFO"}  # type: ignore[index]
+    LOGGING_CONFIG["loggers"]["amqtt.mqtt.protocol.handler"] = {"level": "INFO"}  # type: ignore[index]
 dictConfig(LOGGING_CONFIG)
 
-app = create_application()
+public_key = os.path.abspath(settings.mqtts_public_key)
+private_key = os.path.abspath(settings.mqtts_private_key)
 
-if __name__ == "__main__":
-    public_key = os.path.abspath(settings.mqtts_public_key)
-    private_key = os.path.abspath(settings.mqtts_private_key)
-
-    if not os.path.exists(public_key) and not os.path.exists(private_key):
-        logger.warning("Generating self-signed key pair!")
-        certificate_pair = generate_self_signed_certificate()
-        with open(public_key, "wb") as f:
-            logger.info("Writing new public key to %s", public_key)
-            f.write(certificate_pair[0])
-        with open(private_key, "wb") as f:
-            logger.info("Writing new private key to %s", private_key)
-            f.write(certificate_pair[1])
-    elif not domain_in_subjects(public_key, settings.domain) and settings.domain:
-        logger.warning(
-            "The certificates provided are not valid for %s!", settings.domain
-        )
-        logger.warning(
-            """If you aren't using these certificates in your SSL proxy,
+if not os.path.exists(public_key) and not os.path.exists(private_key):
+    logger.warning("Generating self-signed key pair!")
+    certificate_pair = generate_self_signed_certificate()
+    with open(public_key, "wb") as f:
+        logger.info("Writing new public key to %s", public_key)
+        f.write(certificate_pair[0])
+    with open(private_key, "wb") as f:
+        logger.info("Writing new private key to %s", private_key)
+        f.write(certificate_pair[1])
+elif not domain_in_subjects(public_key, settings.domain) and settings.domain:
+    logger.warning("The certificates provided are not valid for %s!", settings.domain)
+    logger.warning(
+        """If you aren't using these certificates in your SSL proxy,
 you can ignore this message.
 To generate new certificates, please delete the existing certificates and restart
 this application.
 """
-        )
+    )
 
+app = create_application()
+
+if __name__ == "__main__":
     uvicorn.run("feeder.__main__:app", host="0.0.0.0", port=settings.http_port)

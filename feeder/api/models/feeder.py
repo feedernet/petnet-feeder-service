@@ -1,6 +1,6 @@
 from typing import Optional, List, Any
 from pydantic import BaseModel
-from feeder.api.models import BasePaginatedList
+from feeder.api.models import BasePaginatedList, OrmModel
 
 
 class GenericResponse(BaseModel):
@@ -11,26 +11,27 @@ class TriggerFeeding(BaseModel):
     portion: float = 0.0625
 
 
-class FeedEvent(BaseModel):
-    device_name: Optional[str]
+class FeedEvent(OrmModel):
+
+    device_name: Optional[str] = None
     device_hid: str
     timestamp: int
-    start_time: int
-    end_time: int
-    pour: Optional[int]
-    full: Optional[int]
-    grams_expected: int
-    grams_actual: int
-    hopper_start: int
-    hopper_end: int
-    source: int
-    fail: bool
-    trip: Optional[bool]
-    lrg: Optional[bool]
-    vol: Optional[bool]
-    bowl: Optional[bool]
-    recipe_id: str
-    error: Optional[str]
+    start_time: Optional[int] = None
+    end_time: Optional[int] = None
+    pour: Optional[int] = None
+    full: Optional[int] = None
+    grams_expected: Optional[int] = None
+    grams_actual: Optional[int] = None
+    hopper_start: Optional[int] = None
+    hopper_end: Optional[int] = None
+    source: Optional[int] = None
+    fail: Optional[bool] = None
+    trip: Optional[bool] = None
+    lrg: Optional[bool] = None
+    vol: Optional[bool] = None
+    bowl: Optional[bool] = None
+    recipe_id: Optional[str] = None
+    error: Optional[str] = None
 
 
 class FeedHistory(BasePaginatedList):
@@ -41,12 +42,13 @@ class HopperLevel(BaseModel):
     level: int
 
 
-class Recipe(BaseModel):
-    id: Optional[int]
+class Recipe(OrmModel):
+
+    id: Optional[int] = None
     name: Optional[str] = ""
-    tbsp_per_feeding: Optional[int]
-    g_per_tbsp: Optional[int]
-    budget_tbsp: Optional[int]
+    tbsp_per_feeding: Optional[int] = None
+    g_per_tbsp: Optional[int] = None
+    budget_tbsp: Optional[int] = None
 
 
 class RawMQTTMessage(BaseModel):

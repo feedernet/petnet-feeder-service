@@ -24,38 +24,52 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.11"
 alembic = "^1.8.1"
 aiosqlite = "^0.21.0"
-databases = "^0.4.3"
 fastapi = "^0.122.0"
-amqtt = { git = "https://github.com/feedernet/amqtt.git", rev = "f9e72c9e5b503ba385b9dd16d3e35b49662549df" }
+amqtt = { git = "https://github.com/feedernet/amqtt.git", rev = "e3cb4780d6274563c909df25158d57c1ecf772ca" }
 pytz = "^2022.2"
 semver = "^2.13.0"
-sqlalchemy = "^1.3.24"
+sqlalchemy = {version = "^2.0", extras = ["asyncio"]}
+greenlet = "^3.0"
 uvicorn = "^0.18.3"
 aiofiles = "^22.1.0"
 Jinja2 = "^3.1.6"
-cryptography = {version = ">=44.0.1", markers = "python_version != '3.9.0' and python_version != '3.9.1'"}
+cryptography = ">=44.0.1"
 urllib3 = ">=2.6.0"
 starlette = ">=0.47.2"
+pydantic = "^2.0"
+pydantic-settings = "^2.0"
+python-json-logger = "^2.0"
+setuptools = "^82.0.1"
 
-[tool.poetry.dev-dependencies]
-black = {version = "22.8.0", allow-prereleases = true}
+[tool.poetry.group.dev.dependencies]
+black = "^24.0"
 pytest = "^8.4.2"
 pytest-asyncio = "^0.18.1"
 tox = "^4.30.3"
 pytest-cov = "^3.0.0"
 pytest-mock = "^3.15.1"
+httpx = "^0.27.0"
 requests = "^2.32.4"
 flake8 = "^7.3.0"
-pylint = "^2.15.2"
+pylint = "^3.3"
 pytest-xdist = "^2.5.0"
+mypy = "^1.10"
+types-pytz = "*"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+warn_return_any = false
+disallow_untyped_defs = false
+implicit_optional = true
 
 [tool.poetry.plugins."amqtt.broker.plugins"]
 auth_petnet = "feeder.util.mqtt.authentication:PetnetAuthPlugin"

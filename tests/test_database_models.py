@@ -60,7 +60,7 @@ async def test_insert_gateway_and_retrieve_it():
 
     gateway = NewGateway(**SAMPLE_GATEWAY)
 
-    rows_created = await KronosGateways.create(**gateway.dict())
+    rows_created = await KronosGateways.create(**gateway.model_dump())
     assert rows_created == 1
 
     all_gateways = await KronosGateways.get(gateway_hid=SAMPLE_GATEWAY_HID)
@@ -75,7 +75,7 @@ async def test_get_or_insert_gateway():
 
     gateway = NewGateway(**SAMPLE_GATEWAY)
 
-    rows_created = await KronosGateways.create(**gateway.dict())
+    rows_created = await KronosGateways.create(**gateway.model_dump())
     assert rows_created == 1
 
     result = await KronosGateways.get_or_insert(gateway_hid=SAMPLE_GATEWAY_HID)
@@ -154,7 +154,7 @@ async def test_get_or_insert_device(with_registered_gateway: None):
 
     device = NewDevice(**SAMPLE_DEVICE)
 
-    rows_created = await KronosDevices.create(**device.dict())
+    rows_created = await KronosDevices.create(**device.model_dump())
     assert rows_created == 1
 
     result = await KronosDevices.get_or_insert(

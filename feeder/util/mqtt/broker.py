@@ -10,7 +10,7 @@ class FeederBroker(Broker):
 
         config = {
             "listeners": {
-                "default": {"max-connections": 50000, "type": "tcp"},
+                "default": {"max_connections": 50000, "type": "tcp"},
                 "tcp-1": {"bind": f"0.0.0.0:{settings.mqtt_port}"},
                 "tcp-ssl-1": {
                     "bind": f"0.0.0.0:{settings.mqtts_port}",
@@ -21,7 +21,7 @@ class FeederBroker(Broker):
                 },
             },
             "auth": {"plugins": ["auth_petnet"]},
-            "topic-check": {"enabled": True, "plugins": ["topic_petnet"]},
+            "topic_check": {"enabled": True, "plugins": ["topic_petnet"]},
         }
 
         if config_overrides:

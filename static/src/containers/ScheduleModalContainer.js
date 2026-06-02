@@ -1,184 +1,93 @@
-import React from "react";
-import { withRouter } from "react-router";
-import { connect } from "react-redux";
-import PropTypes from "prop-types";
+import React, { useState, useEffect } from "react";
 import { ScheduleModalComponent } from "../components/ScheduleModal";
-import { dismissScheduleModal } from "../actions/scheduleModal";
-import { getPetScheduleAction } from "../actions/getPetSchedule";
-import { updatePetScheduleAction } from "../actions/updatePetSchedule";
-import { createPetScheduleAction } from "../actions/createPetSchedule";
-import { deletePetScheduleAction } from "../actions/deletePetSchedule";
+import {
+  usePetSchedule,
+  useCreatePetSchedule,
+  useUpdatePetSchedule,
+  useDeletePetSchedule,
+} from "../hooks/usePets";
+import { useModals } from "../context/ModalContext";
 
-class ScheduleModalContainer extends React.Component {
-  state = {
-    editMode: false,
-    newEvent: false,
-    targetEvent: {},
-    events: [],
+function ScheduleModal() {
+  const { schedule, setSchedule } = useModals();
+  const petId = schedule.pet?.id;
+
+  const [editMode, setEditMode] = useState(false);
+  const [newEvent, setNewEvent] = useState(false);
+  const [targetEvent, setTargetEvent] = useState({});
+
+  const { data: events = [] } = usePetSchedule(schedule.show ? petId : null);
+  const { mutateAsync: createSchedule } = useCreatePetSchedule();
+  const { mutateAsync: updateSchedule } = useUpdatePetSchedule();
+  const { mutateAsync: deleteSchedule } = useDeletePetSchedule();
+
+  // Reset edit state when modal closes
+  useEffect(() => {
+    if (!schedule.show) {
+      setEditMode(false);
+      setNewEvent(false);
+      setTargetEvent({});
+    }
+  }, [schedule.show]);
+
+  const handleClose = () => {
+    setEditMode(false);
+    setNewEvent(false);
+    setTargetEvent({});
+    setSchedule({ show: false, pet: {} });
   };
 
-  constructor(props) {
-    super(props);
-    this.handleStartEdit = this.handleStartEdit.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
-    this.handleClose = this.handleClose.bind(this);
-    this.handleDeleteEvent = this.handleDeleteEvent.bind(this);
-  }
+  const handleStartEdit = (isNew = true, event = {}) => {
+    setEditMode(true);
+    setNewEvent(isNew);
+    setTargetEvent(isNew ? {} : event);
+  };
 
-  componentDidUpdate(prevProps, prevState, snapshot) {
-    const petId = this.props.scheduleModalState.pet.id;
-    if (
-      !prevProps.scheduleModalState.show &&
-      this.props.scheduleModalState.show
-    ) {
-      this.props.dispatchGetPetSchedule(petId).then(() => {
-        if (!this.props.getPetScheduleState._requestFailed) {
-          this.setState({
-            events: this.props.getPetScheduleState.schedules[petId],
-          });
-        }
-      });
-    }
-
-    if (this.state.events !== this.props.getPetScheduleState.schedules[petId]) {
-      this.setState({
-        events: this.props.getPetScheduleState.schedules[petId],
-      });
-    }
-  }
-
-  handleStartEdit(newEvent = true, targetEvent = {}) {
-    if (newEvent) {
-      this.setState({
-        editMode: true,
-        newEvent: true,
-      });
-    } else {
-      this.setState({
-        editMode: true,
-        newEvent: false,
-        targetEvent,
-      });
-    }
-  }
-
-  handleClose() {
-    this.setState({
-      editMode: false,
-      newEvent: false,
-      targetEvent: {},
-    });
-    this.props.dispatchDismissScheduleModal();
-  }
-
-  handleSubmit(values, actions) {
-    let didFail = false;
-    if (this.state.newEvent) {
-      this.props
-        .dispatchCreatePetSchedule(
-          this.props.scheduleModalState.pet.id,
-          values.name,
-          values.time,
-          values.portion
-        )
-        .then(() => (didFail = this.props.getPetScheduleState._requestFailed));
-    } else {
-      this.props
-        .dispatchUpdatePetSchedule(
-          this.props.scheduleModalState.pet.id,
-          this.state.targetEvent.event_id,
-          values.name,
-          values.time,
-          values.portion,
-          values.enabled
-        )
-        .then(() => (didFail = this.props.getPetScheduleState._requestFailed));
-    }
-
-    if (!didFail) {
-      this.setState({
-        editMode: false,
-        newEvent: false,
-        targetEvent: {},
-      });
-    }
-  }
-
-  handleDeleteEvent(eventId) {
-    const petId = this.props.scheduleModalState.pet.id;
-    this.props.dispatchDeletePetSchedule(petId, eventId);
-  }
-
-  render() {
-    return (
-      <ScheduleModalComponent
-        show={this.props.scheduleModalState.show}
-        handleClose={this.handleClose}
-        pet={this.props.scheduleModalState.pet}
-        editMode={this.state.editMode}
-        newEvent={this.state.newEvent}
-        targetEvent={this.state.targetEvent}
-        startEdit={this.handleStartEdit}
-        events={this.state.events}
-        handleDeleteEvent={this.handleDeleteEvent}
-        handleFormSubmit={this.handleSubmit}
-      />
-    );
-  }
-}
-
-ScheduleModalContainer.propTypes = {
-  scheduleModalState: PropTypes.object,
-  getPetScheduleState: PropTypes.object,
-  dispatchDismissScheduleModal: PropTypes.func,
-  dispatchGetPetSchedule: PropTypes.func,
-  dispatchUpdatePetSchedule: PropTypes.func,
-  dispatchCreatePetSchedule: PropTypes.func,
-  dispatchDeletePetSchedule: PropTypes.func,
-};
-
-const ScheduleModal = withRouter(
-  connect(
-    (state) => {
-      const { scheduleModalState, getPetScheduleState } = state;
-      return { scheduleModalState, getPetScheduleState };
-    },
-    (dispatch) => {
-      return {
-        dispatchDismissScheduleModal() {
-          return dispatch(dismissScheduleModal());
-        },
-        dispatchGetPetSchedule(petId) {
-          return dispatch(getPetScheduleAction(petId));
-        },
-        dispatchUpdatePetSchedule(
+  const handleSubmit = async (values) => {
+    try {
+      if (newEvent) {
+        await createSchedule({
           petId,
-          eventId,
-          name,
-          time,
-          portion,
-          enabled
-        ) {
-          return dispatch(
-            updatePetScheduleAction(
-              petId,
-              eventId,
-              name,
-              time,
-              portion,
-              enabled
-            )
-          );
-        },
-        dispatchCreatePetSchedule(petId, name, time, portion) {
-          return dispatch(createPetScheduleAction(petId, name, time, portion));
-        },
-        dispatchDeletePetSchedule(petId, eventId) {
-          return dispatch(deletePetScheduleAction(petId, eventId));
-        },
-      };
+          name: values.name,
+          time: values.time,
+          portion: values.portion,
+        });
+      } else {
+        await updateSchedule({
+          petId,
+          eventId: targetEvent.event_id,
+          name: values.name,
+          time: values.time,
+          portion: values.portion,
+          enabled: values.enabled,
+        });
+      }
+      setEditMode(false);
+      setNewEvent(false);
+      setTargetEvent({});
+    } catch (_e) {
+      // error handled via mutation state
     }
-  )(ScheduleModalContainer)
-);
+  };
+
+  const handleDeleteEvent = async (eventId) => {
+    await deleteSchedule({ petId, eventId });
+  };
+
+  return (
+    <ScheduleModalComponent
+      show={schedule.show}
+      handleClose={handleClose}
+      pet={schedule.pet}
+      editMode={editMode}
+      newEvent={newEvent}
+      targetEvent={targetEvent}
+      startEdit={handleStartEdit}
+      events={events}
+      handleDeleteEvent={handleDeleteEvent}
+      handleFormSubmit={handleSubmit}
+    />
+  );
+}
 
 export default ScheduleModal;

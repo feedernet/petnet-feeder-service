@@ -16,10 +16,6 @@ class PetnetTopicPlugin(BaseTopicPlugin):
     async def topic_filtering(
         self, *args, **kwargs
     ):  # pylint: disable=invalid-overridden-method
-        filter_result = super().topic_filtering(*args, **kwargs)
-        if not filter_result:
-            return False
-
         session = kwargs.get("session", None)
         action = kwargs.get("action", None)
         topic = kwargs.get("topic", None)
@@ -39,9 +35,9 @@ class PetnetTopicPlugin(BaseTopicPlugin):
 
         gateway_id = user_match.group("gateway_id")
 
-        if action == Action.subscribe:
+        if action == Action.SUBSCRIBE:
             topic_match = self.feeder_sub_topic_regex.match(topic)
-        elif action == Action.publish:
+        elif action == Action.PUBLISH:
             topic_match = self.feeder_pub_topic_regex.match(topic)
         else:
             logger.warning("Unhandled action %s", action)

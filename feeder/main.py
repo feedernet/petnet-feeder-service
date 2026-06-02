@@ -10,7 +10,7 @@ from fastapi.templating import Jinja2Templates
 from feeder import settings
 from feeder.api.routers import kronos, feeder, pet
 from feeder.util.mqtt import FeederClient, FeederBroker
-from feeder.database.session import db
+from feeder.database.session import engine, Base
 
 logger = logging.getLogger("feeder")
 
@@ -46,16 +46,6 @@ async def render_frontend(full_path: str, request: Request):
 
 
 def create_application() -> FastAPI:
-    async_loop = asyncio.get_event_loop()
-    async_loop.set_exception_handler(handle_exception)
-    client = FeederClient()
-    broker = FeederBroker()
-
-    mqtt_enabled_routers = [feeder, pet]
-    for mqtt_router in mqtt_enabled_routers:
-        mqtt_router.router.client = client
-        mqtt_router.router.broker = broker
-
     app = FastAPI(
         title=settings.app_name,
         description=settings.app_description,
@@ -74,14 +64,21 @@ def create_application() -> FastAPI:
 
     @app.on_event("startup")
     async def startup_event():  # pylint: disable=unused-variable
-        await db.connect()
-        async_loop.create_task(broker.start())
-        async_loop.create_task(client.start())
+        asyncio.get_running_loop().set_exception_handler(handle_exception)
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+        app.state.client = FeederClient()
+        app.state.broker = FeederBroker()
+        for mqtt_router in [feeder, pet]:
+            mqtt_router.router.client = app.state.client
+            mqtt_router.router.broker = app.state.broker
+        asyncio.create_task(app.state.broker.start())
+        asyncio.create_task(app.state.client.start())
 
     @app.on_event("shutdown")
     async def shutdown_event():  # pylint: disable=unused-variable
-        await asyncio.gather(broker.shutdown(), return_exceptions=True)
-        await db.disconnect()
+        await asyncio.gather(app.state.broker.shutdown(), return_exceptions=True)
+        await engine.dispose()
 
     app.add_api_route(
         path=f"{settings.app_root}/{{full_path:path}}",

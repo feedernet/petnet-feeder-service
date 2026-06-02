@@ -1,147 +1,60 @@
-import React from "react";
-import PropTypes from "prop-types";
-import { withRouter } from "react-router-dom";
-import { connect } from "react-redux";
-import { getFeedHistoryAction } from "../actions/getFeedHistory";
-import { feederDeviceShape, feedHistoryShape } from "../shapes/feeder";
+import React, { useState } from "react";
+import { useFeedHistory, useFeeders } from "../hooks/useFeeders";
 import { FeedHistoryTableComponent } from "../components/FeedHistoryTable";
 
-class FeedHistoryContainer extends React.Component {
-  refreshInterval;
-  state = {
-    page: 1,
-    pageSize: 10,
-    filteredDeviceId: "",
-    filteredDeviceName: "",
-    history: [],
-    totalPages: 0,
-  };
+function FeedHistory() {
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [filteredDeviceId, setFilteredDeviceId] = useState("");
+  const [filteredDeviceName, setFilteredDeviceName] = useState("");
 
-  constructor(props) {
-    super(props);
-    this.updateHistory = this.updateHistory.bind(this);
-    this.handleChangePageSize = this.handleChangePageSize.bind(this);
-    this.handleChangeFilter = this.handleChangeFilter.bind(this);
-    this.handleChangePage = this.handleChangePage.bind(this);
-  }
+  const { data: feeders = [] } = useFeeders();
+  const { data } = useFeedHistory({
+    deviceId: filteredDeviceId,
+    pageSize,
+    page,
+  });
 
-  componentDidMount() {
-    this.updateHistory();
-    this.refreshInterval = setInterval(this.updateHistory.bind(this), 5000);
-  }
+  const history = data?.data ?? [];
+  const totalPages = data?.totalPages ?? 0;
 
-  componentWillUnmount() {
-    clearInterval(this.refreshInterval);
-  }
-
-  updateHistory() {
-    this.props
-      .dispatchGetFeedHistory(
-        this.state.filteredDeviceId,
-        this.state.pageSize,
-        this.state.page
-      )
-      .then(() => {
-        if (!this.props.getFeedHistoryState._requestFailed) {
-          this.setState({
-            history: this.props.getFeedHistoryState.history,
-            totalPages: this.props.getFeedHistoryState.totalPages,
-          });
-        }
-      });
-  }
-
-  handleChangePageSize(event) {
-    this.setState(
-      {
-        pageSize: event,
-      },
-      () => {
-        this.updateHistory();
-      }
-    );
-  }
-
-  handleChangeFilter(event) {
-    const feeders = this.props.getFeederDevicesState.feeders.filter((f) => {
-      return f.hid === event;
-    });
-    if (feeders.length > 0) {
-      this.setState(
-        {
-          filteredDeviceId: feeders[0].hid,
-          filteredDeviceName: feeders[0].name
-            ? feeders[0].name
-            : `New Feeder (${feeders[0].hid.substring(0, 6)})`,
-        },
-        () => {
-          this.updateHistory();
-        }
+  const handleChangeFilter = (event) => {
+    const matched = feeders.filter((f) => f.hid === event);
+    if (matched.length > 0) {
+      setFilteredDeviceId(matched[0].hid);
+      setFilteredDeviceName(
+        matched[0].name
+          ? matched[0].name
+          : `New Feeder (${matched[0].hid.substring(0, 6)})`
       );
     } else {
-      this.setState(
-        {
-          filteredDeviceId: "",
-          filteredDeviceName: "",
-        },
-        () => {
-          this.updateHistory();
-        }
-      );
+      setFilteredDeviceId("");
+      setFilteredDeviceName("");
     }
-  }
+    setPage(1);
+  };
 
-  handleChangePage(event) {
-    this.setState(
-      {
-        page: event,
-      },
-      () => {
-        this.updateHistory();
-      }
-    );
-  }
+  const handleChangePageSize = (size) => {
+    setPageSize(size);
+    setPage(1);
+  };
 
-  render() {
-    return (
-      <>
-        <h2 style={{ marginTop: 20, marginBottom: 20 }}>History</h2>
-        <FeedHistoryTableComponent
-          history={this.state.history}
-          feeders={this.props.getFeederDevicesState.feeders}
-          pageNumber={this.state.page}
-          changePage={this.handleChangePage}
-          pageSize={this.state.pageSize}
-          totalPages={this.state.totalPages}
-          changePageSize={this.handleChangePageSize}
-          filteredFeederName={this.state.filteredDeviceName}
-          changeFilteredFeeder={this.handleChangeFilter}
-        />
-      </>
-    );
-  }
+  return (
+    <>
+      <h2 style={{ marginTop: 20, marginBottom: 20 }}>History</h2>
+      <FeedHistoryTableComponent
+        history={history}
+        feeders={feeders}
+        pageNumber={page}
+        changePage={setPage}
+        pageSize={pageSize}
+        totalPages={totalPages}
+        changePageSize={handleChangePageSize}
+        filteredFeederName={filteredDeviceName}
+        changeFilteredFeeder={handleChangeFilter}
+      />
+    </>
+  );
 }
-
-FeedHistoryContainer.propTypes = {
-  getFeederDevicesState: PropTypes.arrayOf(feederDeviceShape),
-  getFeedHistoryState: feedHistoryShape,
-  dispatchGetFeedHistory: PropTypes.func,
-};
-
-const FeedHistory = withRouter(
-  connect(
-    (state) => {
-      const { getFeedHistoryState, getFeederDevicesState } = state;
-      return { getFeedHistoryState, getFeederDevicesState };
-    },
-    (dispatch) => {
-      return {
-        dispatchGetFeedHistory(deviceId = "", pageSize, page) {
-          return dispatch(getFeedHistoryAction(deviceId, pageSize, page));
-        },
-      };
-    }
-  )(FeedHistoryContainer)
-);
 
 export default FeedHistory;

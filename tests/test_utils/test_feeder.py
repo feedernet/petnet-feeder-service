@@ -93,6 +93,10 @@ def test_check_feeder_broker_connection(mocker):
     class MockDevice(dict):
         gatewayHid = "gateway_hid"
 
+        @property
+        def _mapping(self):
+            return self
+
     device = MockDevice()
     session = mocker.Mock()
     broker = mocker.Mock()

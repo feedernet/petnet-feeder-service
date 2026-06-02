@@ -16,10 +16,6 @@ class PetnetAuthPlugin(BaseAuthPlugin):
     async def authenticate(
         self, *args, **kwargs
     ):  # pylint: disable=invalid-overridden-method
-        authenticated = super().authenticate(*args, **kwargs)
-        if not authenticated:
-            return False
-
         session = kwargs.get("session", None)
         logger.debug("MQTT Username: %s", session.username)
         if not session.username:
@@ -35,7 +31,7 @@ class PetnetAuthPlugin(BaseAuthPlugin):
         gateway_id = matches.group("gateway_id")
         try:
             gateways = await KronosGateways.get(gateway_hid=gateway_id)
-            success = gateways[0]["apiKey"] == session.password
+            success = gateways[0].apiKey == session.password
             if not success:
                 logger.warning(
                     "Feeder (%s) failed to provide the right password!", gateway_id

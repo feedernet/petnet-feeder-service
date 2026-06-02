@@ -43,9 +43,9 @@ async def get_devices():
 @router.get("/history", response_model=FeedHistory)
 async def get_history(size: int = 10, page: int = 1):
     count_all = await FeedingResult.count()
-    history = await FeedingResult.get(offset=page * size, limit=size)
+    history = await FeedingResult.get(offset=(page - 1) * size, limit=size)
     return paginate_response(
-        entities=[{**result} for result in history],
+        entities=[dict(result._mapping) for result in history],
         current_page=page,
         max_page_size=size,
         total_override=count_all,
@@ -63,12 +63,19 @@ async def get_single_device(device_id: str):
 
 @router.put("/{device_id}", response_model=Device)
 async def update_single_device(device_id: str, updated: DeviceUpdate):
+    # Only update recipe_id if the recipe actually exists (avoids FK violation)
+    valid_recipe_id = None
+    if updated.currentRecipe is not None:
+        recipe_results = await StoredRecipe.get(recipe_id=updated.currentRecipe)
+        if len(recipe_results) > 0:
+            valid_recipe_id = updated.currentRecipe
+
     await KronosDevices.update(
         device_hid=device_id,
         name=updated.name,
         timezone=updated.timezone,
         front_button=updated.frontButton,
-        recipe_id=updated.currentRecipe,
+        recipe_id=valid_recipe_id,
         black=updated.black,
     )
     devices = await KronosDevices.get(device_hid=device_id)
@@ -77,7 +84,7 @@ async def update_single_device(device_id: str, updated: DeviceUpdate):
     if updated.timezone is not None:
         try:
             timezone = pytz.timezone(updated.timezone)
-            offset = int(datetime.datetime.now(timezone).utcoffset().total_seconds())
+            offset = int(datetime.datetime.now(timezone).utcoffset().total_seconds())  # type: ignore[union-attr]
             await router.client.send_cmd_utc_offset(
                 gateway_id=device.gatewayHid, device_id=device_id, utc_offset=offset
             )
@@ -92,18 +99,16 @@ async def update_single_device(device_id: str, updated: DeviceUpdate):
             enable=updated.frontButton,
         )
 
-    if updated.currentRecipe is not None:
-        recipe_results = await StoredRecipe.get(recipe_id=updated.currentRecipe)
-        if len(recipe_results) > 0:
-            recipe = recipe_results[0]
-            await router.client.send_cmd_budget(
-                gateway_id=device.gatewayHid,
-                device_id=device_id,
-                recipe_id=recipe.id,
-                tbsp_per_feeding=recipe.tbsp_per_feeding,
-                g_per_tbsp=recipe.g_per_tbsp,
-                budget_tbsp=recipe.budget_tbsp,
-            )
+    if valid_recipe_id is not None:
+        recipe = recipe_results[0]  # type: ignore[possibly-undefined]
+        await router.client.send_cmd_budget(
+            gateway_id=device.gatewayHid,
+            device_id=device_id,
+            recipe_id=recipe.id,
+            tbsp_per_feeding=recipe.tbsp_per_feeding,
+            g_per_tbsp=recipe.g_per_tbsp,
+            budget_tbsp=recipe.budget_tbsp,
+        )
 
     return check_connection(device, router.broker)
 
@@ -122,10 +127,10 @@ async def get_device_telemetry(device_id: str):
 async def get_device_history(device_id: str, size: int = 10, page: int = 1):
     count_all = await FeedingResult.count(device_hid=device_id)
     history = await FeedingResult.get(
-        device_hid=device_id, offset=page * size, limit=size
+        device_hid=device_id, offset=(page - 1) * size, limit=size
     )
     return paginate_response(
-        entities=[{**result} for result in history],
+        entities=[dict(result._mapping) for result in history],
         current_page=page,
         max_page_size=size,
         total_override=count_all,
@@ -152,6 +157,7 @@ async def restart_feeder(device_id: str):
     await router.client.send_cmd_reboot(
         gateway_id=device.gatewayHid, device_id=device_id
     )
+    return {"success": "ok"}
 
 
 @router.post("/{device_id}/feed", response_model=GenericResponse)
@@ -162,6 +168,7 @@ async def trigger_feeding(device_id: str, feed: TriggerFeeding):
     await router.client.send_cmd_feed(
         gateway_id=device.gatewayHid, device_id=device_id, portion=feed.portion
     )
+    return {"success": "ok"}
 
 
 @router.post("/{device_id}/raw")

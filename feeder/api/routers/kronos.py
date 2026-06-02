@@ -1,6 +1,6 @@
 import logging
 from typing import Optional
-from sqlite3 import IntegrityError
+from sqlalchemy.exc import IntegrityError
 
 from fastapi import APIRouter, Query
 from fastapi.responses import JSONResponse
@@ -26,7 +26,8 @@ router = APIRouter()
 async def get_gateways():
     all_gateways = await KronosGateways.get()
     formatted_feeders = [
-        {"pri": f"arw:pgs:gwy:{gateway['hid']}", **gateway} for gateway in all_gateways
+        {"pri": f"arw:pgs:gwy:{gateway.hid}", **dict(gateway._mapping)}
+        for gateway in all_gateways
     ]
 
     return paginate_response(
@@ -36,13 +37,13 @@ async def get_gateways():
 
 @router.post("/gateways", response_model=AddGatewayResponse)
 async def add_gateway(gateway: NewGateway):
-    gateway_hid = generate_feeder_hid(gateway.uid)
+    gateway_hid = generate_feeder_hid(gateway.uid)  # type: ignore[arg-type]
     try:
-        await KronosGateways.create(**gateway.dict())
+        await KronosGateways.create(**gateway.model_dump())
         content = {"hid": gateway_hid, "message": "OK"}
     except IntegrityError:
         logger.debug("Gateway (%s) already registered!", gateway_hid)
-        await KronosGateways.update(
+        await KronosGateways.update(  # type: ignore[arg-type]
             gateway_hid=gateway_hid, firmware_version=gateway.softwareVersion
         )
         content = {"hid": gateway_hid, "message": "gateway is already registered"}
@@ -54,7 +55,7 @@ async def add_gateway(gateway: NewGateway):
 @router.get("/devices", response_model=PaginatedDeviceList)
 async def get_devices(gateway_hid: Optional[str] = Query(None, alias="gatewayHid")):
     devices = await KronosDevices.get(gateway_hid=gateway_hid)
-    device_array = [{**device} for device in devices]
+    device_array = [dict(device._mapping) for device in devices]
 
     content = paginate_response(entities=device_array, max_page_size=len(devices))
     return JSONResponse(content=content, headers=kronos_headers)
@@ -63,10 +64,10 @@ async def get_devices(gateway_hid: Optional[str] = Query(None, alias="gatewayHid
 @router.post("/devices", response_model=AddGatewayResponse)
 async def register_feeder(device: NewDevice):
     # Generate the feeder device HID
-    device_hid = generate_feeder_hid(device.uid)
+    device_hid = generate_feeder_hid(device.uid)  # type: ignore[arg-type]
 
     try:
-        await KronosDevices.create(**device.dict())
+        await KronosDevices.create(**device.model_dump())
     except IntegrityError:
         logger.debug("Device (%s) already registered!", device_hid)
         await KronosDevices.update(
@@ -98,7 +99,7 @@ async def get_static_gateway_conf(gateway_id: str):
     static_config = {
         "cloudPlatform": "IoTConnect",
         "key": {
-            "apiKey": gateways[0]["apiKey"],
+            "apiKey": gateways[0].apiKey,
             "secretKey": "gEhFrm2hRvW2Km47lgt9xRBCtT9uH2Lx77WxYliNGJI=",
         },
     }

@@ -77,6 +77,14 @@ def testing_environment(
     environ["MQTTS_PORT"] = str(find_free_port())
     environ["HTTP_PORT"] = str(find_free_port())
 
+    # Force-reinitialize feeder.settings so it picks up the env vars set above.
+    # The Settings object is created at import time; if feeder was already cached
+    # in sys.modules with defaults, this reassignment ensures tests use correct ports.
+    import feeder
+    import feeder.config
+
+    feeder.settings = feeder.config.Settings()
+
     yield
 
     # Clean up temporary files
@@ -105,7 +113,8 @@ def app(apply_migrations: None) -> FastAPI:
 
 @pytest.fixture
 def client(app: FastAPI) -> TestClient:
-    return TestClient(app)
+    with TestClient(app) as test_client:
+        yield test_client
 
 
 @pytest.fixture
@@ -178,9 +187,6 @@ async def mqtt_client() -> MQTTClient:
         f"mqtt://{local_username}:{local_password}@localhost:{settings.mqtt_port}"
     )
     await client.subscribe([("#", QOS_2)])
-    message = await client.deliver_message()
-    packet = message.publish_packet
-    assert b"HBMQTT version" in packet.payload.data
 
     yield client
 

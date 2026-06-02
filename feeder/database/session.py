@@ -1,18 +1,19 @@
-from databases import Database
-from sqlalchemy import MetaData
 from sqlalchemy import event
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.pool import Pool
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+from sqlalchemy.orm import declarative_base
 
 from feeder import settings
 
+engine = create_async_engine(f"sqlite+aiosqlite:///{settings.database_path}")
 
-@event.listens_for(Pool, "checkout")
-def _fk_pragma_on_connect(dbapi_con, con_record, con_proxy):
+
+# Enable foreign keys for SQLite
+@event.listens_for(engine.sync_engine, "connect")
+def _fk_pragma_on_connect(dbapi_con, con_record):
     dbapi_con.execute("pragma foreign_keys=ON")
 
 
-db = Database(f"sqlite:///{settings.database_path}")
+async_session = async_sessionmaker(engine, expire_on_commit=False)
 
 Base = declarative_base()
-metadata = MetaData()
+metadata = Base.metadata
