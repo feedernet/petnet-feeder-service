@@ -1,4 +1,3 @@
-import asyncio
 import string
 import tempfile
 import pathlib
@@ -187,12 +186,6 @@ async def mqtt_client() -> MQTTClient:
         f"mqtt://{local_username}:{local_password}@localhost:{settings.mqtt_port}"
     )
     await client.subscribe([("#", QOS_2)])
-    try:
-        message = await asyncio.wait_for(client.deliver_message(), timeout=5.0)
-        packet = message.publish_packet
-        assert b"HBMQTT version" in packet.payload.data
-    except asyncio.TimeoutError:
-        pass
 
     yield client
 

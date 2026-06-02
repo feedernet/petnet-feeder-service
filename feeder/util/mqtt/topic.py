@@ -16,10 +16,6 @@ class PetnetTopicPlugin(BaseTopicPlugin):
     async def topic_filtering(
         self, *args, **kwargs
     ):  # pylint: disable=invalid-overridden-method
-        filter_result = super().topic_filtering(*args, **kwargs)
-        if not filter_result:
-            return False
-
         session = kwargs.get("session", None)
         action = kwargs.get("action", None)
         topic = kwargs.get("topic", None)

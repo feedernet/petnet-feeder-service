@@ -16,10 +16,6 @@ class PetnetAuthPlugin(BaseAuthPlugin):
     async def authenticate(
         self, *args, **kwargs
     ):  # pylint: disable=invalid-overridden-method
-        authenticated = super().authenticate(*args, **kwargs)
-        if not authenticated:
-            return False
-
         session = kwargs.get("session", None)
         logger.debug("MQTT Username: %s", session.username)
         if not session.username:
