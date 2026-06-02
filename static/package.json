@@ -44,7 +44,7 @@
   "proxy": "http://localhost:5000",
   "devDependencies": {
     "@testing-library/jest-dom": "^5.17.0",
-    "@testing-library/react": "^12.1.5",
+    "@testing-library/react": "^16.0.0",
     "@testing-library/user-event": "^14.6.1",
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
