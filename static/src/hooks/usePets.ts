@@ -47,6 +47,7 @@ export const usePetSchedule = (petId) =>
     enabled: !!petId,
     select: (data) => data.events,
     refetchInterval: 60000,
+    refetchIntervalInBackground: false,
   });
 
 export const useCreatePetSchedule = () => {

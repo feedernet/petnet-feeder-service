@@ -17,7 +17,9 @@ export const useFeeders = () =>
   useQuery({
     queryKey: ["feeders"],
     queryFn: getFeeders,
+    staleTime: 10000,
     refetchInterval: 15000,
+    refetchIntervalInBackground: false,
   });
 
 export const useFeederTelemetry = (deviceId) =>
@@ -47,13 +49,17 @@ export const useFeedHistory = ({ deviceId = "", pageSize = 10, page = 1 } = {}) 
     queryKey: ["feedHistory", { deviceId, pageSize, page }],
     queryFn: () => getFeedHistory({ deviceId, pageSize, page }),
     refetchInterval: 5000,
+    refetchIntervalInBackground: false,
   });
 
 export const useTriggerFeeding = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: triggerFeeding,
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["feedHistory"] }),
+    onSuccess: (_data, variables) => {
+      qc.invalidateQueries({ queryKey: ["feedHistory"] });
+      qc.invalidateQueries({ queryKey: ["hopperLevel", variables.deviceId] });
+    },
   });
 };
 

@@ -1,11 +1,12 @@
 import { FEEDER_API_BASE } from "../constants";
+import { apiFetch } from "./client";
 
 export interface Feeder {
-  device_hid: string;
+  hid: string;
   name: string;
   timezone: string;
   frontButton: boolean;
-  currentRecipe: string | null;
+  currentRecipe: number | null;
   black: boolean;
 }
 
@@ -17,39 +18,26 @@ export interface Recipe {
 }
 
 export interface FeedHistoryPage {
-  events: unknown[];
+  data: unknown[];
   page: number;
   size: number;
-  total: number;
+  totalSize: number;
+  totalPages: number;
 }
 
-export const getFeeders = async (): Promise<Feeder[]> => {
-  const res = await fetch(`${FEEDER_API_BASE}/`, { credentials: "include" });
-  if (!res.ok) throw new Error(res.statusText);
-  return res.json();
-};
+export const getFeeders = (): Promise<Feeder[]> =>
+  apiFetch(`${FEEDER_API_BASE}/`);
 
-export const getFeederTelemetry = async (deviceId: string): Promise<unknown> => {
-  const res = await fetch(`${FEEDER_API_BASE}/${deviceId}/telemetry`, {
-    credentials: "include",
-  });
-  if (!res.ok) throw new Error(res.statusText);
-  return res.json();
-};
+export const getFeederTelemetry = (deviceId: string): Promise<unknown> =>
+  apiFetch(`${FEEDER_API_BASE}/${deviceId}/telemetry`);
 
-export const triggerFeeding = async ({ deviceId, portion }: { deviceId: string; portion: number }): Promise<unknown> => {
-  const res = await fetch(`${FEEDER_API_BASE}/${deviceId}/feed`, {
+export const triggerFeeding = ({ deviceId, portion }: { deviceId: string; portion: number }): Promise<unknown> =>
+  apiFetch(`${FEEDER_API_BASE}/${deviceId}/feed`, {
     method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ portion }),
   });
-  if (!res.ok) throw new Error(res.statusText);
-  const text = await res.text();
-  return text ? JSON.parse(text) : null;
-};
 
-export const modifyFeeder = async ({
+export const modifyFeeder = ({
   deviceId,
   name = null,
   timezone = null,
@@ -61,68 +49,33 @@ export const modifyFeeder = async ({
   name?: string | null;
   timezone?: string | null;
   frontButton?: boolean | null;
-  currentRecipe?: string | null;
+  currentRecipe?: number | null;
   black?: boolean | null;
-}): Promise<Feeder> => {
-  const res = await fetch(`${FEEDER_API_BASE}/${deviceId}`, {
+}): Promise<Feeder> =>
+  apiFetch(`${FEEDER_API_BASE}/${deviceId}`, {
     method: "PUT",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ name, timezone, frontButton, currentRecipe, black }),
   });
-  if (!res.ok) throw new Error(res.statusText);
-  return res.json();
-};
 
-export const deleteFeeder = async (deviceId: string): Promise<unknown> => {
-  const res = await fetch(`${FEEDER_API_BASE}/${deviceId}`, {
-    method: "DELETE",
-    credentials: "include",
-  });
-  if (!res.ok) throw new Error(res.statusText);
-  const text = await res.text();
-  return text ? JSON.parse(text) : null;
-};
+export const deleteFeeder = (deviceId: string): Promise<unknown> =>
+  apiFetch(`${FEEDER_API_BASE}/${deviceId}`, { method: "DELETE" });
 
-export const restartFeeder = async (deviceId: string): Promise<unknown> => {
-  const res = await fetch(`${FEEDER_API_BASE}/${deviceId}/restart`, {
+export const restartFeeder = (deviceId: string): Promise<unknown> =>
+  apiFetch(`${FEEDER_API_BASE}/${deviceId}/restart`, { method: "POST" });
+
+export const getHopperLevel = (deviceId: string): Promise<{ level: number }> =>
+  apiFetch(`${FEEDER_API_BASE}/${deviceId}/hopper`);
+
+export const setHopperLevel = ({ deviceId, level }: { deviceId: string; level: number }): Promise<unknown> =>
+  apiFetch(`${FEEDER_API_BASE}/${deviceId}/hopper`, {
     method: "POST",
-    credentials: "include",
-  });
-  if (!res.ok) throw new Error(res.statusText);
-  const text = await res.text();
-  return text ? JSON.parse(text) : null;
-};
-
-export const getHopperLevel = async (deviceId: string): Promise<{ level: number }> => {
-  const res = await fetch(`${FEEDER_API_BASE}/${deviceId}/hopper`, {
-    credentials: "include",
-  });
-  if (!res.ok) throw new Error(res.statusText);
-  return res.json();
-};
-
-export const setHopperLevel = async ({ deviceId, level }: { deviceId: string; level: number }): Promise<unknown> => {
-  const res = await fetch(`${FEEDER_API_BASE}/${deviceId}/hopper`, {
-    method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ level }),
   });
-  if (!res.ok) throw new Error(res.statusText);
-  const text = await res.text();
-  return text ? JSON.parse(text) : null;
-};
 
-export const getRecipe = async (deviceId: string): Promise<Recipe> => {
-  const res = await fetch(`${FEEDER_API_BASE}/${deviceId}/recipe`, {
-    credentials: "include",
-  });
-  if (!res.ok) throw new Error(res.statusText);
-  return res.json();
-};
+export const getRecipe = (deviceId: string): Promise<Recipe> =>
+  apiFetch(`${FEEDER_API_BASE}/${deviceId}/recipe`);
 
-export const setRecipe = async ({
+export const setRecipe = ({
   deviceId,
   g_per_tbsp = null,
   tbsp_per_feeding = null,
@@ -134,18 +87,13 @@ export const setRecipe = async ({
   tbsp_per_feeding?: number | null;
   name?: string | null;
   budget_tbsp?: number | null;
-}): Promise<Recipe> => {
-  const res = await fetch(`${FEEDER_API_BASE}/${deviceId}/recipe`, {
+}): Promise<Recipe> =>
+  apiFetch(`${FEEDER_API_BASE}/${deviceId}/recipe`, {
     method: "PUT",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ g_per_tbsp, tbsp_per_feeding, name, budget_tbsp }),
   });
-  if (!res.ok) throw new Error(res.statusText);
-  return res.json();
-};
 
-export const getFeedHistory = async ({
+export const getFeedHistory = ({
   deviceId = "",
   pageSize = 10,
   page = 1,
@@ -154,13 +102,6 @@ export const getFeedHistory = async ({
   pageSize?: number;
   page?: number;
 } = {}): Promise<FeedHistoryPage> => {
-  let url = FEEDER_API_BASE;
-  if (deviceId !== "") {
-    url += `/${deviceId}`;
-  }
-  const res = await fetch(`${url}/history?size=${pageSize}&page=${page}`, {
-    credentials: "include",
-  });
-  if (!res.ok) throw new Error(res.statusText);
-  return res.json();
+  const base = deviceId !== "" ? `${FEEDER_API_BASE}/${deviceId}` : FEEDER_API_BASE;
+  return apiFetch(`${base}/history?size=${pageSize}&page=${page}`);
 };

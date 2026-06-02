@@ -1,12 +1,13 @@
 import { PET_API_BASE } from "../constants";
+import { apiFetch } from "./client";
 
 export interface Pet {
-  pet_id: number;
+  id: number;
   name: string;
   animal_type: string;
   weight: number;
-  birthday: string | null;
-  activity_level: string;
+  birthday: number | null;
+  activity_level: number | null;
   image: string | null;
   device_hid: string | null;
 }
@@ -14,7 +15,7 @@ export interface Pet {
 export interface ScheduleEvent {
   event_id: number;
   name: string | null;
-  time: string | null;
+  time: number | null;
   portion: number | null;
   enabled: boolean;
 }
@@ -23,13 +24,10 @@ export interface PetSchedule {
   events: ScheduleEvent[];
 }
 
-export const getPets = async (): Promise<Pet[]> => {
-  const res = await fetch(`${PET_API_BASE}/`, { credentials: "include" });
-  if (!res.ok) throw new Error(res.statusText);
-  return res.json();
-};
+export const getPets = (): Promise<Pet[]> =>
+  apiFetch(`${PET_API_BASE}/`);
 
-export const createPet = async ({
+export const createPet = ({
   name,
   animal_type,
   weight,
@@ -45,26 +43,13 @@ export const createPet = async ({
   activity_level: string;
   image?: string | null;
   device_hid?: string | null;
-}): Promise<Pet> => {
-  const res = await fetch(`${PET_API_BASE}`, {
+}): Promise<Pet> =>
+  apiFetch(`${PET_API_BASE}`, {
     method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      name,
-      animal_type,
-      weight,
-      birthday,
-      image,
-      activity_level,
-      device_hid,
-    }),
+    body: JSON.stringify({ name, animal_type, weight, birthday, image, activity_level, device_hid }),
   });
-  if (!res.ok) throw new Error(res.statusText);
-  return res.json();
-};
 
-export const modifyPet = async ({
+export const modifyPet = ({
   pet_id,
   name,
   animal_type,
@@ -82,44 +67,19 @@ export const modifyPet = async ({
   activity_level: string;
   image?: string | null;
   device_hid?: string | null;
-}): Promise<Pet> => {
-  const res = await fetch(`${PET_API_BASE}/${pet_id}`, {
+}): Promise<Pet> =>
+  apiFetch(`${PET_API_BASE}/${pet_id}`, {
     method: "PUT",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      name,
-      animal_type,
-      weight,
-      birthday,
-      image,
-      activity_level,
-      device_hid,
-    }),
+    body: JSON.stringify({ name, animal_type, weight, birthday, image, activity_level, device_hid }),
   });
-  if (!res.ok) throw new Error(res.statusText);
-  return res.json();
-};
 
-export const deletePet = async (petId: number): Promise<unknown> => {
-  const res = await fetch(`${PET_API_BASE}/${petId}`, {
-    method: "DELETE",
-    credentials: "include",
-  });
-  if (!res.ok) throw new Error(res.statusText);
-  const text = await res.text();
-  return text ? JSON.parse(text) : null;
-};
+export const deletePet = (petId: number): Promise<unknown> =>
+  apiFetch(`${PET_API_BASE}/${petId}`, { method: "DELETE" });
 
-export const getPetSchedule = async (petId: number): Promise<PetSchedule> => {
-  const res = await fetch(`${PET_API_BASE}/${petId}/schedule`, {
-    credentials: "include",
-  });
-  if (!res.ok) throw new Error(res.statusText);
-  return res.json();
-};
+export const getPetSchedule = (petId: number): Promise<PetSchedule> =>
+  apiFetch(`${PET_API_BASE}/${petId}/schedule`);
 
-export const createPetSchedule = async ({
+export const createPetSchedule = ({
   petId,
   name = null,
   time = null,
@@ -129,18 +89,13 @@ export const createPetSchedule = async ({
   name?: string | null;
   time?: string | null;
   portion?: number | null;
-}): Promise<ScheduleEvent> => {
-  const res = await fetch(`${PET_API_BASE}/${petId}/schedule`, {
+}): Promise<ScheduleEvent> =>
+  apiFetch(`${PET_API_BASE}/${petId}/schedule`, {
     method: "POST",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ name, time, portion }),
   });
-  if (!res.ok) throw new Error(res.statusText);
-  return res.json();
-};
 
-export const updatePetSchedule = async ({
+export const updatePetSchedule = ({
   petId,
   eventId,
   name = null,
@@ -154,23 +109,11 @@ export const updatePetSchedule = async ({
   time?: string | null;
   portion?: number | null;
   enabled?: boolean | null;
-}): Promise<ScheduleEvent> => {
-  const res = await fetch(`${PET_API_BASE}/${petId}/schedule/${eventId}`, {
+}): Promise<ScheduleEvent> =>
+  apiFetch(`${PET_API_BASE}/${petId}/schedule/${eventId}`, {
     method: "PUT",
-    credentials: "include",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ name, time, portion, enabled }),
   });
-  if (!res.ok) throw new Error(res.statusText);
-  return res.json();
-};
 
-export const deletePetSchedule = async ({ petId, eventId }: { petId: number; eventId: number }): Promise<unknown> => {
-  const res = await fetch(`${PET_API_BASE}/${petId}/schedule/${eventId}`, {
-    method: "DELETE",
-    credentials: "include",
-  });
-  if (!res.ok) throw new Error(res.statusText);
-  const text = await res.text();
-  return text ? JSON.parse(text) : null;
-};
+export const deletePetSchedule = ({ petId, eventId }: { petId: number; eventId: number }): Promise<unknown> =>
+  apiFetch(`${PET_API_BASE}/${petId}/schedule/${eventId}`, { method: "DELETE" });

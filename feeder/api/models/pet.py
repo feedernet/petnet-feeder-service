@@ -1,10 +1,9 @@
 from typing import Optional, List
-from pydantic import BaseModel, ConfigDict
+from feeder.api.models import OrmModel
 from feeder.api.models.feeder import FeedEvent
 
 
-class RegisteredPet(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+class RegisteredPet(OrmModel):
 
     id: Optional[int] = None
     name: Optional[str] = None
@@ -16,8 +15,7 @@ class RegisteredPet(BaseModel):
     device_hid: Optional[str] = None
 
 
-class ScheduledFeed(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+class ScheduledFeed(OrmModel):
 
     event_id: Optional[int] = None
     name: Optional[str] = None
@@ -27,7 +25,6 @@ class ScheduledFeed(BaseModel):
     result: Optional[FeedEvent] = None
 
 
-class PetSchedule(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+class PetSchedule(OrmModel):
 
     events: List[ScheduledFeed]

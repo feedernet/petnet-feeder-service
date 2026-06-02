@@ -1,9 +1,9 @@
 from typing import List, Optional
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
 
 from feeder import settings
-from feeder.api.models import BasePaginatedList
+from feeder.api.models import BasePaginatedList, OrmModel
 
 
 class NewGateway(BaseModel):
@@ -29,9 +29,7 @@ class NewGateway(BaseModel):
     sdkVersion: Optional[str] = None
 
 
-class Gateway(NewGateway):
-    model_config = ConfigDict(from_attributes=True)
-
+class Gateway(OrmModel, NewGateway):
     hid: str
     pri: str
     applicationHid: str = settings.app_id
@@ -69,9 +67,7 @@ class NewDevice(BaseModel):
     softwareVersion: Optional[str] = None
 
 
-class Device(NewDevice):
-    model_config = ConfigDict(from_attributes=True)
-
+class Device(OrmModel, NewDevice):
     hid: str
     discoveredAt: int = 0
     lastPingedAt: Optional[int] = 0
@@ -90,9 +86,7 @@ class DeviceUpdate(BaseModel):
     black: Optional[bool] = None
 
 
-class DeviceTelemetry(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
+class DeviceTelemetry(OrmModel):
     timestamp: int
     voltage: float
     usb_power: bool

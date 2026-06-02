@@ -1,6 +1,6 @@
 from typing import Optional, List, Any
-from pydantic import BaseModel, ConfigDict
-from feeder.api.models import BasePaginatedList
+from pydantic import BaseModel
+from feeder.api.models import BasePaginatedList, OrmModel
 
 
 class GenericResponse(BaseModel):
@@ -11,8 +11,7 @@ class TriggerFeeding(BaseModel):
     portion: float = 0.0625
 
 
-class FeedEvent(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+class FeedEvent(OrmModel):
 
     device_name: Optional[str] = None
     device_hid: str
@@ -43,8 +42,7 @@ class HopperLevel(BaseModel):
     level: int
 
 
-class Recipe(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+class Recipe(OrmModel):
 
     id: Optional[int] = None
     name: Optional[str] = ""
