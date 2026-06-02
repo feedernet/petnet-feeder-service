@@ -26,7 +26,8 @@ router = APIRouter()
 async def get_gateways():
     all_gateways = await KronosGateways.get()
     formatted_feeders = [
-        {"pri": f"arw:pgs:gwy:{gateway.hid}", **dict(gateway._mapping)} for gateway in all_gateways
+        {"pri": f"arw:pgs:gwy:{gateway.hid}", **dict(gateway._mapping)}
+        for gateway in all_gateways
     ]
 
     return paginate_response(

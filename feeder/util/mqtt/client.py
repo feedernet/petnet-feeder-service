@@ -186,7 +186,8 @@ class FeederClient(MQTTClient):
                 "automatic": True,
                 "feeding_id": (
                     f"{device_id[:16]}_feed{event.event_id}_"  # type: ignore[attr-defined]
-                    f"{int(event.time / 3600)}:{str(int(event.time / 60 % 60)).zfill(2)}"  # type: ignore[attr-defined]
+                    f"{int(event.time / 3600)}"  # type: ignore[attr-defined]
+                    f":{str(int(event.time / 60 % 60)).zfill(2)}"  # type: ignore[attr-defined]
                     f"{'AM' if event.time / 3600 < 12 else 'PM'}"  # type: ignore[attr-defined]
                 ),
                 "name": f"FEED{index}",

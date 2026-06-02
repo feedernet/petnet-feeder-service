@@ -6,7 +6,7 @@ LOGGING_CONFIG = {
     "formatters": {
         "json": {
             "()": "pythonjsonlogger.jsonlogger.JsonFormatter",
-            "format": "%(asctime)s %(name)s %(levelname)s %(message)s"
+            "format": "%(asctime)s %(name)s %(levelname)s %(message)s",
         }
     },
     "handlers": {

@@ -1,4 +1,5 @@
 from sqlalchemy import text
+
 """Make most gateway/device fields optional
 
 Revision ID: 317ddf3509cb
@@ -47,12 +48,16 @@ def downgrade():
         "name",
     ]:
         connection.execute(
-            text(f"UPDATE kronos_gateway SET {field_name} = 'unknown' WHERE {field_name} IS NULL")
+            text(
+                f"UPDATE kronos_gateway SET {field_name} = 'unknown' WHERE {field_name} IS NULL"
+            )
         )
 
     for field_name in ["uid", "type", "softwareVersion", "softwareName", "name"]:
         connection.execute(
-            text(f"UPDATE kronos_device SET {field_name} = 'unknown' WHERE {field_name} IS NULL")
+            text(
+                f"UPDATE kronos_device SET {field_name} = 'unknown' WHERE {field_name} IS NULL"
+            )
         )
 
     with op.batch_alter_table("kronos_gateway") as batch_op:

@@ -32,9 +32,7 @@ if not os.path.exists(public_key) and not os.path.exists(private_key):
         logger.info("Writing new private key to %s", private_key)
         f.write(certificate_pair[1])
 elif not domain_in_subjects(public_key, settings.domain) and settings.domain:
-    logger.warning(
-        "The certificates provided are not valid for %s!", settings.domain
-    )
+    logger.warning("The certificates provided are not valid for %s!", settings.domain)
     logger.warning(
         """If you aren't using these certificates in your SSL proxy,
 you can ignore this message.

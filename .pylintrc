@@ -72,7 +72,11 @@ disable=
     # We should get rid of these once we have written docstrings ;)
     missing-function-docstring,
     missing-class-docstring,
-    missing-module-docstring
+    missing-module-docstring,
+    # SQLAlchemy func.* attributes are dynamic; pylint can't infer them
+    not-callable,
+    # ORM create() methods legitimately take many positional args (one per column)
+    too-many-positional-arguments
 
 
 [REPORTS]
@@ -312,7 +316,7 @@ spelling-store-unknown-words=no
 [DESIGN]
 
 # Maximum number of arguments for function / method
-max-args=10
+max-args=20
 
 # Argument names that match this expression will be ignored. Default to name
 # with leading underscore

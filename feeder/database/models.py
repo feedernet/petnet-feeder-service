@@ -79,7 +79,7 @@ class KronosGateways:
         async with async_session() as session:
             result = await session.execute(query)
             await session.commit()
-        return result.rowcount
+        return result.rowcount  # type: ignore[attr-defined]
 
     @classmethod
     async def get_or_insert(cls, *, gateway_hid):
@@ -164,7 +164,7 @@ class KronosDevices:
         async with async_session() as session:
             result = await session.execute(query)
             await session.commit()
-        return result.rowcount
+        return result.rowcount  # type: ignore[attr-defined]
 
     @classmethod
     async def get_or_insert(cls, *, gateway_hid, device_hid):
@@ -225,7 +225,7 @@ class KronosDevices:
         async with async_session() as session:
             result = await session.execute(query)
             await session.commit()
-        return result.rowcount
+        return result.rowcount  # type: ignore[attr-defined]
 
     @classmethod
     async def delete(cls, device_id):
@@ -310,7 +310,7 @@ class DeviceTelemetryData:
         async with async_session() as session:
             result = await session.execute(query)
             await session.commit()
-        return result.rowcount
+        return result.rowcount  # type: ignore[attr-defined]
 
     @classmethod
     async def clear_for_device(cls, device_id):
@@ -431,7 +431,7 @@ class FeedingResult:
             async with async_session() as session:
                 result = await session.execute(query)
                 await session.commit()
-            return result.lastrowid
+            return result.lastrowid  # type: ignore[attr-defined]
         except IntegrityError:
             logger.exception("Unable to save feed result!")
 
@@ -524,7 +524,7 @@ class Pet:
         async with async_session() as session:
             result = await session.execute(query)
             await session.commit()
-        return result.inserted_primary_key[0]
+        return result.inserted_primary_key[0]  # type: ignore[attr-defined]
 
     @classmethod
     async def delete(cls, pet_id: int):
@@ -568,7 +568,7 @@ class Pet:
         async with async_session() as session:
             result = await session.execute(query)
             await session.commit()
-        return result.rowcount
+        return result.rowcount  # type: ignore[attr-defined]
 
 
 recipes = Table(
@@ -611,7 +611,7 @@ class StoredRecipe:
         async with async_session() as session:
             result = await session.execute(query)
             await session.commit()
-        return result.inserted_primary_key[0]
+        return result.inserted_primary_key[0]  # type: ignore[attr-defined]
 
     @classmethod
     async def update(
@@ -635,7 +635,7 @@ class StoredRecipe:
         async with async_session() as session:
             result = await session.execute(query)
             await session.commit()
-        return result.rowcount
+        return result.rowcount  # type: ignore[attr-defined]
 
 
 # We will store a level reference every time someone manually updates the amount
@@ -769,14 +769,20 @@ class FeedingSchedule:
             await session.commit()
 
     @classmethod
-    async def create_event(cls, pet_id: int, name: Optional[str], time: Optional[int], portion: Optional[float]):
+    async def create_event(
+        cls,
+        pet_id: int,
+        name: Optional[str],
+        time: Optional[int],
+        portion: Optional[float],
+    ):
         query = schedules.insert().values(
             pet_id=pet_id, time=time, enabled=True, name=name, portion=portion
         )
         async with async_session() as session:
             result = await session.execute(query)
             await session.commit()
-        return result.inserted_primary_key[0]
+        return result.inserted_primary_key[0]  # type: ignore[attr-defined]
 
     @classmethod
     async def update_event(

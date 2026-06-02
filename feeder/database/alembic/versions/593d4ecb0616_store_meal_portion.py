@@ -1,4 +1,5 @@
 from sqlalchemy import text
+
 """Store meal portion
 
 Revision ID: 593d4ecb0616

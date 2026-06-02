@@ -1,4 +1,5 @@
 from sqlalchemy import text
+
 """Add feeder color boolean
 
 Revision ID: 107a06aaf34c
