@@ -39,7 +39,7 @@ async def get_gateways():
 async def add_gateway(gateway: NewGateway):
     gateway_hid = generate_feeder_hid(gateway.uid)  # type: ignore[arg-type]
     try:
-        await KronosGateways.create(**gateway.dict())
+        await KronosGateways.create(**gateway.model_dump())
         content = {"hid": gateway_hid, "message": "OK"}
     except IntegrityError:
         logger.debug("Gateway (%s) already registered!", gateway_hid)
@@ -67,7 +67,7 @@ async def register_feeder(device: NewDevice):
     device_hid = generate_feeder_hid(device.uid)  # type: ignore[arg-type]
 
     try:
-        await KronosDevices.create(**device.dict())
+        await KronosDevices.create(**device.model_dump())
     except IntegrityError:
         logger.debug("Device (%s) already registered!", device_hid)
         await KronosDevices.update(
