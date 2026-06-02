@@ -32,19 +32,11 @@ function NewFeederWizard() {
   };
 
   return (
-    <Modal
-      show={newFeederWizard.show}
-      onHide={handleDismiss}
-      centered
-    >
+    <Modal show={newFeederWizard.show} onHide={handleDismiss} centered>
       <Modal.Header closeButton>
         <Modal.Title className={"h5"}>New Feeder Wizard</Modal.Title>
       </Modal.Header>
-      <StepWizard
-        instance={registerSetupWizard}
-        transitions={{}}
-        isLazyMount
-      >
+      <StepWizard instance={registerSetupWizard} transitions={{}} isLazyMount>
         <CreateOrAssignPet deviceHid={newFeederWizard.deviceHid} />
         <SetHopperLevel deviceHid={newFeederWizard.deviceHid} />
         <CreateRecipe deviceHid={newFeederWizard.deviceHid} />

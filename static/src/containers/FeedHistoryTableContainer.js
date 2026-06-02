@@ -9,7 +9,11 @@ function FeedHistory() {
   const [filteredDeviceName, setFilteredDeviceName] = useState("");
 
   const { data: feeders = [] } = useFeeders();
-  const { data } = useFeedHistory({ deviceId: filteredDeviceId, pageSize, page });
+  const { data } = useFeedHistory({
+    deviceId: filteredDeviceId,
+    pageSize,
+    page,
+  });
 
   const history = data?.data ?? [];
   const totalPages = data?.totalPages ?? 0;

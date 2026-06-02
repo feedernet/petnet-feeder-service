@@ -49,10 +49,7 @@ function FeederCardList() {
               >
                 <span className={"visually-hidden"}>Searching...</span>
               </Spinner>
-              <p
-                className={"fw-bold mb-0"}
-                style={{ display: "inline-block" }}
-              >
+              <p className={"fw-bold mb-0"} style={{ display: "inline-block" }}>
                 Waiting for New Devices
               </p>
             </div>

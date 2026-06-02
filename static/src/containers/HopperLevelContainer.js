@@ -7,10 +7,7 @@ function HopperLevelIndicator({ deviceHid }) {
   const { data: level, isLoading } = useHopperLevel(deviceHid);
 
   return (
-    <HopperLevelIndicatorComponent
-      level={level ?? 0}
-      animated={isLoading}
-    />
+    <HopperLevelIndicatorComponent level={level ?? 0} animated={isLoading} />
   );
 }
 

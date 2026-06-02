@@ -7,10 +7,7 @@ import FormControl from "react-bootstrap/FormControl";
 import PropTypes from "prop-types";
 import { useQueryClient } from "@tanstack/react-query";
 import { FoodWeightBubble } from "../../components/FoodWeightBubble";
-import {
-  useTriggerFeeding,
-  useSetRecipe,
-} from "../../hooks/useFeeders";
+import { useTriggerFeeding, useSetRecipe } from "../../hooks/useFeeders";
 import { getFeedHistory } from "../../api/feeders";
 
 function timer(ms) {
@@ -38,7 +35,11 @@ function CreateRecipe({ deviceHid, nextStep }) {
     // Get the current feed history to find the latest timestamp before dispensing
     let lastTimeBefore = null;
     try {
-      const historyBefore = await getFeedHistory({ deviceId: deviceHid, pageSize: 5, page: 1 });
+      const historyBefore = await getFeedHistory({
+        deviceId: deviceHid,
+        pageSize: 5,
+        page: 1,
+      });
       if (historyBefore?.data?.length > 0) {
         lastTimeBefore = historyBefore.data[0].timestamp;
       }
@@ -188,17 +189,12 @@ function CreateRecipe({ deviceHid, nextStep }) {
         ) : null}
 
         {!manualEntry ? (
-          <p className={"mt-3"}>
-            Average density: {measuredDensity} g/tbsp
-          </p>
+          <p className={"mt-3"}>Average density: {measuredDensity} g/tbsp</p>
         ) : null}
       </Modal.Body>
       <Modal.Footer>
         {!manualEntry ? (
-          <Button
-            variant={"secondary"}
-            onClick={() => setManualEntry(true)}
-          >
+          <Button variant={"secondary"} onClick={() => setManualEntry(true)}>
             Manual Entry
           </Button>
         ) : null}
@@ -214,10 +210,7 @@ function CreateRecipe({ deviceHid, nextStep }) {
         ) : null}
 
         {!manualEntry && measuredWeights[2] !== null ? (
-          <Button
-            variant={"success"}
-            onClick={() => handleCreateRecipe()}
-          >
+          <Button variant={"success"} onClick={() => handleCreateRecipe()}>
             Submit
           </Button>
         ) : null}
@@ -235,10 +228,7 @@ function CreateRecipe({ deviceHid, nextStep }) {
             >
               Go Back
             </Button>
-            <Button
-              variant={"success"}
-              onClick={() => handleCreateRecipe()}
-            >
+            <Button variant={"success"} onClick={() => handleCreateRecipe()}>
               Submit
             </Button>
           </>

@@ -31,7 +31,13 @@ export const getFeeders = (): Promise<Feeder[]> =>
 export const getFeederTelemetry = (deviceId: string): Promise<unknown> =>
   apiFetch(`${FEEDER_API_BASE}/${deviceId}/telemetry`);
 
-export const triggerFeeding = ({ deviceId, portion }: { deviceId: string; portion: number }): Promise<unknown> =>
+export const triggerFeeding = ({
+  deviceId,
+  portion,
+}: {
+  deviceId: string;
+  portion: number;
+}): Promise<unknown> =>
   apiFetch(`${FEEDER_API_BASE}/${deviceId}/feed`, {
     method: "POST",
     body: JSON.stringify({ portion }),
@@ -66,7 +72,13 @@ export const restartFeeder = (deviceId: string): Promise<unknown> =>
 export const getHopperLevel = (deviceId: string): Promise<{ level: number }> =>
   apiFetch(`${FEEDER_API_BASE}/${deviceId}/hopper`);
 
-export const setHopperLevel = ({ deviceId, level }: { deviceId: string; level: number }): Promise<unknown> =>
+export const setHopperLevel = ({
+  deviceId,
+  level,
+}: {
+  deviceId: string;
+  level: number;
+}): Promise<unknown> =>
   apiFetch(`${FEEDER_API_BASE}/${deviceId}/hopper`, {
     method: "POST",
     body: JSON.stringify({ level }),
@@ -102,6 +114,7 @@ export const getFeedHistory = ({
   pageSize?: number;
   page?: number;
 } = {}): Promise<FeedHistoryPage> => {
-  const base = deviceId !== "" ? `${FEEDER_API_BASE}/${deviceId}` : FEEDER_API_BASE;
+  const base =
+    deviceId !== "" ? `${FEEDER_API_BASE}/${deviceId}` : FEEDER_API_BASE;
   return apiFetch(`${base}/history?size=${pageSize}&page=${page}`);
 };

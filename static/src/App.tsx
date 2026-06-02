@@ -27,9 +27,7 @@ function App() {
         variant="dark"
         bg="primary"
         fixed="top"
-        className={
-          window.navigator.standalone === true ? "ios-app-nav" : null
-        }
+        className={window.navigator.standalone === true ? "ios-app-nav" : null}
       >
         <Container>
           <Navbar.Brand href="#">

@@ -37,7 +37,9 @@ interface ModalContextValue {
   schedule: ScheduleState;
   setSchedule: React.Dispatch<React.SetStateAction<ScheduleState>>;
   newFeederWizard: NewFeederWizardState;
-  setNewFeederWizard: React.Dispatch<React.SetStateAction<NewFeederWizardState>>;
+  setNewFeederWizard: React.Dispatch<
+    React.SetStateAction<NewFeederWizardState>
+  >;
 }
 
 const ModalContext = createContext<ModalContextValue | null>(null);
@@ -95,4 +97,5 @@ export function ModalProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export const useModals = (): ModalContextValue | null => useContext(ModalContext);
+export const useModals = (): ModalContextValue | null =>
+  useContext(ModalContext);

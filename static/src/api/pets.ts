@@ -24,8 +24,7 @@ export interface PetSchedule {
   events: ScheduleEvent[];
 }
 
-export const getPets = (): Promise<Pet[]> =>
-  apiFetch(`${PET_API_BASE}/`);
+export const getPets = (): Promise<Pet[]> => apiFetch(`${PET_API_BASE}/`);
 
 export const createPet = ({
   name,
@@ -46,7 +45,15 @@ export const createPet = ({
 }): Promise<Pet> =>
   apiFetch(`${PET_API_BASE}`, {
     method: "POST",
-    body: JSON.stringify({ name, animal_type, weight, birthday, image, activity_level, device_hid }),
+    body: JSON.stringify({
+      name,
+      animal_type,
+      weight,
+      birthday,
+      image,
+      activity_level,
+      device_hid,
+    }),
   });
 
 export const modifyPet = ({
@@ -70,7 +77,15 @@ export const modifyPet = ({
 }): Promise<Pet> =>
   apiFetch(`${PET_API_BASE}/${pet_id}`, {
     method: "PUT",
-    body: JSON.stringify({ name, animal_type, weight, birthday, image, activity_level, device_hid }),
+    body: JSON.stringify({
+      name,
+      animal_type,
+      weight,
+      birthday,
+      image,
+      activity_level,
+      device_hid,
+    }),
   });
 
 export const deletePet = (petId: number): Promise<unknown> =>
@@ -115,5 +130,13 @@ export const updatePetSchedule = ({
     body: JSON.stringify({ name, time, portion, enabled }),
   });
 
-export const deletePetSchedule = ({ petId, eventId }: { petId: number; eventId: number }): Promise<unknown> =>
-  apiFetch(`${PET_API_BASE}/${petId}/schedule/${eventId}`, { method: "DELETE" });
+export const deletePetSchedule = ({
+  petId,
+  eventId,
+}: {
+  petId: number;
+  eventId: number;
+}): Promise<unknown> =>
+  apiFetch(`${PET_API_BASE}/${petId}/schedule/${eventId}`, {
+    method: "DELETE",
+  });

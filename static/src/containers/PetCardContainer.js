@@ -10,9 +10,7 @@ function PetCard({ pet }) {
   const { data: recipe } = useRecipe(pet.device_hid);
   const { setSnack, setEditPet, setSchedule } = useModals();
 
-  const manualFeedPortion = recipe
-    ? recipe.tbsp_per_feeding / 16
-    : 0.0625;
+  const manualFeedPortion = recipe ? recipe.tbsp_per_feeding / 16 : 0.0625;
 
   const d = new Date();
   const pctDayElapsed =

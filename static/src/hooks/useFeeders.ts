@@ -44,7 +44,11 @@ export const useRecipe = (deviceId) =>
     enabled: !!deviceId,
   });
 
-export const useFeedHistory = ({ deviceId = "", pageSize = 10, page = 1 } = {}) =>
+export const useFeedHistory = ({
+  deviceId = "",
+  pageSize = 10,
+  page = 1,
+} = {}) =>
   useQuery({
     queryKey: ["feedHistory", { deviceId, pageSize, page }],
     queryFn: () => getFeedHistory({ deviceId, pageSize, page }),
