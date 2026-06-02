@@ -1,5 +1,5 @@
 from typing import Optional, List, Any
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from feeder.api.models import BasePaginatedList
 
 
@@ -12,25 +12,27 @@ class TriggerFeeding(BaseModel):
 
 
 class FeedEvent(BaseModel):
-    device_name: Optional[str]
+    model_config = ConfigDict(from_attributes=True)
+
+    device_name: Optional[str] = None
     device_hid: str
     timestamp: int
     start_time: int
     end_time: int
-    pour: Optional[int]
-    full: Optional[int]
+    pour: Optional[int] = None
+    full: Optional[int] = None
     grams_expected: int
     grams_actual: int
     hopper_start: int
     hopper_end: int
     source: int
     fail: bool
-    trip: Optional[bool]
-    lrg: Optional[bool]
-    vol: Optional[bool]
-    bowl: Optional[bool]
+    trip: Optional[bool] = None
+    lrg: Optional[bool] = None
+    vol: Optional[bool] = None
+    bowl: Optional[bool] = None
     recipe_id: str
-    error: Optional[str]
+    error: Optional[str] = None
 
 
 class FeedHistory(BasePaginatedList):
@@ -42,11 +44,13 @@ class HopperLevel(BaseModel):
 
 
 class Recipe(BaseModel):
-    id: Optional[int]
+    model_config = ConfigDict(from_attributes=True)
+
+    id: Optional[int] = None
     name: Optional[str] = ""
-    tbsp_per_feeding: Optional[int]
-    g_per_tbsp: Optional[int]
-    budget_tbsp: Optional[int]
+    tbsp_per_feeding: Optional[int] = None
+    g_per_tbsp: Optional[int] = None
+    budget_tbsp: Optional[int] = None
 
 
 class RawMQTTMessage(BaseModel):

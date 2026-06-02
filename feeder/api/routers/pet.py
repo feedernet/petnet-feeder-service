@@ -66,12 +66,12 @@ async def get_schedule_for_pet(pet: RegisteredPet):
 
     for idx, event in enumerate(schedule):
         target_time = get_relative_timestamp(
-            seconds_since_midnight=event["time"], timezone=feeder_tz
+            seconds_since_midnight=event.time, timezone=feeder_tz
         )
         dispense_result = await FeedingResult.dispensed_at(
             device_id=pet.device_hid, timestamp=target_time  # type: ignore[arg-type]
         )
-        schedule[idx] = {**event, "result": dispense_result}
+        schedule[idx] = {**dict(event._mapping), "result": dispense_result}
 
     return {"events": schedule}
 

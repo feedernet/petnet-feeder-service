@@ -219,6 +219,8 @@ class KronosDevices:
             values["black"] = black
         if firmware_version is not None:
             values["softwareVersion"] = firmware_version
+        if not values:
+            return 0
         query = devices.update().where(devices.c.hid == device_hid).values(**values)
         async with async_session() as session:
             result = await session.execute(query)
@@ -740,7 +742,7 @@ schedules = Table(
     Column("event_id", Integer(), primary_key=True, autoincrement=True),
     Column("pet_id", Text(), ForeignKey("pets.id"), nullable=False),
     # This is the number of seconds since 12:00AM
-    Column("time", Integer(), primary_key=True),
+    Column("time", Integer(), nullable=False),
     Column("enabled", Boolean(), nullable=False),
     Column("name", Text(), nullable=False),
     Column("portion", Float(), nullable=False),

@@ -66,8 +66,9 @@ def check_connection(
     # This is kinda gross... we are tapping into their internal sessions
     # storage.
     # TODO: If we end up forking HBMQTT, we should add an interface for this.
-    sessions = broker._sessions
     connected = False
-    if device.gatewayHid in sessions:
-        connected = sessions[device.gatewayHid][0].transitions.is_connected()
-    return {**device, "connected": connected}
+    if broker is not None:
+        sessions = broker._sessions
+        if device.gatewayHid in sessions:
+            connected = sessions[device.gatewayHid][0].transitions.is_connected()
+    return {**dict(device._mapping), "connected": connected}

@@ -20,13 +20,13 @@ class NewGateway(BaseModel):
     }
     """
 
-    name: Optional[str]
-    uid: Optional[str]
-    osName: Optional[str]
-    type: Optional[str]
-    softwareName: Optional[str]
-    softwareVersion: Optional[str]
-    sdkVersion: Optional[str]
+    name: Optional[str] = None
+    uid: Optional[str] = None
+    osName: Optional[str] = None
+    type: Optional[str] = None
+    softwareName: Optional[str] = None
+    softwareVersion: Optional[str] = None
+    sdkVersion: Optional[str] = None
 
 
 class Gateway(NewGateway):
@@ -45,8 +45,8 @@ class PaginatedGatewayList(BasePaginatedList):
 class AddGatewayResponse(BaseModel):
     hid: str
     message: str
-    links: Optional[dict]
-    pri: Optional[str]
+    links: Optional[dict] = None
+    pri: Optional[str] = None
 
 
 class NewDevice(BaseModel):
@@ -61,12 +61,12 @@ class NewDevice(BaseModel):
     }
     """
 
-    name: Optional[str]
-    type: Optional[str]
-    uid: Optional[str]
+    name: Optional[str] = None
+    type: Optional[str] = None
+    uid: Optional[str] = None
     gatewayHid: str
-    softwareName: Optional[str]
-    softwareVersion: Optional[str]
+    softwareName: Optional[str] = None
+    softwareVersion: Optional[str] = None
 
 
 class Device(NewDevice):
@@ -75,19 +75,19 @@ class Device(NewDevice):
     hid: str
     discoveredAt: int = 0
     lastPingedAt: Optional[int] = 0
-    frontButton: Optional[bool]
-    timezone: Optional[str]
+    frontButton: Optional[bool] = None
+    timezone: Optional[str] = None
     connected: bool = False
-    currentRecipe: Optional[int]
+    currentRecipe: Optional[int] = None
     black: Optional[bool] = False
 
 
 class DeviceUpdate(BaseModel):
-    name: Optional[str]
-    timezone: Optional[str]
-    frontButton: Optional[bool]
-    currentRecipe: Optional[int]
-    black: Optional[bool]
+    name: Optional[str] = None
+    timezone: Optional[str] = None
+    frontButton: Optional[bool] = None
+    currentRecipe: Optional[int] = None
+    black: Optional[bool] = None
 
 
 class DeviceTelemetry(BaseModel):
