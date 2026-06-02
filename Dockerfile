@@ -1,6 +1,7 @@
 FROM --platform=$BUILDPLATFORM node:24-alpine AS frontend-build
 WORKDIR /tmp
 COPY static/package*.json ./
+COPY static/.npmrc ./
 COPY static/vite.config.js ./
 COPY static/index.html ./
 COPY static/src ./src
