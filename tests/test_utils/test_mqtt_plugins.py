@@ -147,17 +147,17 @@ async def test_mqtt_topic_plugin_device_correct_topic():
     mock_session = MockSession(username=f"/pegasus:{SAMPLE_GATEWAY_HID}")
     assert await PetnetTopicPlugin(mock_context).topic_filtering(
         session=mock_session,
-        action=Action.subscribe,
+        action=Action.SUBSCRIBE,
         topic=f"krs/api/stg/{SAMPLE_GATEWAY_HID}",
     )
     assert await PetnetTopicPlugin(mock_context).topic_filtering(
         session=mock_session,
-        action=Action.subscribe,
+        action=Action.SUBSCRIBE,
         topic=f"krs/cmd/stg/{SAMPLE_GATEWAY_HID}",
     )
     assert await PetnetTopicPlugin(mock_context).topic_filtering(
         session=mock_session,
-        action=Action.publish,
+        action=Action.PUBLISH,
         topic=f"krs.tel.gts.{SAMPLE_GATEWAY_HID}",
     )
 
@@ -170,10 +170,10 @@ async def test_mqtt_topic_plugin_device_wrong_topic_pattern_match():
     mock_context = MockContext()
     mock_session = MockSession(username=f"/pegasus:{SAMPLE_GATEWAY_HID}")
     assert not await PetnetTopicPlugin(mock_context).topic_filtering(
-        session=mock_session, action=Action.subscribe, topic="krs/cmd/stg/wrong-hid"
+        session=mock_session, action=Action.SUBSCRIBE, topic="krs/cmd/stg/wrong-hid"
     )
     assert not await PetnetTopicPlugin(mock_context).topic_filtering(
-        session=mock_session, action=Action.publish, topic="krs.tel.gts.wrong-hid"
+        session=mock_session, action=Action.PUBLISH, topic="krs.tel.gts.wrong-hid"
     )
 
 
@@ -185,10 +185,10 @@ async def test_mqtt_topic_plugin_device_wrong_topic_pattern_miss():
     mock_context = MockContext()
     mock_session = MockSession(username=f"/pegasus:{SAMPLE_GATEWAY_HID}")
     assert not await PetnetTopicPlugin(mock_context).topic_filtering(
-        session=mock_session, action=Action.subscribe, topic="wrong-hid"
+        session=mock_session, action=Action.SUBSCRIBE, topic="wrong-hid"
     )
     assert not await PetnetTopicPlugin(mock_context).topic_filtering(
-        session=mock_session, action=Action.publish, topic="wrong-hid"
+        session=mock_session, action=Action.PUBLISH, topic="wrong-hid"
     )
 
 

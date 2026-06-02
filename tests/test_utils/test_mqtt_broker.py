@@ -1,4 +1,8 @@
-def test_mqtt_broker_default_config():
+import pytest
+
+
+@pytest.mark.asyncio
+async def test_mqtt_broker_default_config():
     from feeder.util.mqtt.broker import FeederBroker
     from feeder import settings
 
@@ -15,7 +19,8 @@ def test_mqtt_broker_default_config():
     }
 
 
-def test_mqtt_broker_config_overrides():
+@pytest.mark.asyncio
+async def test_mqtt_broker_config_overrides():
     from feeder.util.mqtt.broker import FeederBroker
 
     overrides = {"auth": {}}

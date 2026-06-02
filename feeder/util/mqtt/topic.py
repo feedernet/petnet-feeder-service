@@ -39,9 +39,9 @@ class PetnetTopicPlugin(BaseTopicPlugin):
 
         gateway_id = user_match.group("gateway_id")
 
-        if action == Action.subscribe:
+        if action == Action.SUBSCRIBE:
             topic_match = self.feeder_sub_topic_regex.match(topic)
-        elif action == Action.publish:
+        elif action == Action.PUBLISH:
             topic_match = self.feeder_pub_topic_regex.match(topic)
         else:
             logger.warning("Unhandled action %s", action)
