@@ -91,6 +91,8 @@ class DeviceUpdate(BaseModel):
 
 
 class DeviceTelemetry(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     timestamp: int
     voltage: float
     usb_power: bool

@@ -17,21 +17,21 @@ class FeedEvent(BaseModel):
     device_name: Optional[str] = None
     device_hid: str
     timestamp: int
-    start_time: int
-    end_time: int
+    start_time: Optional[int] = None
+    end_time: Optional[int] = None
     pour: Optional[int] = None
     full: Optional[int] = None
-    grams_expected: int
-    grams_actual: int
-    hopper_start: int
-    hopper_end: int
-    source: int
-    fail: bool
+    grams_expected: Optional[int] = None
+    grams_actual: Optional[int] = None
+    hopper_start: Optional[int] = None
+    hopper_end: Optional[int] = None
+    source: Optional[int] = None
+    fail: Optional[bool] = None
     trip: Optional[bool] = None
     lrg: Optional[bool] = None
     vol: Optional[bool] = None
     bowl: Optional[bool] = None
-    recipe_id: str
+    recipe_id: Optional[str] = None
     error: Optional[str] = None
 
 

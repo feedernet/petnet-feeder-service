@@ -41,7 +41,7 @@ async def get_pet(pet_id: int):
 
 @router.put("/{pet_id}", response_model=RegisteredPet)
 async def update_pet(pet_id: int, update: RegisteredPet):
-    pet_id = await Pet.update(
+    await Pet.update(
         pet_id=pet_id,
         name=update.name,
         animal_type=update.animal_type,

@@ -611,7 +611,7 @@ class StoredRecipe:
         async with async_session() as session:
             result = await session.execute(query)
             await session.commit()
-        return result.rowcount
+        return result.inserted_primary_key[0]
 
     @classmethod
     async def update(

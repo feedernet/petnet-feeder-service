@@ -38,16 +38,16 @@ function App() {
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse id="basic-navbar-nav">
             <Nav className="me-auto">
-              <Link
+              <Nav.Link
+                as={Link}
                 to={rootPath}
-                component={Nav.Link}
                 active={window.location.pathname === `${rootPath}/`}
               >
                 <Icon path={mdiPaw} size={0.75} /> Home
-              </Link>
-              <Link to={`${rootPath}/settings`} component={Nav.Link}>
+              </Nav.Link>
+              <Nav.Link as={Link} to={`${rootPath}/settings`}>
                 <Icon path={mdiCog} size={0.75} /> Settings
-              </Link>
+              </Nav.Link>
             </Nav>
           </Navbar.Collapse>
         </Container>
