@@ -82,6 +82,7 @@ def testing_environment(
     # in sys.modules with defaults, this reassignment ensures tests use correct ports.
     import feeder
     import feeder.config
+
     feeder.settings = feeder.config.Settings()
 
     yield
