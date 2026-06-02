@@ -30,8 +30,8 @@ RUN apk add --no-cache --virtual .build-deps \
         jq \
     && python -m pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir poetry yq --extra-index-url https://www.piwheels.org/simple \
-    && cat poetry.lock | tomlq -r '.package[] | select(.category == "main") | select(.source == null) | "\(.name)==\(.version)"' | xargs poetry run pip install --no-cache-dir --extra-index-url https://www.piwheels.org/simple \
-    && poetry install --no-dev -v \
+    && cat poetry.lock | tomlq -r '.package[] | select(.groups[] == "main") | select(.source == null) | "\(.name)==\(.version)"' | xargs poetry run pip install --no-cache-dir --extra-index-url https://www.piwheels.org/simple \
+    && poetry install --only main -v \
     && apk del .build-deps \
     && rm -rf ~/.cache/pip \
     && rm -rf ~/.cache/pypoetry/{cache,artifacts}
